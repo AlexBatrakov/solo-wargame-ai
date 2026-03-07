@@ -157,7 +157,7 @@ Update this block only from a planning / audit / master-thread after checking
 repo state against the stage criteria.
 
 - Stage 0 - Phase 2 replanning audit: completed
-- Stage 1 - Engine contract regression hardening: pending
+- Stage 1 - Engine contract regression hardening: completed
 - Stage 2 - Replay and reproducibility contract hardening: pending
 - Stage 3 - Minimal CI / automation gate: pending
 - Stage 4 - Phase 2 closeout audit and next-phase dispatch: pending
