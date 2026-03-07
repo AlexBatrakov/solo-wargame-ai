@@ -14,7 +14,8 @@ So every thread needs a repeatable startup and handoff process.
 
 ## Mandatory startup reading order
 
-For any non-trivial thread, read these files in this order:
+For a narrow implementation thread that touches one bounded subsystem, read
+these files in this order:
 
 1. `README.md`
 2. `docs/reference/rules_digest.md`
@@ -25,14 +26,29 @@ For any non-trivial thread, read these files in this order:
 7. `docs/internal/execution_plan.md`
 8. `docs/internal/codex_workflow.md`
 
-If the task touches repo structure, also read:
-- `docs/internal/repo_layout.md`
+Also add these when relevant:
+- `docs/testing_strategy.md` if tests should be added or updated
+- `docs/development_workflow.md` if the thread may affect process or scope rules
+- `docs/internal/repo_layout.md` if package/file boundaries may change
+- `docs/internal/commit_policy.md` if the thread is likely to end commit-ready
 
-If the task touches tests, also read:
-- `docs/testing_strategy.md`
+For a major planning, review, or architecture-sensitive Phase 1 thread, use the
+extended startup order below:
 
-If the thread is likely to produce a commit, also read:
-- `docs/internal/commit_policy.md`
+1. `README.md`
+2. `docs/reference/rules_digest.md`
+3. `ASSUMPTIONS.md`
+4. `docs/game_spec.md`
+5. `docs/state_model.md`
+6. `docs/action_model.md`
+7. `docs/testing_strategy.md`
+8. `docs/development_workflow.md`
+9. `docs/internal/execution_plan.md`
+10. `docs/internal/codex_workflow.md`
+11. `docs/internal/thread_playbook.md`
+12. `docs/internal/repo_layout.md`
+13. `docs/internal/commit_policy.md`
+14. `ROADMAP.md`
 
 ## Default thread contract
 
@@ -45,6 +61,35 @@ Every implementation thread should operate under these rules:
 - update `ASSUMPTIONS.md` if a rule interpretation or simplification was needed
 - update public docs if stable behavior changed
 - do not start RL/environment work unless the task explicitly calls for it
+
+## Master-thread vs implementation-thread responsibilities
+
+For Phase 1, keep planning / dispatch / review work separate from implementation
+work.
+
+### Master-thread responsibilities
+
+The master-thread should:
+- treat `docs/internal/execution_plan.md` as the control document for Phase 1
+- keep the Phase 1 status block current
+- decide whether a stage is actually complete against its exit criteria
+- enforce stage-by-stage sequencing
+- prevent dependent stages from being opened in parallel
+- decide the next commit-sized slice before dispatching the next implementation
+  thread
+- stay out of `src/` unless it is explicitly re-tasked away from the
+  planning/review role
+
+### Implementation-thread responsibilities
+
+An implementation thread should:
+- execute only the currently assigned stage or substage
+- not self-upgrade its scope to the next stage
+- not open dependent later-stage work in parallel
+- report what exit criteria were met, what remains open, and whether the slice
+  is commit-ready
+- leave status changes in `execution_plan.md` to the master-thread unless the
+  task explicitly asked for a planning update too
 
 ## Recommended prompt structure
 
@@ -69,6 +114,8 @@ Read:
 - docs/action_model.md
 - docs/internal/execution_plan.md
 - docs/internal/codex_workflow.md
+- docs/testing_strategy.md if tests are in scope
+- docs/internal/repo_layout.md if package boundaries may change
 
 Task:
 - <one bounded task>
@@ -94,6 +141,8 @@ Use when:
 - architecture might change
 - multiple docs may need updates
 - the task could balloon
+- the thread is about `state.py`, `actions.py`, `decision_context.py`, replay
+  format, or package-boundary changes
 
 Expected output:
 - current-state summary
@@ -106,6 +155,7 @@ Expected output:
 Use when:
 - the target module is already chosen
 - the rule/behavior is already specified
+- the action/state contract is already settled for that slice
 
 Expected output:
 - code
@@ -174,18 +224,56 @@ Stop and switch to an analysis-style thread if the work starts affecting:
 These decisions are foundational and should not be smuggled in through a small
 code task.
 
+## Phase 1 slicing rules
+
+Use the Mission 1 stages from `docs/internal/execution_plan.md` as the default
+thread boundaries.
+
+Good one-thread scopes:
+- Stage 1 only: package bootstrap plus `hexgrid` / `terrain` / `rng`
+- Stage 2 only: mission schema, loader, and config validation
+- Stage 3A only: analysis-before-edit for state / action /
+  decision-context contracts
+- Stage 3B only: implementation of the agreed state / action /
+  decision-context contracts
+- Stage 4 only: British activation flow legality
+- Stage 5 only: `advance` / `take_cover` / `rally` / `scout` / reveal
+- Stage 6A only: British combat and morale
+- Stage 6B only: German phase, turn rollover, terminal checks, and integration
+  path
+- Stage 7 only: replay / trace / manual run path
+
+Do not mix in one thread:
+- loader/schema work with state/action redesign
+- replay-format work with unresolved resolver redesign
+- German phase implementation with package/bootstrap setup
+- Mission 1 completion with Mission 3+ extension work
+- domain-engine work with agents, environment, or RL scaffolding
+
+Default analysis-before-edit requirement inside Phase 1:
+- Stage 3A is mandatory before Stage 3B
+- any replay-format redesign
+- any mission-schema change beyond Mission 1
+- any change that affects package boundaries or action granularity
+
+Phase-order rule:
+- do not open a dependent later stage until the master-thread has confirmed the
+  current stage complete and updated `docs/internal/execution_plan.md`
+
 ## Suggested first thread queue
 
 If no better priority is obvious, use this sequence:
 
-1. create Python package skeleton and test tooling
-2. implement hex-grid primitives
-3. implement Mission 1 config loader
-4. implement state/mission models
-5. implement Mission 1 activation and orders
-6. implement Mission 1 reveal/combat/German phase
-7. add deterministic replay and end-to-end tests
-8. move to the Mission 3-4 terrain extension
+1. implement Stage 1 package bootstrap and board primitives
+2. implement Stage 2 Mission 1 schema and loader
+3. run Stage 3A analysis-before-edit
+4. implement Stage 3B state and decision-context models
+5. implement Stage 4 British activation flow and legality
+6. implement Stage 5 reveal and non-attack orders
+7. implement Stage 6A British combat and morale
+8. implement Stage 6B German phase, terminal checks, and integration path
+9. implement Stage 7 replay / deterministic trace support
+10. move to the Mission 3-4 terrain extension
 
 ## Practical rule for this repo
 

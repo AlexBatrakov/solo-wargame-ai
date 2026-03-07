@@ -265,8 +265,10 @@ Start with:
 src/solo_wargame_ai/
   domain/
   io/
-  agents/
 ```
+
+Defer `agents/`, `env/`, `eval/`, and `cli/` until the Mission 1 engine slice is
+real enough that those packages have an immediate use.
 
 First likely modules:
 
@@ -275,131 +277,353 @@ domain/
   enums.py
   hexgrid.py
   terrain.py
+  mission.py
   units.py
   state.py
   actions.py
   decision_context.py
+  legal_actions.py
   rng.py
   reveal.py
   combat.py
   german_fire.py
   resolver.py
+  validation.py
 
 io/
   mission_loader.py
   mission_schema.py
-  replay.py
-
-agents/
-  random_agent.py
+  replay.py  # later in Phase 1, not in the bootstrap thread
 ```
 
-## Thread-sized backlog
+## Detailed Phase 1 build stages
 
-These are the recommended first Codex tasks.
-Each should be one thread or one tightly-scoped pair of threads.
-
-### Phase 1 kickoff queue
-
-1. Create the Python package skeleton under the existing project metadata and
-   test tooling.
-2. Implement hex coordinates, adjacency, and forward-neighbor helpers.
-3. Implement the Mission 1 config loader.
-4. Implement the first `GameState` and decision-context models.
-5. Start the Mission 1 engine slice.
-
-The detailed backlog below expands this kickoff queue.
 `pyproject.toml` and `Makefile` already belong to the completed Phase 0/1
 handoff, so the first remaining implementation step starts at `src/`.
 
-### Package foundation
+## Phase 1 master-plan usage
 
-6. Create `src/solo_wargame_ai/` and the first package skeleton under the
-   existing project metadata and test tooling.
-7. Implement hex coordinates, adjacency, and forward-neighbor helpers.
-8. Implement terrain / terrain modifier primitives.
-9. Implement core enums for units, terrain, actions, morale, and decision
-   phases.
-10. Implement RNG wrapper with deterministic seeding and serializable state.
+For Phase 1, this file is not only a backlog.
+It is the **master execution plan** that a planning / dispatch / review thread
+should keep current while implementation happens in separate threads.
 
-### Mission/state foundation
+Operational rules:
+- implementation threads must move stage-by-stage in the order defined here
+- do not start a dependent later stage while an earlier stage is still pending,
+  in progress, or under review
+- do not run dependent stages in parallel
+- Stage 3 is architecture-sensitive and must run as:
+  - Stage 3A = analysis-before-edit
+  - Stage 3B = implementation
+- after each completed stage, the master-thread should:
+  - update the status block below
+  - confirm whether exit criteria for that stage were actually met
+  - identify the next commit-sized slice before the next implementation thread
+    starts
 
-11. Implement mission models and loader for Mission 1 config.
-12. Implement `GameState` and state validation.
-13. Implement unresolved enemy marker representation.
-14. Implement British unit activation bookkeeping.
-15. Implement German unit facing and Fire Zone helpers.
+Allowed status values:
+- `pending`
+- `in_progress`
+- `completed`
+- `blocked`
 
-### Mission 1 rule slice
+## Phase 1 status block
 
-16. Implement reveal resolution from adjacent movement.
-17. Implement reveal resolution from Scout.
-18. Implement British order-roll logic, including doubles and rerolls.
-19. Implement die-result selection and legality checking.
-20. Implement Advance order and cover reset behavior.
-21. Implement Fire resolution.
-22. Implement Grenade Attack resolution.
-23. Implement Take Cover and Rally.
-24. Implement Scout legality and execution.
-25. Implement German activation ordering and attacks.
-26. Implement morale transitions.
-27. Implement Mission 1 terminal checks.
-28. Implement text trace / replay for Mission 1.
+Update this block only from a planning / review / master-thread after checking
+the repository state against the stage exit criteria.
 
-### Mission 1 verification
+- Stage 1: pending
+- Stage 2: pending
+- Stage 3A: pending
+- Stage 3B: pending
+- Stage 4: pending
+- Stage 5: pending
+- Stage 6A: pending
+- Stage 6B: pending
+- Stage 7: pending
 
-29. Add unit tests for hex logic.
-30. Add tests for doubles / reroll activation logic.
-31. Add tests for Orders Chart lookup.
-32. Add tests for reveal facing when found by movement.
-33. Add tests for reveal facing when revealed by Scout.
-34. Add tests for flanking modifier.
-35. Add tests for support modifier.
-36. Add tests for cover stacking and cover loss on movement.
-37. Add tests for morale degradation and Rally.
-38. Add an end-to-end deterministic Mission 1 replay test.
+The key constraint for Phase 1 is:
+- model the written Mission 1 turn flow explicitly;
+- keep static mission data separate from dynamic state;
+- add tests in the same slice as the behavior they protect;
+- avoid empty scaffolding outside the files that immediately support Mission 1.
 
-### Mission 3/4 extension
+### Stage 1 - Minimal package bootstrap and board primitives
 
-39. Transcribe Mission 3 or 4 config.
-40. Add Building and Hill modifier support.
-41. Add German Rifle Squad support.
-42. Add regression tests proving Mission 1 behavior did not change.
+Goal:
+- create the smallest executable package surface needed for Mission 1
+- lock the coordinate and RNG conventions before higher-level state exists
 
-### Mission 5/6 extension
+Deliverables:
+- `src/solo_wargame_ai/__init__.py`
+- `src/solo_wargame_ai/domain/__init__.py`
+- `src/solo_wargame_ai/io/__init__.py`
+- `src/solo_wargame_ai/domain/enums.py`
+- `src/solo_wargame_ai/domain/hexgrid.py`
+- `src/solo_wargame_ai/domain/terrain.py`
+- `src/solo_wargame_ai/domain/rng.py`
 
-43. Transcribe Mission 5 config.
-44. Add MG Team unit type and chart handling.
-45. Add support for multiple start hexes.
-46. Add tests for mixed British roster behavior.
+Tests that should appear:
+- `tests/test_hexgrid.py`
+- `tests/test_rng.py`
+- `tests/test_terrain.py` if terrain lookup is not trivial
 
-### Mission 7/9 extension
+Risks / traps:
+- drifting away from the documented flat-top axial convention
+- encoding British forward movement as a special-case hardcoded list instead of
+  a reusable direction helper
+- creating `agents/` or other future-facing packages before they are needed
 
-47. Transcribe Mission 7 config.
-48. Add Mortar support logic.
-49. Add PIAT targeting restrictions and building-ignore rule.
-50. Add Half-Track pre-revealed placement and combat rules.
-51. Add river-blocked edge representation and bridge exceptions.
-52. Add Minefield reveal and repeated hit logic.
-53. Add deterministic tests for each of the above.
+Completion criteria:
+- the package imports cleanly under the documented `src` layout
+- axial adjacency and British-forward-neighbor helpers are tested
+- RNG seeding and repeatability are tested
 
-### Mission 10/11 extension
+### Stage 2 - Mission 1 schema, loader, and static mission model
 
-54. Transcribe Mission 10 or 11 config.
-55. Add Artillery unit behavior.
-56. Add cover filtering for Artillery targeting.
-57. Add tests for Artillery non-flankability and global attack pattern.
+Goal:
+- turn the Mission 1 TOML file into a validated in-memory mission definition
+- keep runtime state concerns out of the loader
 
-### Baselines and RL
+Deliverables:
+- `src/solo_wargame_ai/domain/mission.py`
+- `src/solo_wargame_ai/domain/validation.py`
+- `src/solo_wargame_ai/io/mission_schema.py`
+- `src/solo_wargame_ai/io/mission_loader.py`
 
-58. Add random agent over legal actions.
-59. Add first heuristic agent.
-60. Add batch evaluation harness.
-61. Define observation schema.
-62. Define action encoding and legal-action mask.
-63. Add Gym wrapper.
-64. Add first reward design.
-65. Run first baseline and RL experiments.
+Tests that should appear:
+- `tests/test_mission_loader.py`
+- `tests/test_mission_validation.py`
+
+Validation coverage should include:
+- duplicate ids
+- invalid terrain or direction names
+- missing Orders Chart rows for Mission 1 unit classes
+- reveal-table gaps or overlaps
+- hidden markers or start hexes on non-playable hexes
+
+Risks / traps:
+- hardcoding Mission 1 behavior directly into the loader instead of the domain
+- merging setup-space data with dynamic `GameState`
+- letting the loader depend on resolver or legality code
+
+Completion criteria:
+- Mission 1 loads deterministically from
+  `configs/missions/mission_01_secure_the_woods_1.toml`
+- the loaded mission object is validated and inspectable
+- no dynamic turn/activation state is required to load a mission
+
+### Stage 3 - Dynamic state, action schema, and decision-context contract
+
+Dispatch rule:
+- do not treat this as a single implementation thread
+- execute it as:
+  - Stage 3A: analysis-before-edit on the state/action/decision-context
+    contract
+  - Stage 3B: implementation of the agreed contract plus tests
+
+Goal:
+- define the runtime contract that all later legality and resolver code will
+  use
+- make staged Mission 1 decisions explicit before rule resolution is added
+
+Deliverables:
+- `src/solo_wargame_ai/domain/units.py`
+- `src/solo_wargame_ai/domain/state.py`
+- `src/solo_wargame_ai/domain/actions.py`
+- `src/solo_wargame_ai/domain/decision_context.py`
+- initial state construction from the loaded mission
+- state validation helpers for Mission 1 invariants
+
+Tests that should appear:
+- `tests/test_initial_state.py`
+- `tests/test_state_validation.py`
+- `tests/test_decision_context.py`
+
+Risks / traps:
+- hiding pending decisions in resolver-local variables instead of state
+- conflating order templates from the Orders Chart with concrete actions chosen
+  by the player
+- over-generalizing for later missions before Mission 1 state is proven
+- treating hidden markers as pre-sampled units instead of unresolved markers
+
+Completion criteria:
+- the engine can create a valid initial Mission 1 state from the mission object
+- the initial pending decision context is explicit
+- activation bookkeeping, morale, cover, hidden markers, and revealed units are
+  all representable without ad hoc side channels
+
+### Stage 4 - British activation flow and legality engine
+
+Goal:
+- implement the staged British decision flow up to the point where a concrete
+  order execution is chosen
+- prove that legality is state-driven, not caller-driven
+
+Deliverables:
+- `src/solo_wargame_ai/domain/legal_actions.py`
+- resolver support for:
+  - choosing the next British unit
+  - rolling 2d6 through the RNG wrapper
+  - deciding keep vs reroll on doubles
+  - selecting one die result or discarding both dice
+  - choosing first order, second order, both, or no action under morale rules
+
+Tests that should appear:
+- `tests/test_activation_flow.py`
+- `tests/test_order_chart_lookup.py`
+- `tests/test_low_morale_constraints.py`
+
+Risks / traps:
+- silently auto-rerolling or auto-keeping doubles
+- collapsing die choice and order choice into one macro decision
+- letting legality depend on agent-side filtering instead of engine state
+- forgetting that "discard both dice and do nothing" is legal
+
+Completion criteria:
+- from a valid state, the engine can enumerate only legal British activation
+  flow actions
+- low-morale restrictions are enforced by legality
+- the state can advance from initial setup to a pending concrete order
+  parameter decision without manual intervention
+
+### Stage 5 - Positioning orders, support orders, and reveal mechanics
+
+Goal:
+- implement the non-attack Mission 1 orders and the reveal system they trigger
+- make reveal behavior explicit rather than a side effect hidden in movement code
+
+Deliverables:
+- `src/solo_wargame_ai/domain/reveal.py`
+- resolver support for:
+  - `advance`
+  - `take_cover`
+  - `rally`
+  - `scout`
+  - reveal by movement
+  - reveal by Scout
+  - German facing assignment on reveal
+
+Tests that should appear:
+- `tests/test_advance_rules.py`
+- `tests/test_cover_and_rally.py`
+- `tests/test_reveal_rules.py`
+- `tests/test_scout_rules.py`
+
+Risks / traps:
+- forgetting that only moving out of a hex removes accumulated Cover
+- allowing Scout to bypass the exact-distance and facing-choice constraints
+- resolving reveal as preloaded hidden content instead of sampling from the
+  reveal table at reveal time
+- mixing map mutation, reveal sampling, and state transition bookkeeping in one
+  opaque function
+
+Completion criteria:
+- all non-attack Mission 1 orders execute through the resolver
+- reveal-by-movement and reveal-by-Scout behave as documented
+- reveal-facing rules are covered by tests
+
+### Stage 6 - Combat, German phase, turn progression, and terminal checks
+
+Goal:
+- complete the first faithful playable Mission 1 engine slice
+- close the loop from British phase through German phase to mission end
+
+Deliverables:
+- `src/solo_wargame_ai/domain/combat.py`
+- `src/solo_wargame_ai/domain/german_fire.py`
+- `src/solo_wargame_ai/domain/resolver.py`
+- resolver support for:
+  - British `fire`
+  - British `grenade_attack`
+  - combat modifier calculation
+  - morale transitions
+  - German activation ordering
+  - German Fire Zone attacks
+  - turn rollover and activation reset
+  - Mission 1 terminal evaluation
+
+Tests that should appear:
+- `tests/test_combat_rules.py`
+- `tests/test_german_phase.py`
+- `tests/test_terminal_conditions.py`
+- `tests/test_mission1_integration.py`
+
+Risks / traps:
+- applying Fire modifiers to grenade attacks
+- evaluating German attacks without explicit player-chosen German activation
+  order
+- forgetting turn-boundary reset of activation bookkeeping
+- checking terminal conditions at the wrong point in the flow
+
+Completion criteria:
+- Mission 1 can be played end-to-end using only legal actions
+- British and German phases both progress through explicit decision contexts
+- fixed seed plus fixed chosen actions produces a stable Mission 1 trajectory
+
+### Stage 7 - Replay, text trace, and regression closure
+
+Goal:
+- make Mission 1 inspectable and regression-safe once the playable slice exists
+
+Deliverables:
+- `src/solo_wargame_ai/io/replay.py`
+- optional thin manual-run entrypoint only if it directly exercises the engine
+- event / trace objects sufficient to record:
+  - random draws and their purposes
+  - chosen actions
+  - reveals
+  - hits, morale changes, removals
+  - mission end
+
+Tests that should appear:
+- `tests/test_replay_determinism.py`
+- one end-to-end fixed-seed trace regression test if not already covered in
+  `tests/test_mission1_integration.py`
+
+Risks / traps:
+- designing replay too early and forcing the resolver around it
+- storing too little information to debug divergence
+- coupling human-readable logging to core transition logic
+
+Completion criteria:
+- a short Mission 1 trace can be replayed deterministically
+- the engine can emit a readable text log without direct state mutation
+- replay/logging stays an adapter over the domain engine, not a second source of
+  truth
+
+## Recommended Codex thread slicing for Phase 1
+
+The recommended thread order is:
+
+1. Stage 1 only: package bootstrap plus `hexgrid` / `terrain` / `rng` and their
+   tests.
+2. Stage 2 only: mission schema, mission loader, validation, and loader tests.
+3. Stage 3A only: analysis-before-edit for the state / actions /
+   decision-context contract.
+4. Stage 3B only: state, actions, decision context, initialization, and
+   invariant tests.
+5. Stage 4 only: British activation flow legality and tests.
+6. Stage 5 only: `advance` / `take_cover` / `rally` / `scout` / reveal and
+   tests.
+7. Stage 6A: British combat and morale tests.
+8. Stage 6B: German phase, terminal checks, and Mission 1 integration test.
+9. Stage 7 only: replay / trace / manual run path after the engine behavior is
+   already stable.
+
+Do not mix these in one thread unless there is a very small cleanup:
+- mission-schema changes with state/action redesign
+- replay-format work with unresolved legality/resolver redesign
+- German phase work with early package/bootstrap setup
+- Mission 1 completion work with Mission 3+ extensions
+- domain-engine work with agent or RL scaffolding
+
+Master-thread checklist after each completed stage:
+1. verify the completed thread against that stage's exit criteria
+2. update the Phase 1 status block in this file
+3. decide whether the result is one commit-sized slice or needs follow-up before
+   commit
+4. name the next stage-specific implementation thread explicitly
 
 ## Testing plan by stage
 
