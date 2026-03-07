@@ -160,7 +160,44 @@ repo state against the stage criteria.
 - Stage 1 - Engine contract regression hardening: completed
 - Stage 2 - Replay and reproducibility contract hardening: completed
 - Stage 3 - Minimal CI / automation gate: completed
-- Stage 4 - Phase 2 closeout audit and next-phase dispatch: pending
+- Stage 4 - Phase 2 closeout audit and next-phase dispatch: completed
+- Phase 2 overall decision: completed
+- Closeout audit date: March 7, 2026
+- Blocking hardening findings: none
+
+## Phase 2 closeout summary
+
+March 7, 2026 closeout audit result:
+
+- accepted local verification gate passes:
+  - `.venv/bin/pytest -q` -> `133 passed`
+  - `.venv/bin/ruff check src tests` -> `All checks passed!`
+- Stage 1 deliverables are present in committed repo state:
+  - focused resolver/terminal/runtime-invariant hardening exists under
+    `tests/test_resolver_contracts.py`, `tests/test_state_validation.py`, and
+    `tests/test_terminal_conditions.py`
+  - the Stage 1 thread report records one narrow runtime-validation bug fix in
+    `src/solo_wargame_ai/domain/state.py`
+- Stage 2 deliverables are present in committed repo state:
+  - replay contract hardening exists under `tests/test_replay_contracts.py`
+    alongside the existing deterministic replay coverage
+  - no replay-adapter redesign was needed
+- Stage 3 deliverables are present in committed repo state:
+  - `.github/workflows/ci.yml` runs the accepted local gate on Python 3.11
+    with no widened CI scope
+- current repo state is clean before Stage 4 docs edits, so the closeout thread
+  starts from a reproducible baseline
+
+Residual risks after closeout:
+
+- public `ROADMAP.md` still describes Phase 2 in its older setup-era wording
+  and should be synced in a separate docs-only thread
+- later-phase work remains open by design:
+  - Phase 3 baselines
+  - Mission 3/4 content extension
+  - RL/environment work
+
+These are not Phase 2 blockers.
 
 ## Stage 0 - Phase 2 replanning audit
 
@@ -345,6 +382,10 @@ Completion criteria:
 
 ## Stage 4 - Phase 2 closeout audit and next-phase dispatch
 
+Status:
+
+- completed
+
 Goal:
 
 - explicitly decide whether the hardening cycle is actually finished before
@@ -383,6 +424,13 @@ Completion criteria:
 - every Phase 2 stage is either completed or explicitly deferred out of scope
 - the next macro-step is named and justified
 - the master-thread can hand off to the next phase without ambiguity
+
+Closeout result:
+
+- Stages 1-3 are accepted by repo fact and local verification.
+- No remaining hardening gap found in the accepted Phase 2 scope is material
+  enough to block closeout.
+- Phase 2 is therefore accepted as complete.
 
 ## Recommended Codex thread slicing for Phase 2
 
@@ -431,7 +479,7 @@ Rationale:
 
 Planning decision:
 
-- after Phase 2, open Phase 3 baselines first
+- after accepted Phase 2 closeout, open Phase 3 baselines first
 - keep Mission 3/4 content extension as the next content track after the first
   baseline harness is real, or reopen earlier only if Phase 3 proves Mission 1
   too degenerate for useful comparisons
@@ -442,7 +490,7 @@ The public `README.md` already says the next milestone should be chosen in a
 separate planning pass, so the internal replanning can proceed without
 immediately rewriting public docs.
 
-However, the public `ROADMAP.md` Phase 2 wording is now partially stale.
-After Stage 4, open a separate docs-only public handoff thread if the internal
-Phase 2 plan is accepted unchanged and the public roadmap still risks misleading
-future readers.
+However, the public `ROADMAP.md` Phase 2 wording is now stale relative to the
+accepted internal closeout.
+Open a separate docs-only public handoff thread to sync the public roadmap
+after this Stage 4 closeout commit lands.
