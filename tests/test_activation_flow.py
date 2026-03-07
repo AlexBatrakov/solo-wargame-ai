@@ -107,13 +107,13 @@ def test_non_double_path_reaches_order_execution_after_die_selection() -> None:
 
     next_state = apply_action(
         state,
-        SelectActivationDieAction(die_value=5),
+        SelectActivationDieAction(die_value=2),
     )
 
     assert next_state.pending_decision.kind is DecisionContextKind.CHOOSE_ORDER_EXECUTION
     assert next_state.current_activation is not None
     assert next_state.current_activation.roll == (2, 5)
-    assert next_state.current_activation.selected_die == 5
+    assert next_state.current_activation.selected_die == 2
     assert get_legal_actions(next_state) == (
         ChooseOrderExecutionAction(choice=OrderExecutionChoice.FIRST_ORDER_ONLY),
         ChooseOrderExecutionAction(choice=OrderExecutionChoice.SECOND_ORDER_ONLY),

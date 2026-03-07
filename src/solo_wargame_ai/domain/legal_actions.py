@@ -194,19 +194,37 @@ def _selectable_british_unit_ids(
 def _legal_order_execution_choices(state: GameState) -> tuple[OrderExecutionChoice, ...]:
     activation = _require_current_activation(state)
     active_unit = state.british_units[activation.active_unit_id]
+    orders_row = lookup_orders_chart_row(
+        state.mission,
+        unit_class=active_unit.unit_class,
+        die_value=activation.selected_die or 0,
+    )
 
-    if active_unit.morale is BritishMorale.LOW:
-        return (
+    candidate_choices = (
+        (
             OrderExecutionChoice.FIRST_ORDER_ONLY,
             OrderExecutionChoice.NO_ACTION,
         )
-
-    return (
-        OrderExecutionChoice.FIRST_ORDER_ONLY,
-        OrderExecutionChoice.SECOND_ORDER_ONLY,
-        OrderExecutionChoice.BOTH_ORDERS,
-        OrderExecutionChoice.NO_ACTION,
+        if active_unit.morale is BritishMorale.LOW
+        else (
+            OrderExecutionChoice.FIRST_ORDER_ONLY,
+            OrderExecutionChoice.SECOND_ORDER_ONLY,
+            OrderExecutionChoice.BOTH_ORDERS,
+            OrderExecutionChoice.NO_ACTION,
+        )
     )
+
+    legal_choices: list[OrderExecutionChoice] = []
+    for choice in candidate_choices:
+        if choice is OrderExecutionChoice.NO_ACTION:
+            legal_choices.append(choice)
+            continue
+
+        planned_orders = _planned_orders_for_choice(orders_row, choice)
+        if _has_immediate_legal_order_parameter_action(state, planned_orders=planned_orders):
+            legal_choices.append(choice)
+
+    return tuple(legal_choices)
 
 
 def _legal_order_parameter_actions(state: GameState) -> tuple[GameAction, ...]:
@@ -565,6 +583,30 @@ def _legal_scout_actions(state: GameState, unit_position: HexCoord) -> tuple[Sco
         for facing in legal_scout_facing_directions(state.mission, marker_state.position):
             actions.append(ScoutAction(marker_id=marker_state.marker_id, facing=facing))
     return tuple(actions)
+
+
+def _has_immediate_legal_order_parameter_action(
+    state: GameState,
+    *,
+    planned_orders: tuple[OrderName, ...],
+) -> bool:
+    if not planned_orders:
+        return False
+
+    activation = _require_current_activation(state)
+    preview_state = replace(
+        state,
+        pending_decision=ChooseOrderParameterContext(
+            order=planned_orders[0],
+            order_index=0,
+        ),
+        current_activation=replace(
+            activation,
+            planned_orders=planned_orders,
+            next_order_index=0,
+        ),
+    )
+    return bool(_legal_order_parameter_actions(preview_state))
 
 
 def _require_order_parameter_context(state: GameState) -> ChooseOrderParameterContext:

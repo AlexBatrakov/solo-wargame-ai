@@ -10,9 +10,12 @@ from solo_wargame_ai.domain.decision_context import (
     ChooseOrderExecutionContext,
     ChooseOrderParameterContext,
 )
+from solo_wargame_ai.domain.enums import HexDirection
+from solo_wargame_ai.domain.hexgrid import HexCoord
 from solo_wargame_ai.domain.legal_actions import apply_action, lookup_orders_chart_row
 from solo_wargame_ai.domain.mission import OrderName
 from solo_wargame_ai.domain.state import CurrentActivation, create_initial_game_state
+from solo_wargame_ai.domain.units import GermanUnitStatus, RevealedGermanUnitState
 from solo_wargame_ai.io.mission_loader import load_mission
 
 MISSION_PATH = (
@@ -94,6 +97,23 @@ def _state_at_choose_order_execution(*, selected_die: int):
     initial_state = create_initial_game_state(mission)
     return replace(
         initial_state,
+        british_units={
+            **initial_state.british_units,
+            "rifle_squad_a": replace(
+                initial_state.british_units["rifle_squad_a"],
+                position=HexCoord(0, 2),
+            ),
+        },
+        german_units={
+            "qm_1": RevealedGermanUnitState(
+                unit_id="qm_1",
+                unit_class="light_machine_gun",
+                position=HexCoord(0, 1),
+                facing=HexDirection.DOWN,
+                status=GermanUnitStatus.ACTIVE,
+            ),
+        },
+        unresolved_markers={},
         pending_decision=ChooseOrderExecutionContext(),
         current_activation=CurrentActivation(
             active_unit_id="rifle_squad_a",
