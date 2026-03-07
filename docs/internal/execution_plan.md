@@ -332,7 +332,7 @@ Allowed status values:
 Update this block only from a planning / review / master-thread after checking
 the repository state against the stage exit criteria.
 
-- Stage 1: pending
+- Stage 1: completed
 - Stage 2: pending
 - Stage 3A: pending
 - Stage 3B: pending
