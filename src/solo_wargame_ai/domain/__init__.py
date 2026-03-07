@@ -1,5 +1,16 @@
 """Core domain primitives for the Solo Wargame AI engine."""
 
+from .decision_context import (
+    ChooseActivationDieContext,
+    ChooseBritishUnitContext,
+    ChooseDoubleChoiceContext,
+    ChooseGermanUnitContext,
+    ChooseOrderExecutionContext,
+    ChooseOrderParameterContext,
+    DecisionContextKind,
+    PendingDecision,
+    context_requires_current_activation,
+)
 from .enums import (
     CoordinateSystem,
     HexDirection,
@@ -42,7 +53,23 @@ from .mission import (
     order_name_from_name,
 )
 from .rng import DeterministicRNG, RNGState
+from .state import (
+    CurrentActivation,
+    GamePhase,
+    GameState,
+    GameStateValidationError,
+    GameStateValidationIssue,
+    create_initial_game_state,
+    validate_game_state,
+)
 from .terrain import TerrainType, is_terrain_name, terrain_from_name
+from .units import (
+    BritishMorale,
+    BritishUnitState,
+    GermanUnitStatus,
+    RevealedGermanUnitState,
+    UnresolvedHiddenMarkerState,
+)
 from .validation import MissionValidationError, ValidationIssue, validate_mission
 
 __all__ = [
@@ -51,13 +78,28 @@ __all__ = [
     "AttackProfile",
     "AttackRange",
     "BRITISH_FORWARD_DIRECTIONS",
+    "BritishMorale",
     "BritishMissionData",
     "BritishUnitClass",
     "BritishUnitDefinition",
+    "BritishUnitState",
+    "ChooseActivationDieContext",
+    "ChooseBritishUnitContext",
+    "ChooseDoubleChoiceContext",
+    "ChooseGermanUnitContext",
+    "ChooseOrderExecutionContext",
+    "ChooseOrderParameterContext",
     "CombatModifiers",
     "CoordinateSystem",
+    "CurrentActivation",
+    "DecisionContextKind",
     "DeterministicRNG",
     "EnemyRevealTableRow",
+    "GamePhase",
+    "GameState",
+    "GameStateValidationError",
+    "GameStateValidationIssue",
+    "GermanUnitStatus",
     "GermanMissionData",
     "GermanUnitClass",
     "HiddenMarker",
@@ -74,13 +116,18 @@ __all__ = [
     "OrderName",
     "OrdersChart",
     "OrdersChartRow",
+    "PendingDecision",
+    "RevealedGermanUnitState",
     "RNGState",
     "TerrainType",
+    "UnresolvedHiddenMarkerState",
     "ValidationIssue",
     "are_adjacent",
     "attack_range_from_name",
     "british_forward_neighbors",
     "coordinate_system_from_name",
+    "context_requires_current_activation",
+    "create_initial_game_state",
     "hex_direction_from_name",
     "is_terrain_name",
     "mission_objective_kind_from_name",
@@ -88,5 +135,6 @@ __all__ = [
     "neighbors",
     "order_name_from_name",
     "terrain_from_name",
+    "validate_game_state",
     "validate_mission",
 ]
