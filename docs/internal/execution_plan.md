@@ -188,10 +188,10 @@ March 7, 2026 closeout audit result:
 - current repo state is clean before Stage 4 docs edits, so the closeout thread
   starts from a reproducible baseline
 
-Residual risks after closeout:
+Residual notes after closeout:
 
-- public `ROADMAP.md` still describes Phase 2 in its older setup-era wording
-  and should be synced in a separate docs-only thread
+- public `README.md` and `ROADMAP.md` were minimally synced during the final
+  closeout audit so public status no longer stops at the Phase 1 handoff
 - later-phase work remains open by design:
   - Phase 3 baselines
   - Mission 3/4 content extension
@@ -484,13 +484,14 @@ Planning decision:
   baseline harness is real, or reopen earlier only if Phase 3 proves Mission 1
   too degenerate for useful comparisons
 
-## Public roadmap policy after this replanning
+## Public docs after Phase 2 closeout
 
-The public `README.md` already says the next milestone should be chosen in a
-separate planning pass, so the internal replanning can proceed without
-immediately rewriting public docs.
+The final Phase 2 closeout audit leaves public status text aligned with
+accepted repo truth.
 
-However, the public `ROADMAP.md` Phase 2 wording is now stale relative to the
-accepted internal closeout.
-Open a separate docs-only public handoff thread to sync the public roadmap
-after this Stage 4 closeout commit lands.
+During closeout, `README.md` and `ROADMAP.md` were synced to reflect that:
+
+- Phase 2 is complete
+- the next macro-step is Phase 3 baselines
+
+Further public polish can happen later in separate docs-only threads.

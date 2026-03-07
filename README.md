@@ -125,12 +125,16 @@ Mission data conventions are documented in `docs/mission_config.md`.
 ## Status
 
 Current repository state:
-- Phase 1 implementation is complete;
+- Phase 1 implementation is complete and captured by the local
+  `phase1-complete` milestone tag;
 - Mission 1 can be loaded, initialized, and played through the accepted
   resolver path under `src/solo_wargame_ai/domain/`;
 - deterministic replay / trace support exists under `src/solo_wargame_ai/io/`;
-- the repository currently verifies locally with `.venv/bin/pytest -q` and
-  `.venv/bin/ruff check src tests`;
+- Phase 2 hardening is complete: engine contracts, replay/reproducibility
+  contracts, and the minimal CI gate are in place;
+- the repository verifies locally with `.venv/bin/pytest -q` and
+  `.venv/bin/ruff check src tests`, and the same narrow gate is defined in
+  GitHub Actions;
 - later milestones such as baseline agents, RL wrappers, broader mission
   coverage, and experiments remain open.
 
@@ -143,8 +147,10 @@ At this stage, the repository does **not** yet include:
 - broader mission and advanced-rule coverage;
 - benchmark results.
 
-## Next planning handoff
+## Next macro-step
 
-Public docs now stop at the completed Phase 1 engine handoff.
-The next project milestone should be chosen in a separate planning pass rather
-than inferred from stale setup-era status text.
+Phase 2 hardening is formally complete.
+The next planned macro-step is Phase 3 baseline agents and evaluation-harness
+work.
+Mission 3/4 extension, RL wrappers, and broader public polish remain later
+follow-on work.

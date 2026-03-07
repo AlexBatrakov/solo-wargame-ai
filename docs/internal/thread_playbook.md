@@ -5,16 +5,21 @@
 This file defines how to run Codex threads on the repository without losing
 continuity.
 
-As of March 7, 2026, the active project-management problem is Phase 2
-hardening, not Mission 1 implementation.
-Thread startup, slicing, and handoff rules should reflect that reality.
+As of March 7, 2026, Phase 2 hardening is complete.
+This file remains the accepted playbook for that completed cycle.
+The next master-thread should replace the active phase context with Phase 3
+baseline planning before new implementation threads begin.
 
 ## Current phase context
 
 - Phase 1 is complete and accepted.
+- Phase 2 is complete and accepted.
 - `phase1-complete` is the local milestone tag.
-- The active master plan lives in `docs/internal/execution_plan.md`.
-- Phase 2 is a focused hardening cycle, not a content-expansion phase.
+- The accepted Phase 2 control record lives in
+  `docs/internal/execution_plan.md`.
+- The next macro-step is Phase 3 baselines.
+- The Phase 2-specific startup and slicing rules below are retained for
+  audit/history and should not be treated as the active implementation queue.
 
 If a thread starts acting as though Mission 1 still needs to be built from
 scratch, it is operating from stale context.

@@ -231,9 +231,9 @@ engine exists."
 
 Goal: make the simulator trustworthy enough to refactor and extend without losing correctness.
 
-Status note: a substantial share of the planned testing and replay groundwork
-already landed during Phase 1, but Phase 2 as a dedicated hardening cycle is
-not yet formally closed.
+Status note: the focused Phase 2 hardening cycle is complete in the repository.
+Engine contract hardening, replay/reproducibility hardening, and the minimal CI
+gate have all landed.
 
 ### 2.1 Unit tests for primitives
 
@@ -272,7 +272,10 @@ not yet formally closed.
 - [x] the first mission load path is tested
 - [x] key state transitions are tested
 - [x] deterministic seeded execution is verified
-- [ ] the simulator is safe enough to extend without blind refactoring
+- [x] the simulator is safe enough to extend without blind refactoring
+
+Closeout note: Phase 2 is formally complete; the next macro-step is Phase 3
+baselines.
 
 ---
 
