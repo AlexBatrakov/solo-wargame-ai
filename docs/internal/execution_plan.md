@@ -339,7 +339,7 @@ the repository state against the stage exit criteria.
 - Stage 4: completed
 - Stage 5: completed
 - Stage 6A: completed
-- Stage 6B: pending
+- Stage 6B: completed
 - Stage 7: pending
 
 The key constraint for Phase 1 is:
