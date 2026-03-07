@@ -28,25 +28,23 @@ The game contains several ingredients that make it interesting for AI:
 ## Current scope
 
 Current development focuses on:
-- formalizing the rules into a programmable specification;
-- fixing the domain model around the written turn structure rather than a
-  simplified macro-action abstraction;
-- building an MVP engine for a minimal mission;
-- creating deterministic tests and replayable simulations;
-- implementing simple baseline agents before attempting RL.
+- maintaining and extending the completed Mission 1 engine slice;
+- keeping the domain model aligned with the written staged turn structure rather
+  than a simplified macro-action abstraction;
+- preserving deterministic tests and replayable traces as the engine grows;
+- using the stable engine as the foundation for later baseline agents and RL
+  wrappers.
 
-## MVP goals
+## Current engine slice
 
-The MVP should support:
-- Mission 1 only as the first playable target;
-- hex-grid representation;
-- core unit representation;
+The current implemented slice supports:
+- Mission 1 as a playable scenario;
+- mission loading and deterministic initial state creation;
 - explicit decision-context / activation-step state;
-- game state transitions;
-- legal action generation;
-- deterministic seeded simulation;
-- textual logging / replay;
-- random and heuristic agents.
+- legal action generation and state-driven resolution for British and German
+  phases;
+- reveal, combat, morale, turn rollover, and terminal outcome handling;
+- deterministic seeded simulation and structured text replay.
 
 ## Non-goals for MVP
 
@@ -127,28 +125,26 @@ Mission data conventions are documented in `docs/mission_config.md`.
 ## Status
 
 Current repository state:
-- documentation and planning files are in place;
-- the rulebook has been distilled into a software-oriented digest under
-  `docs/reference/`;
-- Mission 1 has been transcribed into an initial TOML mission config under
-  `configs/missions/`;
-- implementation has not started yet;
-- the next step is to create the package skeleton and start the Mission 1
-  engine foundation.
+- Phase 1 implementation is complete;
+- Mission 1 can be loaded, initialized, and played through the accepted
+  resolver path under `src/solo_wargame_ai/domain/`;
+- deterministic replay / trace support exists under `src/solo_wargame_ai/io/`;
+- the repository currently verifies locally with `.venv/bin/pytest -q` and
+  `.venv/bin/ruff check src tests`;
+- later milestones such as baseline agents, RL wrappers, broader mission
+  coverage, and experiments remain open.
 
 ## Not implemented yet
 
 At this stage, the repository does **not** yet include:
-- a playable engine;
-- mission loading;
+- baseline agents;
 - a baseline evaluation loop;
 - an RL environment;
+- broader mission and advanced-rule coverage;
 - benchmark results.
 
-## Immediate next steps
+## Next planning handoff
 
-The most useful next coding targets are:
-- create `src/solo_wargame_ai/`;
-- implement core enums, decision-context primitives, and hex-grid helpers.
-- implement the Mission 1 config loader;
-- implement the first focused unit tests around coordinates and mission loading.
+Public docs now stop at the completed Phase 1 engine handoff.
+The next project milestone should be chosen in a separate planning pass rather
+than inferred from stale setup-era status text.

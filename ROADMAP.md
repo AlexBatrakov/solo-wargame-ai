@@ -149,6 +149,10 @@ invention first.
 
 Goal: build a minimal but reliable simulator for a single mission, with explicit state transitions, deterministic randomness, and a domain layer that can later support both baseline agents and RL wrappers.
 
+Status note: Phase 1 implementation is complete in the repository. Mission 1 is
+playable through the accepted resolver path, covered by deterministic tests,
+and replayable through structured text traces.
+
 Focused tests should already start appearing during Phase 1 whenever a slice
 adds nontrivial rule behavior.
 Phase 2 expands that into broader coverage, regression support, and
@@ -157,70 +161,69 @@ engine exists."
 
 ### 1.1 Package and module skeleton
 
-- [ ] Create `src/solo_wargame_ai/`
-- [ ] Create initial `domain/` package
-- [ ] Create initial `io/` package
-- [ ] Create initial `agents/` package only if the first playable slice actually needs it
-- [ ] Create initial `utils/` package if needed
-- [ ] Add `__init__.py` files where appropriate
-- [ ] Ensure package layout matches documented architecture
+- [x] Create `src/solo_wargame_ai/`
+- [x] Create initial `domain/` package
+- [x] Create initial `io/` package
+- [x] Confirm that the first playable slice does not yet require `agents/` or `utils/` packages
+- [x] Add `__init__.py` files where appropriate
+- [x] Ensure package layout matches documented architecture
 
 ### 1.2 Core domain primitives
 
-- [ ] Implement hex-grid coordinates and neighbors
-- [ ] Implement terrain representation
-- [ ] Implement core enums (unit types, terrain types, action types, statuses, phases if needed)
-- [ ] Implement base unit dataclasses / models
-- [ ] Implement base mission / scenario models
-- [ ] Implement action dataclasses / models
-- [ ] Implement explicit decision-context / pending-choice models for the staged turn flow
-- [ ] Implement RNG wrapper with deterministic seeding
+- [x] Implement hex-grid coordinates and neighbors
+- [x] Implement terrain representation
+- [x] Implement core enums (unit types, terrain types, action types, statuses, phases if needed)
+- [x] Implement base unit dataclasses / models
+- [x] Implement base mission / scenario models
+- [x] Implement action dataclasses / models
+- [x] Implement explicit decision-context / pending-choice models for the staged turn flow
+- [x] Implement RNG wrapper with deterministic seeding
 
 ### 1.3 Game state and flow
 
-- [ ] Implement `GameState`
-- [ ] Implement mission metadata in state
-- [ ] Implement map state representation
-- [ ] Implement unit collections and indexing strategy
-- [ ] Implement turn / phase structure
-- [ ] Implement state validation helpers if needed
-- [ ] Implement terminal conditions
+- [x] Implement `GameState`
+- [x] Implement mission metadata in state
+- [x] Implement map state representation
+- [x] Implement unit collections and indexing strategy
+- [x] Implement turn / phase structure
+- [x] Implement state validation helpers if needed
+- [x] Implement terminal conditions
 
 ### 1.4 Mission loading and initialization
 
-- [ ] Implement scenario / mission loading
+- [x] Implement scenario / mission loading
 - [x] Define mission config format for the first playable scenario
-- [ ] Validate mission loading against config expectations
-- [ ] Implement initial state creation from mission data
-- [ ] Ensure first mission can be initialized deterministically
+- [x] Validate mission loading against config expectations
+- [x] Implement initial state creation from mission data
+- [x] Ensure first mission can be initialized deterministically
 
 ### 1.5 Action generation and resolution
 
-- [ ] Implement legal action generation for MVP actions
-- [ ] Implement action validation
-- [ ] Implement state transition resolver
-- [ ] Implement movement resolution
-- [ ] Implement first-pass combat resolution
-- [ ] Implement morale / status change resolution if required by MVP
-- [ ] Implement hidden-information / reveal handling if required by MVP
-- [ ] Ensure illegal actions are rejected cleanly
+- [x] Implement legal action generation for MVP actions
+- [x] Implement action validation
+- [x] Implement state transition resolver
+- [x] Implement movement resolution
+- [x] Implement first-pass combat resolution
+- [x] Implement morale / status change resolution if required by MVP
+- [x] Implement hidden-information / reveal handling if required by MVP
+- [x] Ensure illegal actions are rejected cleanly
 
 ### 1.6 Playable text-based slice
 
-- [ ] Implement textual game runner
-- [ ] Implement minimal event/log output
-- [ ] Implement one deterministic playable trace
-- [ ] Ensure a single mission can be progressed through multiple steps without manual state editing
+- [x] Implement readable text trace / replay output for the playable slice
+- [x] Implement minimal event/log output
+- [x] Implement one deterministic playable trace
+- [x] Ensure a single mission can be progressed through multiple steps without manual state editing
 
 ### 1.7 Exit criteria for Phase 1
 
-- [ ] one mission can be loaded
-- [ ] initial state can be built deterministically
-- [ ] legal actions can be generated
-- [ ] chosen actions can be applied through the engine
-- [ ] state progresses correctly across turns/phases for the MVP slice
-- [ ] terminal conditions can be detected
-- [ ] the simulator can produce a text-based playable run
+- [x] one mission can be loaded
+- [x] initial state can be built deterministically
+- [x] legal actions can be generated
+- [x] chosen actions can be applied through the engine
+- [x] state progresses correctly across turns/phases for the MVP slice
+- [x] terminal conditions can be detected
+- [x] the simulator can produce a text-based playable run
 
 ---
 
@@ -228,43 +231,47 @@ engine exists."
 
 Goal: make the simulator trustworthy enough to refactor and extend without losing correctness.
 
+Status note: a substantial share of the planned testing and replay groundwork
+already landed during Phase 1, but Phase 2 as a dedicated hardening cycle is
+not yet formally closed.
+
 ### 2.1 Unit tests for primitives
 
-- [ ] Unit tests for grid logic
-- [ ] Unit tests for terrain behavior / lookup
+- [x] Unit tests for grid logic
+- [x] Unit tests for terrain behavior / lookup
 - [ ] Unit tests for enum-driven validation if useful
-- [ ] Unit tests for RNG determinism
+- [x] Unit tests for RNG determinism
 
 ### 2.2 State and loading tests
 
-- [ ] Unit tests for mission loading
-- [ ] Unit tests for initial state creation
-- [ ] Unit tests for state invariants
-- [ ] Validation tests for malformed mission configs
+- [x] Unit tests for mission loading
+- [x] Unit tests for initial state creation
+- [x] Unit tests for state invariants
+- [x] Validation tests for malformed mission configs
 
 ### 2.3 Rule and transition tests
 
-- [ ] Unit tests for legal action generation
-- [ ] Unit tests for staged decision-context progression and German activation ordering
-- [ ] Unit tests for movement resolution
-- [ ] Unit tests for combat resolution
-- [ ] Unit tests for morale / status changes
-- [ ] Unit tests for hidden-information / reveal behavior if applicable
-- [ ] Unit tests for terminal / victory conditions
+- [x] Unit tests for legal action generation
+- [x] Unit tests for staged decision-context progression and German activation ordering
+- [x] Unit tests for movement resolution
+- [x] Unit tests for combat resolution
+- [x] Unit tests for morale / status changes
+- [x] Unit tests for hidden-information / reveal behavior if applicable
+- [x] Unit tests for terminal / victory conditions
 
 ### 2.4 Reproducibility and regression support
 
-- [ ] Replay format for complete game traces
-- [ ] Seed-based reproducibility tests
-- [ ] Deterministic short-trace regression tests
-- [ ] Ensure fixed seed + fixed actions produce stable outcomes
+- [x] Replay format for complete game traces
+- [x] Seed-based reproducibility tests
+- [x] Deterministic short-trace regression tests
+- [x] Ensure fixed seed + fixed actions produce stable outcomes
 
 ### 2.5 Exit criteria for Phase 2
 
-- [ ] core domain primitives are tested
-- [ ] the first mission load path is tested
-- [ ] key state transitions are tested
-- [ ] deterministic seeded execution is verified
+- [x] core domain primitives are tested
+- [x] the first mission load path is tested
+- [x] key state transitions are tested
+- [x] deterministic seeded execution is verified
 - [ ] the simulator is safe enough to extend without blind refactoring
 
 ---

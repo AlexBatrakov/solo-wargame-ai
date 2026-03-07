@@ -1,15 +1,16 @@
 # Tests Directory
 
-This directory intentionally stays almost empty at the end of Phase 0.
+This directory now contains the focused test suite that closed out Phase 1.
 
-Phase 0 defines the testing strategy and the Mission 1 test matrix in
-`docs/testing_strategy.md`, but it does not add placeholder tests just to make
-the tree look populated.
+Current coverage includes:
 
-The first real tests should appear together with Phase 1 implementation slices,
-starting with:
+- grid, terrain, and RNG primitives;
+- mission loading and validation;
+- runtime-state and legality invariants;
+- British activation flow;
+- reveal and non-attack orders;
+- British combat, German phase, and terminal conditions;
+- deterministic replay / trace regression.
 
-- hex-grid primitives,
-- Mission 1 config loading,
-- staged decision-flow / legality checks,
-- deterministic seeded traces.
+Tests should continue to stay narrow, behavior-focused, and aligned with the
+public testing strategy in `docs/testing_strategy.md`.
