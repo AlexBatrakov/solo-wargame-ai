@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 from pathlib import Path
 
-from solo_wargame_ai.domain.decision_context import ChooseGermanUnitContext
+from solo_wargame_ai.domain.decision_context import ChooseGermanUnitContext, DecisionContextKind
 from solo_wargame_ai.domain.enums import HexDirection
 from solo_wargame_ai.domain.hexgrid import HexCoord
 from solo_wargame_ai.domain.mission import HiddenMarker
@@ -81,6 +81,41 @@ def test_no_premature_defeat_before_final_turn_is_completed() -> None:
     assert next_state.terminal_outcome is None
     assert next_state.turn == mission.turns.turn_limit
     assert next_state.phase is GamePhase.BRITISH
+
+
+def test_british_phase_victory_is_normalized_to_terminal_state_and_is_idempotent() -> None:
+    mission = load_mission(MISSION_PATH)
+    base_state = create_initial_game_state(mission, seed=0)
+    state = replace(
+        base_state,
+        german_units={
+            "qm_1": _german_unit(
+                "qm_1",
+                HexCoord(0, 1),
+                status=GermanUnitStatus.REMOVED,
+            ),
+        },
+        unresolved_markers={},
+    )
+
+    next_state = resolve_automatic_progression(state)
+
+    assert next_state.phase is GamePhase.BRITISH
+    assert next_state.pending_decision.kind is DecisionContextKind.CHOOSE_BRITISH_UNIT
+    assert next_state.current_activation is None
+    assert next_state.terminal_outcome is TerminalOutcome.VICTORY
+    assert resolve_automatic_progression(next_state) == next_state
+
+
+def test_nonterminal_rollover_normalization_is_idempotent() -> None:
+    state = _german_phase_state(german_units={})
+
+    next_state = resolve_automatic_progression(state)
+
+    assert next_state.phase is GamePhase.BRITISH
+    assert next_state.pending_decision.kind is DecisionContextKind.CHOOSE_BRITISH_UNIT
+    assert next_state.current_activation is None
+    assert resolve_automatic_progression(next_state) == next_state
 
 
 def _mission_with_hidden_markers():

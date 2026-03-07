@@ -5,11 +5,17 @@ from pathlib import Path
 
 import pytest
 
-from solo_wargame_ai.domain.decision_context import ChooseOrderExecutionContext
+from solo_wargame_ai.domain.decision_context import (
+    ChooseBritishUnitContext,
+    ChooseOrderExecutionContext,
+)
 from solo_wargame_ai.domain.enums import HexDirection
 from solo_wargame_ai.domain.hexgrid import HexCoord
 from solo_wargame_ai.domain.state import (
+    CurrentActivation,
+    GamePhase,
     GameStateValidationError,
+    TerminalOutcome,
     create_initial_game_state,
     validate_game_state,
 )
@@ -104,6 +110,25 @@ def test_validate_game_state_rejects_invalid_activated_ids() -> None:
     )
 
 
+def test_validate_game_state_rejects_german_phase_without_german_pending_decision() -> None:
+    state = _load_valid_state()
+
+    with pytest.raises(GameStateValidationError) as exc_info:
+        validate_game_state(
+            replace(
+                state,
+                phase=GamePhase.GERMAN,
+                pending_decision=ChooseBritishUnitContext(),
+            ),
+        )
+
+    _assert_issue_present(
+        exc_info.value,
+        "pending_decision",
+        "German phase must expose CHOOSE_GERMAN_UNIT",
+    )
+
+
 def test_validate_game_state_rejects_pending_decision_without_required_activation() -> None:
     state = _load_valid_state()
 
@@ -117,6 +142,45 @@ def test_validate_game_state_rejects_pending_decision_without_required_activatio
         )
 
     _assert_issue_present(exc_info.value, "current_activation", "required")
+
+
+def test_validate_game_state_rejects_terminal_state_with_current_activation() -> None:
+    state = _load_valid_state()
+
+    with pytest.raises(GameStateValidationError) as exc_info:
+        validate_game_state(
+            replace(
+                state,
+                terminal_outcome=TerminalOutcome.VICTORY,
+                current_activation=CurrentActivation(active_unit_id="rifle_squad_a"),
+            ),
+        )
+
+    _assert_issue_present(
+        exc_info.value,
+        "current_activation",
+        "empty in terminal states",
+    )
+
+
+def test_validate_game_state_rejects_terminal_british_state_with_staged_pending_decision() -> None:
+    state = _load_valid_state()
+
+    with pytest.raises(GameStateValidationError) as exc_info:
+        validate_game_state(
+            replace(
+                state,
+                terminal_outcome=TerminalOutcome.VICTORY,
+                pending_decision=ChooseOrderExecutionContext(),
+                current_activation=None,
+            ),
+        )
+
+    _assert_issue_present(
+        exc_info.value,
+        "pending_decision",
+        "terminal states must expose the phase-level pending decision",
+    )
 
 
 def test_validate_game_state_rejects_negative_cover() -> None:

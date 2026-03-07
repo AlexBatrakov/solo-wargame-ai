@@ -448,6 +448,16 @@ def _validate_pending_decision(
         )
 
     if state.terminal_outcome is not None:
+        expected_terminal_pending_kind = (
+            DecisionContextKind.CHOOSE_GERMAN_UNIT
+            if state.phase is GamePhase.GERMAN
+            else DecisionContextKind.CHOOSE_BRITISH_UNIT
+        )
+        if pending_kind is not expected_terminal_pending_kind:
+            collector.add(
+                "pending_decision",
+                "terminal states must expose the phase-level pending decision",
+            )
         if state.current_activation is not None:
             collector.add(
                 "current_activation",
