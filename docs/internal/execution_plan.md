@@ -159,7 +159,7 @@ repo state against the stage criteria.
 - Stage 0 - Phase 2 replanning audit: completed
 - Stage 1 - Engine contract regression hardening: completed
 - Stage 2 - Replay and reproducibility contract hardening: completed
-- Stage 3 - Minimal CI / automation gate: pending
+- Stage 3 - Minimal CI / automation gate: completed
 - Stage 4 - Phase 2 closeout audit and next-phase dispatch: pending
 
 ## Stage 0 - Phase 2 replanning audit
