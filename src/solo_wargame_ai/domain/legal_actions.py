@@ -31,6 +31,7 @@ from .decision_context import (
     ChooseOrderParameterContext,
     DecisionContextKind,
 )
+from .german_fire import resolve_selected_german_unit_fire, selectable_german_unit_ids
 from .hexgrid import HexCoord, are_adjacent, british_forward_neighbors
 from .mission import Mission, OrderName, OrdersChartRow
 from .reveal import legal_scout_facing_directions, reveal_by_movement, reveal_by_scout
@@ -47,6 +48,8 @@ def get_legal_actions(state: GameState) -> tuple[GameAction, ...]:
     """Return all legal actions for the state's current pending decision."""
 
     validate_game_state(state)
+    if state.terminal_outcome is not None:
+        return ()
 
     pending_kind = state.pending_decision.kind
 
@@ -86,7 +89,7 @@ def get_legal_actions(state: GameState) -> tuple[GameAction, ...]:
     if pending_kind is DecisionContextKind.CHOOSE_GERMAN_UNIT:
         return tuple(
             SelectGermanUnitAction(unit_id=unit_id)
-            for unit_id in _selectable_german_unit_ids(state)
+            for unit_id in selectable_german_unit_ids(state)
         )
 
     if pending_kind is DecisionContextKind.CHOOSE_ORDER_PARAMETER:
@@ -147,7 +150,7 @@ def apply_action(state: GameState, action: GameAction) -> GameState:
         return _apply_scout_action(state, action)
 
     if isinstance(action, SelectGermanUnitAction):
-        raise NotImplementedError("German activation resolution is out of scope for Stage 5")
+        return resolve_selected_german_unit_fire(state, unit_id=action.unit_id)
 
     raise IllegalActionError(f"Stage 5 does not support applying action {action!r}")
 
@@ -183,17 +186,6 @@ def _selectable_british_unit_ids(
         if unit_state.morale is BritishMorale.REMOVED:
             continue
         if unit_id in activated_british_unit_ids:
-            continue
-        selectable_unit_ids.append(unit_id)
-    return tuple(selectable_unit_ids)
-
-
-def _selectable_german_unit_ids(state: GameState) -> tuple[str, ...]:
-    selectable_unit_ids: list[str] = []
-    for unit_id, unit_state in state.german_units.items():
-        if unit_state.status is GermanUnitStatus.REMOVED:
-            continue
-        if unit_id in state.activated_german_unit_ids:
             continue
         selectable_unit_ids.append(unit_id)
     return tuple(selectable_unit_ids)

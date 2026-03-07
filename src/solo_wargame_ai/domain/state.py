@@ -35,6 +35,13 @@ class GamePhase(StrEnum):
     GERMAN = "german"
 
 
+class TerminalOutcome(StrEnum):
+    """Explicit terminal outcomes for Mission 1 runtime states."""
+
+    VICTORY = "victory"
+    DEFEAT = "defeat"
+
+
 @dataclass(frozen=True, slots=True)
 class CurrentActivation:
     """In-progress British activation bookkeeping."""
@@ -108,6 +115,7 @@ class GameState:
     activated_german_unit_ids: frozenset[str] = field(default_factory=frozenset)
     pending_decision: PendingDecision = field(default_factory=ChooseBritishUnitContext)
     current_activation: CurrentActivation | None = None
+    terminal_outcome: TerminalOutcome | None = None
     rng_state: RNGState = field(
         default_factory=lambda: DeterministicRNG(seed=DEFAULT_INITIAL_RNG_SEED).snapshot(),
     )
@@ -200,6 +208,15 @@ def _validate_core_fields(
 
     if not isinstance(state.phase, GamePhase):
         collector.add("phase", "phase must be a GamePhase value")
+
+    if state.terminal_outcome is not None and not isinstance(
+        state.terminal_outcome,
+        TerminalOutcome,
+    ):
+        collector.add(
+            "terminal_outcome",
+            "terminal_outcome must be None or a TerminalOutcome value",
+        )
 
 
 def _validate_british_units(
@@ -430,6 +447,14 @@ def _validate_pending_decision(
             "the German phase must expose CHOOSE_GERMAN_UNIT as its pending decision",
         )
 
+    if state.terminal_outcome is not None:
+        if state.current_activation is not None:
+            collector.add(
+                "current_activation",
+                "current_activation must be empty in terminal states",
+            )
+        return
+
     requires_activation = context_requires_current_activation(pending_kind)
     if requires_activation and state.current_activation is None:
         collector.add(
@@ -610,6 +635,7 @@ __all__ = [
     "GameState",
     "GameStateValidationError",
     "GameStateValidationIssue",
+    "TerminalOutcome",
     "create_initial_game_state",
     "validate_game_state",
 ]

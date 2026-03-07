@@ -17,6 +17,12 @@ from .enums import (
     coordinate_system_from_name,
     hex_direction_from_name,
 )
+from .german_fire import (
+    calculate_german_fire_threshold,
+    german_fire_target_ids,
+    resolve_selected_german_unit_fire,
+    selectable_german_unit_ids,
+)
 from .hexgrid import (
     ALL_DIRECTIONS,
     AXIAL_DIRECTION_DELTAS,
@@ -52,6 +58,16 @@ from .mission import (
     mission_objective_kind_from_name,
     order_name_from_name,
 )
+from .resolver import (
+    apply_action as resolve_action,
+)
+from .resolver import (
+    evaluate_terminal_outcome,
+    resolve_automatic_progression,
+)
+from .resolver import (
+    get_legal_actions as get_resolved_legal_actions,
+)
 from .rng import DeterministicRNG, RNGState
 from .state import (
     CurrentActivation,
@@ -59,6 +75,7 @@ from .state import (
     GameState,
     GameStateValidationError,
     GameStateValidationIssue,
+    TerminalOutcome,
     create_initial_game_state,
     validate_game_state,
 )
@@ -92,6 +109,7 @@ __all__ = [
     "CombatModifiers",
     "CoordinateSystem",
     "CurrentActivation",
+    "TerminalOutcome",
     "DecisionContextKind",
     "DeterministicRNG",
     "EnemyRevealTableRow",
@@ -125,15 +143,23 @@ __all__ = [
     "are_adjacent",
     "attack_range_from_name",
     "british_forward_neighbors",
+    "calculate_german_fire_threshold",
     "coordinate_system_from_name",
     "context_requires_current_activation",
     "create_initial_game_state",
+    "evaluate_terminal_outcome",
+    "german_fire_target_ids",
+    "get_resolved_legal_actions",
     "hex_direction_from_name",
     "is_terrain_name",
     "mission_objective_kind_from_name",
     "neighbor",
     "neighbors",
     "order_name_from_name",
+    "resolve_action",
+    "resolve_automatic_progression",
+    "resolve_selected_german_unit_fire",
+    "selectable_german_unit_ids",
     "terrain_from_name",
     "validate_game_state",
     "validate_mission",
