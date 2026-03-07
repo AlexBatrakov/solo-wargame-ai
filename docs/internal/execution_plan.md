@@ -334,8 +334,8 @@ the repository state against the stage exit criteria.
 
 - Stage 1: completed
 - Stage 2: completed
-- Stage 3A: pending
-- Stage 3B: pending
+- Stage 3A: completed
+- Stage 3B: completed
 - Stage 4: pending
 - Stage 5: pending
 - Stage 6A: pending
