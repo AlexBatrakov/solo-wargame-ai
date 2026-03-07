@@ -340,7 +340,7 @@ the repository state against the stage exit criteria.
 - Stage 5: completed
 - Stage 6A: completed
 - Stage 6B: completed
-- Stage 7: pending
+- Stage 7: completed
 
 The key constraint for Phase 1 is:
 - model the written Mission 1 turn flow explicitly;
