@@ -1,4 +1,4 @@
-"""Stage 4/5 legality and staged British activation transitions."""
+"""Stage 4/5/6A legality and staged British activation transitions."""
 
 from __future__ import annotations
 
@@ -9,7 +9,9 @@ from .actions import (
     ChooseOrderExecutionAction,
     DiscardActivationRollAction,
     DoubleChoiceOption,
+    FireAction,
     GameAction,
+    GrenadeAttackAction,
     OrderExecutionChoice,
     RallyAction,
     ResolveDoubleChoiceAction,
@@ -19,6 +21,7 @@ from .actions import (
     SelectGermanUnitAction,
     TakeCoverAction,
 )
+from .combat import resolve_british_attack
 from .decision_context import (
     ChooseActivationDieContext,
     ChooseBritishUnitContext,
@@ -28,7 +31,7 @@ from .decision_context import (
     ChooseOrderParameterContext,
     DecisionContextKind,
 )
-from .hexgrid import HexCoord, british_forward_neighbors
+from .hexgrid import HexCoord, are_adjacent, british_forward_neighbors
 from .mission import Mission, OrderName, OrdersChartRow
 from .reveal import legal_scout_facing_directions, reveal_by_movement, reveal_by_scout
 from .rng import DeterministicRNG
@@ -93,7 +96,7 @@ def get_legal_actions(state: GameState) -> tuple[GameAction, ...]:
 
 
 def apply_action(state: GameState, action: GameAction) -> GameState:
-    """Apply one legal Stage 4/5 action and return the resulting state."""
+    """Apply one legal Stage 4/5/6A action and return the resulting state."""
 
     legal_actions = get_legal_actions(state)
     if action not in legal_actions:
@@ -119,6 +122,20 @@ def apply_action(state: GameState, action: GameAction) -> GameState:
 
     if isinstance(action, AdvanceAction):
         return _apply_advance_action(state, action)
+
+    if isinstance(action, FireAction):
+        return _apply_british_attack_action(
+            state,
+            attack_order=OrderName.FIRE,
+            target_unit_id=action.target_unit_id,
+        )
+
+    if isinstance(action, GrenadeAttackAction):
+        return _apply_british_attack_action(
+            state,
+            attack_order=OrderName.GRENADE_ATTACK,
+            target_unit_id=action.target_unit_id,
+        )
 
     if isinstance(action, TakeCoverAction):
         return _apply_take_cover_action(state)
@@ -212,6 +229,18 @@ def _legal_order_parameter_actions(state: GameState) -> tuple[GameAction, ...]:
         return tuple(
             AdvanceAction(destination=destination)
             for destination in _legal_advance_destinations(state, active_unit.position)
+        )
+
+    if context.order is OrderName.FIRE:
+        return tuple(
+            FireAction(target_unit_id=unit_id)
+            for unit_id in _legal_attack_target_ids(state, active_unit.position)
+        )
+
+    if context.order is OrderName.GRENADE_ATTACK:
+        return tuple(
+            GrenadeAttackAction(target_unit_id=unit_id)
+            for unit_id in _legal_attack_target_ids(state, active_unit.position)
         )
 
     if context.order is OrderName.TAKE_COVER:
@@ -342,7 +371,7 @@ def _apply_advance_action(state: GameState, action: AdvanceAction) -> GameState:
     reveal_resolution = reveal_by_movement(state, destination=action.destination, rng=rng)
     rng_state = rng.snapshot() if reveal_resolution.revealed_marker_ids else state.rng_state
 
-    return _continue_after_non_attack_order(
+    return _continue_after_resolved_order(
         state,
         british_units=british_units,
         german_units=reveal_resolution.german_units,
@@ -356,7 +385,7 @@ def _apply_take_cover_action(state: GameState) -> GameState:
     active_unit = state.british_units[activation.active_unit_id]
     british_units = dict(state.british_units)
     british_units[active_unit.unit_id] = replace(active_unit, cover=active_unit.cover + 1)
-    return _continue_after_non_attack_order(
+    return _continue_after_resolved_order(
         state,
         british_units=british_units,
         german_units=state.german_units,
@@ -373,7 +402,7 @@ def _apply_rally_action(state: GameState) -> GameState:
     )
     british_units = dict(state.british_units)
     british_units[active_unit.unit_id] = replace(active_unit, morale=updated_morale)
-    return _continue_after_non_attack_order(
+    return _continue_after_resolved_order(
         state,
         british_units=british_units,
         german_units=state.german_units,
@@ -393,7 +422,7 @@ def _apply_scout_action(state: GameState, action: ScoutAction) -> GameState:
         facing=action.facing,
         rng=rng,
     )
-    return _continue_after_non_attack_order(
+    return _continue_after_resolved_order(
         state,
         british_units=state.british_units,
         german_units=reveal_resolution.german_units,
@@ -415,7 +444,27 @@ def _planned_orders_for_choice(
     raise IllegalActionError(f"Cannot build planned orders for choice {choice!r}")
 
 
-def _continue_after_non_attack_order(
+def _apply_british_attack_action(
+    state: GameState,
+    *,
+    attack_order: OrderName,
+    target_unit_id: str,
+) -> GameState:
+    attack_outcome = resolve_british_attack(
+        state,
+        attack_order=attack_order,
+        target_unit_id=target_unit_id,
+    )
+    return _continue_after_resolved_order(
+        state,
+        british_units=state.british_units,
+        german_units=attack_outcome.german_units,
+        unresolved_markers=state.unresolved_markers,
+        rng_state=attack_outcome.rng_state,
+    )
+
+
+def _continue_after_resolved_order(
     state: GameState,
     *,
     british_units,
@@ -489,7 +538,11 @@ def _finish_british_activation(state: GameState) -> GameState:
 
 
 def _legal_advance_destinations(state: GameState, position: HexCoord) -> tuple[HexCoord, ...]:
-    occupied_by_german = {unit.position for unit in state.german_units.values()}
+    occupied_by_german = {
+        unit.position
+        for unit in state.german_units.values()
+        if unit.status is GermanUnitStatus.ACTIVE
+    }
     return tuple(
         destination
         for destination in british_forward_neighbors(
@@ -497,6 +550,15 @@ def _legal_advance_destinations(state: GameState, position: HexCoord) -> tuple[H
             forward_directions=state.mission.map.forward_directions,
         )
         if state.mission.map.is_playable_hex(destination) and destination not in occupied_by_german
+    )
+
+
+def _legal_attack_target_ids(state: GameState, attacker_position: HexCoord) -> tuple[str, ...]:
+    return tuple(
+        unit_id
+        for unit_id, unit_state in state.german_units.items()
+        if unit_state.status is GermanUnitStatus.ACTIVE
+        and are_adjacent(attacker_position, unit_state.position)
     )
 
 

@@ -339,6 +339,8 @@ def _validate_occupancy(
 
     german_by_position: dict[object, list[str]] = {}
     for unit_id, unit_state in state.german_units.items():
+        if unit_state.status is GermanUnitStatus.REMOVED:
+            continue
         german_by_position.setdefault(unit_state.position, []).append(unit_id)
 
     for position, british_unit_ids in british_by_position.items():
