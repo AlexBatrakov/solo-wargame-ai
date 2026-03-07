@@ -2,284 +2,205 @@
 
 ## Purpose
 
-This file defines how to use Codex threads on this repository in a way that
-preserves continuity.
+This file defines how to run Codex threads on the repository without losing
+continuity.
 
-The main problem to avoid is this:
-- each thread has only partial memory
-- the rulebook is non-trivial
-- the project has architecture-sensitive decisions
+As of March 7, 2026, the active project-management problem is Phase 2
+hardening, not Mission 1 implementation.
+Thread startup, slicing, and handoff rules should reflect that reality.
 
-So every thread needs a repeatable startup and handoff process.
+## Current phase context
 
-## Mandatory startup reading order
+- Phase 1 is complete and accepted.
+- `phase1-complete` is the local milestone tag.
+- The active master plan lives in `docs/internal/execution_plan.md`.
+- Phase 2 is a focused hardening cycle, not a content-expansion phase.
 
-For a narrow implementation thread that touches one bounded subsystem, read
-these files in this order:
+If a thread starts acting as though Mission 1 still needs to be built from
+scratch, it is operating from stale context.
 
-1. `README.md`
-2. `docs/reference/rules_digest.md`
-3. `ASSUMPTIONS.md`
-4. `docs/game_spec.md`
-5. `docs/state_model.md`
-6. `docs/action_model.md`
-7. `docs/internal/execution_plan.md`
-8. `docs/internal/codex_workflow.md`
+## Mandatory startup reading order for Phase 2
 
-Also add these when relevant:
-- `docs/testing_strategy.md` if tests should be added or updated
-- `docs/development_workflow.md` if the thread may affect process or scope rules
-- `docs/internal/repo_layout.md` if package/file boundaries may change
-- `docs/internal/commit_policy.md` if the thread is likely to end commit-ready
-
-For a major planning, review, or architecture-sensitive Phase 1 thread, use the
-extended startup order below:
+For any Phase 2 implementation, planning, review, or audit thread, read these
+files in this order:
 
 1. `README.md`
-2. `docs/reference/rules_digest.md`
-3. `ASSUMPTIONS.md`
-4. `docs/game_spec.md`
-5. `docs/state_model.md`
-6. `docs/action_model.md`
-7. `docs/testing_strategy.md`
-8. `docs/development_workflow.md`
-9. `docs/internal/execution_plan.md`
-10. `docs/internal/codex_workflow.md`
-11. `docs/internal/thread_playbook.md`
-12. `docs/internal/repo_layout.md`
-13. `docs/internal/commit_policy.md`
-14. `ROADMAP.md`
+2. `ROADMAP.md`
+3. `docs/reference/rules_digest.md`
+4. `ASSUMPTIONS.md`
+5. `docs/game_spec.md`
+6. `docs/state_model.md`
+7. `docs/action_model.md`
+8. `docs/testing_strategy.md`
+9. `docs/development_workflow.md`
+10. `docs/internal/execution_plan.md`
+11. `docs/internal/codex_workflow.md`
+12. `docs/internal/thread_playbook.md`
+13. `docs/internal/repo_layout.md`
+14. `docs/internal/commit_policy.md`
 
-## Default thread contract
+For a Phase 2 master-thread or closeout audit, also check the current repo state
+before planning:
 
-Every implementation thread should operate under these rules:
+- `git status --short`
+- `git log --oneline --decorate -12`
+- `git show --no-patch --decorate phase1-complete`
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
 
-- do one bounded task only
-- do not change architecture casually
-- do not implement rules not required by the task
-- add tests for non-trivial rule behavior
-- update `ASSUMPTIONS.md` if a rule interpretation or simplification was needed
-- update public docs if stable behavior changed
-- do not start RL/environment work unless the task explicitly calls for it
+## Default Phase 2 thread contract
+
+Every Phase 2 thread should operate under these rules:
+
+- do one bounded stage only
+- do not expand the game beyond Mission 1 unless the task is an explicitly
+  narrow bug fix
+- prefer tests, contract checks, and tooling over new engine surface
+- do not add baseline, RL, or content-extension work
+- update public docs only if stable public truth would otherwise become
+  misleading
+- leave stage-status updates in `docs/internal/execution_plan.md` to the
+  master-thread unless the task explicitly includes a planning update
 
 ## Master-thread vs implementation-thread responsibilities
 
-For Phase 1, keep planning / dispatch / review work separate from implementation
-work.
+For Phase 2, keep planning / dispatch / audit separate from implementation.
 
 ### Master-thread responsibilities
 
 The master-thread should:
-- treat `docs/internal/execution_plan.md` as the control document for Phase 1
-- keep the Phase 1 status block current
+
+- treat `docs/internal/execution_plan.md` as the control document for Phase 2
+- keep the Phase 2 status block current
 - decide whether a stage is actually complete against its exit criteria
-- enforce stage-by-stage sequencing
-- prevent dependent stages from being opened in parallel
-- decide the next commit-sized slice before dispatching the next implementation
-  thread
-- stay out of `src/` unless it is explicitly re-tasked away from the
-  planning/review role
+- preserve the new narrowed interpretation of Phase 2
+- decide whether a public-roadmap sync is needed after closeout
+- stay out of `src/` and `tests/` unless explicitly re-tasked
 
 ### Implementation-thread responsibilities
 
 An implementation thread should:
-- execute only the currently assigned stage or substage
-- not self-upgrade its scope to the next stage
-- not open dependent later-stage work in parallel
-- report what exit criteria were met, what remains open, and whether the slice
-  is commit-ready
-- leave status changes in `execution_plan.md` to the master-thread unless the
-  task explicitly asked for a planning update too
 
-## Recommended prompt structure
+- execute only the currently assigned Phase 2 stage
+- avoid opening later dependent work in parallel
+- report exactly which contract gaps were closed
+- keep any bug fix narrow and paired with protecting tests
+- report whether the slice is commit-ready
 
-When opening a new Codex thread, use a prompt that includes:
+## Phase 2 thread types
 
-- the exact goal
-- the specific files or subsystem
-- the relevant docs to honor
-- what is out of scope
-- expected tests or verification
-- whether docs must be updated
-
-Minimal template:
-
-```text
-Read:
-- README.md
-- docs/reference/rules_digest.md
-- ASSUMPTIONS.md
-- docs/game_spec.md
-- docs/state_model.md
-- docs/action_model.md
-- docs/internal/execution_plan.md
-- docs/internal/codex_workflow.md
-- docs/testing_strategy.md if tests are in scope
-- docs/internal/repo_layout.md if package boundaries may change
-
-Task:
-- <one bounded task>
-
-In scope:
-- <concrete outputs>
-
-Out of scope:
-- <explicit exclusions>
-
-Requirements:
-- add or update focused tests
-- do not refactor unrelated code
-- update docs/assumptions if needed
-```
-
-## Thread types
-
-### Type A - Analysis-before-edit
+### Type A - Contract hardening
 
 Use when:
-- rules are ambiguous
-- architecture might change
-- multiple docs may need updates
-- the task could balloon
-- the thread is about `state.py`, `actions.py`, `decision_context.py`, replay
-  format, or package-boundary changes
+
+- the task is to add or strengthen tests for accepted engine behavior
+- a narrow bug fix may be needed if tests expose a real regression risk
 
 Expected output:
-- current-state summary
-- risks
-- implementation proposal
-- no code until direction is clear
 
-### Type B - Narrow implementation
+- focused tests
+- minimal bug fix if needed
+- explicit note on which contract was hardened
+
+### Type B - Replay contract hardening
 
 Use when:
-- the target module is already chosen
-- the rule/behavior is already specified
-- the action/state contract is already settled for that slice
+
+- the task touches replay determinism, serialization, or structured trace
+  contracts
 
 Expected output:
-- code
-- tests
-- brief note on assumptions
 
-### Type C - Review / bug hunt
+- focused replay/regression tests
+- minimal replay-adapter changes only if necessary
+- clear note on what is intentionally treated as stable vs incidental
+
+### Type C - Automation gate
 
 Use when:
-- a branch already has changes
-- the goal is to find defects or regressions
+
+- the task is limited to CI / workflow / verification-command automation
 
 Expected output:
+
+- minimal workflow/tooling diff
+- no gameplay, replay, or content changes
+
+### Type D - Closeout audit
+
+Use when:
+
+- the goal is to accept or reject the completed hardening cycle
+
+Expected output:
+
 - findings first
-- severity-ordered
-- no big redesign unless asked
+- status update in `docs/internal/execution_plan.md`
+- explicit recommendation for the next macro-step
 
-## What every thread should leave behind
+## Phase 2 slicing rules
 
-A good thread should leave the repo in a state where the next thread can recover
-quickly.
-
-Minimum handoff quality:
-
-- code or docs are in the repository, not only in the chat reply
-- tests exist for behavior that was added or changed
-- assumptions are documented
-- the thread response says what changed and what remains
-- if the thread was nontrivial, a short local report exists under
-  `docs/internal/thread_reports/`
-
-## Handoff checklist
-
-Before finishing a thread, check:
-
-- Were the relevant docs actually read?
-- Was the task kept narrow?
-- Were rule assumptions surfaced explicitly?
-- Were tests added for the new behavior?
-- Was unrelated code left alone?
-- Does the next thread know the next obvious task?
-- Is this now one commit, several commits, or not commit-ready yet?
-
-## Scope guardrails
-
-These are the most important anti-patterns to avoid:
-
-- implementing "the whole simulator"
-- silently choosing an interpretation for an ambiguous rule
-- adding RL abstractions before the domain engine is ready
-- duplicating rule logic in agents or scripts
-- creating many empty modules "for later"
-- changing public docs and code out of sync
-
-## Decision escalation rule
-
-Stop and switch to an analysis-style thread if the work starts affecting:
-
-- action granularity
-- hidden-information semantics
-- mission config schema
-- replay format
-- coordinate/orientation conventions
-- package boundaries
-
-These decisions are foundational and should not be smuggled in through a small
-code task.
-
-## Phase 1 slicing rules
-
-Use the Mission 1 stages from `docs/internal/execution_plan.md` as the default
+Use the Phase 2 stages from `docs/internal/execution_plan.md` as the default
 thread boundaries.
 
 Good one-thread scopes:
-- Stage 1 only: package bootstrap plus `hexgrid` / `terrain` / `rng`
-- Stage 2 only: mission schema, loader, and config validation
-- Stage 3A only: analysis-before-edit for state / action /
-  decision-context contracts
-- Stage 3B only: implementation of the agreed state / action /
-  decision-context contracts
-- Stage 4 only: British activation flow legality
-- Stage 5 only: `advance` / `take_cover` / `rally` / `scout` / reveal
-- Stage 6A only: British combat and morale
-- Stage 6B only: German phase, turn rollover, terminal checks, and integration
-  path
-- Stage 7 only: replay / trace / manual run path
+
+- Stage 1 only: engine contract tests and any narrow fixes they expose
+- Stage 2 only: replay/reproducibility contract tests and any narrow fixes
+- Stage 3 only: minimal CI / automation gate
+- Stage 4 only: master-thread closeout audit and dispatch update
 
 Do not mix in one thread:
-- loader/schema work with state/action redesign
-- replay-format work with unresolved resolver redesign
-- German phase implementation with package/bootstrap setup
-- Mission 1 completion with Mission 3+ extension work
-- domain-engine work with agents, environment, or RL scaffolding
 
-Default analysis-before-edit requirement inside Phase 1:
-- Stage 3A is mandatory before Stage 3B
-- any replay-format redesign
-- any mission-schema change beyond Mission 1
-- any change that affects package boundaries or action granularity
+- Stage 1 contract hardening with Mission 3/4 or other content work
+- Stage 2 replay hardening with `GameState` / action-model redesign
+- Stage 3 CI work with engine bug-hunting or public-roadmap cleanup
+- Stage 4 closeout audit with new implementation work
 
-Phase-order rule:
-- do not open a dependent later stage until the master-thread has confirmed the
-  current stage complete and updated `docs/internal/execution_plan.md`
+## Analysis-before-edit rules for Phase 2
 
-## Suggested first thread queue
+Analysis-before-edit is required when a thread proposes to change:
+
+- runtime-state invariants in `state.py`
+- decision-context semantics
+- resolver automatic-progression behavior
+- replay event or serialization schema
+- the CI scope beyond the minimal `pytest + ruff` gate
+
+Direct implementation is fine when the task is clearly bounded to:
+
+- adding focused negative-path tests
+- freezing an already accepted contract with regression coverage
+- adding the minimal CI workflow
+- updating stage status after verified completion
+
+## Suggested Phase 2 queue
 
 If no better priority is obvious, use this sequence:
 
-1. implement Stage 1 package bootstrap and board primitives
-2. implement Stage 2 Mission 1 schema and loader
-3. run Stage 3A analysis-before-edit
-4. implement Stage 3B state and decision-context models
-5. implement Stage 4 British activation flow and legality
-6. implement Stage 5 reveal and non-attack orders
-7. implement Stage 6A British combat and morale
-8. implement Stage 6B German phase, terminal checks, and integration path
-9. implement Stage 7 replay / deterministic trace support
-10. move to the Mission 3-4 terrain extension
+1. harden engine contracts and negative paths
+2. harden replay and reproducibility contracts
+3. add the minimal CI / automation gate
+4. run the closeout audit and dispatch the next macro-step
 
-## Practical rule for this repo
+## What every Phase 2 thread should leave behind
 
-If a thread cannot point to:
-- the rule in the digest or PDF,
-- the architecture doc it follows,
-- and the test that proves the behavior,
+Minimum handoff quality:
 
-then the change is probably not ready.
+- the bounded stage objective is either met or explicitly blocked
+- any new or fixed contract is protected by tests or a clearly justified gate
+- the response states what remains open
+- a short local report exists under `docs/internal/thread_reports/` for
+  nontrivial threads
+- the next thread can recover from `docs/internal/execution_plan.md` plus the
+  local report without reading chat history
+
+## Practical rule for the current repo
+
+If a Phase 2 thread cannot point to:
+
+- the accepted engine contract it is hardening
+- the test or automation artifact that protects that contract
+- and the exact Phase 2 stage it belongs to
+
+then the work is probably not yet scoped tightly enough.
