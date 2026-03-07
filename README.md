@@ -66,6 +66,16 @@ The following are explicitly out of scope for the first version:
 - `tests/` — unit and integration tests
 - `outputs/` — logs, replays, checkpoints, and reports
 
+## Development setup
+
+The project keeps development tooling in a local `.venv` created from
+`pyproject.toml`.
+
+- `make bootstrap` creates or refreshes `.venv` and installs `.[dev]`
+- `make test`, `make lint`, and `make fmt` automatically use `.venv`
+- editors that auto-detect a repository-local `.venv` should pick it up without
+  extra per-project setup
+
 ## Development philosophy
 
 The project is built in layers:
