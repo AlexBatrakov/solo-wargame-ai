@@ -1,0 +1,145 @@
+schema_version = 1
+mission_id = "mission_01_secure_the_woods_1"
+name = "Mission 1 - Secure the Woods (1)"
+
+[source]
+rulebook_path = "docs/reference/rules.pdf"
+briefing_page = 16
+map_page = 17
+
+[turns]
+turn_limit = 4
+first_turn_already_marked = true
+
+[objective]
+kind = "clear_all_hostiles"
+description = "Reveal and clear the German unit before time runs out."
+
+[map]
+coordinate_system = "axial_flat_top"
+forward_directions = ["up_left", "up", "up_right"]
+
+[[map.hexes]]
+hex_id = "top_center"
+q = 0
+r = 0
+terrain = "woods"
+
+[[map.hexes]]
+hex_id = "upper_left"
+q = -1
+r = 1
+terrain = "woods"
+
+[[map.hexes]]
+hex_id = "upper_right"
+q = 1
+r = 0
+terrain = "woods"
+
+[[map.hexes]]
+hex_id = "hidden_woods"
+q = 0
+r = 1
+terrain = "woods"
+
+[[map.hexes]]
+hex_id = "middle_left"
+q = -1
+r = 2
+terrain = "woods"
+
+[[map.hexes]]
+hex_id = "middle_right"
+q = 1
+r = 1
+terrain = "clear"
+
+[[map.hexes]]
+hex_id = "lower_center"
+q = 0
+r = 2
+terrain = "clear"
+
+[[map.hexes]]
+hex_id = "lower_left"
+q = -1
+r = 3
+terrain = "clear"
+
+[[map.hexes]]
+hex_id = "lower_right"
+q = 1
+r = 2
+terrain = "woods"
+
+[[map.hexes]]
+hex_id = "start_hex"
+q = 0
+r = 3
+terrain = "clear"
+
+[[map.start_hexes]]
+q = 0
+r = 3
+
+[[map.hidden_markers]]
+marker_id = "qm_1"
+q = 0
+r = 1
+
+[[british_units]]
+unit_id = "rifle_squad_a"
+unit_class = "rifle_squad"
+
+[[british_units]]
+unit_id = "rifle_squad_b"
+unit_class = "rifle_squad"
+
+[british_unit_classes.rifle_squad]
+display_name = "Rifle Squad"
+
+[british_unit_classes.rifle_squad.attacks.fire]
+attack_name = "Rifles"
+base_to_hit = 8
+range = "adjacent"
+uses_standard_modifiers = true
+
+[british_unit_classes.rifle_squad.attacks.grenade_attack]
+attack_name = "Grenades"
+base_to_hit = 6
+range = "adjacent"
+uses_standard_modifiers = false
+
+[british_orders.rifle_squad]
+"1" = ["rally", "grenade_attack"]
+"2" = ["advance", "scout"]
+"3" = ["advance", "take_cover"]
+"4" = ["fire", "take_cover"]
+"5" = ["fire", "advance"]
+"6" = ["advance", "fire"]
+
+[german_unit_classes.heavy_machine_gun]
+display_name = "Heavy machine gun"
+attack_to_hit = 5
+uses_fire_zone = true
+
+[german_unit_classes.light_machine_gun]
+display_name = "Light machine gun"
+attack_to_hit = 6
+uses_fire_zone = true
+
+[[enemy_reveal_table]]
+roll_min = 1
+roll_max = 2
+result_unit_class = "heavy_machine_gun"
+
+[[enemy_reveal_table]]
+roll_min = 3
+roll_max = 6
+result_unit_class = "light_machine_gun"
+
+[combat_modifiers]
+defender_in_woods = 1
+attacker_outside_target_fire_zone = -1
+per_other_british_unit_adjacent_to_target = -1
