@@ -484,14 +484,31 @@ def _continue_after_resolved_order(
 ) -> GameState:
     activation = _require_current_activation(state)
     next_order_index = activation.next_order_index + 1
+    updated_state = replace(
+        state,
+        british_units=british_units,
+        german_units=german_units,
+        unresolved_markers=unresolved_markers,
+        rng_state=rng_state,
+    )
 
-    if next_order_index < len(activation.planned_orders):
+    return _advance_to_next_resolvable_order_or_finish(
+        updated_state,
+        activation=activation,
+        next_order_index=next_order_index,
+    )
+
+
+def _advance_to_next_resolvable_order_or_finish(
+    state: GameState,
+    *,
+    activation: CurrentActivation,
+    next_order_index: int,
+) -> GameState:
+    while next_order_index < len(activation.planned_orders):
         next_order = activation.planned_orders[next_order_index]
         next_state = replace(
             state,
-            british_units=british_units,
-            german_units=german_units,
-            unresolved_markers=unresolved_markers,
             pending_decision=ChooseOrderParameterContext(
                 order=next_order,
                 order_index=next_order_index,
@@ -500,19 +517,13 @@ def _continue_after_resolved_order(
                 activation,
                 next_order_index=next_order_index,
             ),
-            rng_state=rng_state,
         )
-        validate_game_state(next_state)
-        return next_state
+        if _legal_order_parameter_actions(next_state):
+            validate_game_state(next_state)
+            return next_state
+        next_order_index += 1
 
-    completed_state = replace(
-        state,
-        british_units=british_units,
-        german_units=german_units,
-        unresolved_markers=unresolved_markers,
-        rng_state=rng_state,
-    )
-    return _finish_british_activation(completed_state)
+    return _finish_british_activation(state)
 
 
 def _finish_british_activation(state: GameState) -> GameState:

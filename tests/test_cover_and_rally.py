@@ -60,7 +60,7 @@ def test_rally_changes_low_morale_to_normal() -> None:
     assert next_state.activated_british_unit_ids == frozenset({"rifle_squad_a"})
 
 
-def test_rally_on_normal_unit_remains_legal_as_a_wasted_order_and_stages_next_order() -> None:
+def test_rally_on_normal_unit_finishes_if_follow_up_is_impossible() -> None:
     state = _stage_order_state(
         planned_orders=(OrderName.RALLY, OrderName.GRENADE_ATTACK),
     )
@@ -70,11 +70,8 @@ def test_rally_on_normal_unit_remains_legal_as_a_wasted_order_and_stages_next_or
     next_state = apply_action(state, RallyAction())
 
     assert next_state.british_units["rifle_squad_a"].morale is BritishMorale.NORMAL
-    assert isinstance(next_state.pending_decision, ChooseOrderParameterContext)
-    assert next_state.pending_decision.order is OrderName.GRENADE_ATTACK
-    assert next_state.pending_decision.order_index == 1
-    assert next_state.current_activation is not None
-    assert next_state.current_activation.next_order_index == 1
+    assert next_state.current_activation is None
+    assert next_state.activated_british_unit_ids == frozenset({"rifle_squad_a"})
 
 
 def test_advancing_after_taking_cover_clears_accumulated_cover() -> None:

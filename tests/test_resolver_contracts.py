@@ -5,7 +5,16 @@ from pathlib import Path
 
 import pytest
 
-from solo_wargame_ai.domain.actions import SelectBritishUnitAction, SelectGermanUnitAction
+from solo_wargame_ai.domain.actions import (
+    ChooseOrderExecutionAction,
+    DoubleChoiceOption,
+    OrderExecutionChoice,
+    RallyAction,
+    ResolveDoubleChoiceAction,
+    SelectActivationDieAction,
+    SelectBritishUnitAction,
+    SelectGermanUnitAction,
+)
 from solo_wargame_ai.domain.decision_context import ChooseGermanUnitContext, DecisionContextKind
 from solo_wargame_ai.domain.enums import HexDirection
 from solo_wargame_ai.domain.hexgrid import HexCoord
@@ -84,6 +93,26 @@ def test_resolver_normalizes_terminal_like_states_to_no_actions_and_rejects_appl
 
     with pytest.raises(IllegalActionError, match="terminal Mission 1 state"):
         apply_action(terminal_state, SelectBritishUnitAction(unit_id="rifle_squad_a"))
+
+
+def test_resolver_finishes_activation_when_a_follow_up_order_has_no_legal_actions() -> None:
+    state = _load_initial_state(seed=0)
+    trace = (
+        SelectBritishUnitAction(unit_id="rifle_squad_b"),
+        ResolveDoubleChoiceAction(choice=DoubleChoiceOption.REROLL),
+        SelectActivationDieAction(die_value=1),
+        ChooseOrderExecutionAction(choice=OrderExecutionChoice.BOTH_ORDERS),
+        RallyAction(),
+    )
+
+    for action in trace:
+        state = apply_action(state, action)
+
+    assert state.phase is GamePhase.BRITISH
+    assert state.pending_decision.kind is DecisionContextKind.CHOOSE_BRITISH_UNIT
+    assert state.current_activation is None
+    assert state.activated_british_unit_ids == frozenset({"rifle_squad_b"})
+    assert get_legal_actions(state) == (SelectBritishUnitAction(unit_id="rifle_squad_a"),)
 
 
 def _load_initial_state(*, seed: int = 0):
