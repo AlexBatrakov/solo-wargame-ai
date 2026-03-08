@@ -151,6 +151,16 @@ interoperate safely.
 This is an engineering representation choice, not a claim that the printed
 rulebook itself uses axial notation.
 
+### A11. Hidden markers are unresolved until reveal
+Hidden enemy markers are represented as unresolved runtime markers and are
+sampled from the mission reveal table only when a reveal event actually occurs.
+
+Rationale:
+This matches the accepted Mission 1 implementation and keeps hidden information
+separate from revealed unit state.
+It also preserves the distinction between simulator truth, player-visible
+information, and replay/debugging behavior.
+
 ---
 
 ## Open assumptions to resolve later
@@ -171,13 +181,22 @@ Questions:
 - Are there any rule interactions that would justify pulling a later mechanic
   slightly earlier?
 
-### O2. Hidden information modeling
-How exactly hidden enemy markers or latent enemy information should be represented internally remains open.
+### O2. Hidden-information observation boundary
+The current implementation resolves hidden markers by sampling at reveal time,
+but the exact boundary between full simulator truth and future agent-visible
+observation remains open.
+
+Current implementation fact:
+- hidden enemy markers are stored as unresolved markers, not as pre-sampled
+  concealed units.
 
 Questions:
-- Should hidden content be represented directly in `GameState`?
-- Should there be separate internal-truth and player-visible structures?
-- Should reveal behavior be modeled as explicit state transitions or mission-driven events?
+- How should future agent-visible observation expose unresolved markers versus
+  revealed enemies?
+- Should there be a distinct observation-layer model rather than exposing
+  filtered `GameState` views directly?
+- Which hidden-information details belong in replay/debugging traces but not in
+  future agent observation?
 
 ### O3. Action granularity
 The domain-engine decision granularity is now resolved, but the future RL-facing

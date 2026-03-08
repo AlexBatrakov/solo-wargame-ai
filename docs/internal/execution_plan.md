@@ -13,6 +13,11 @@ safe and well-sequenced."
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
 
+After Phase 2, future phases should use the orchestration model in
+`docs/internal/orchestration_policy.md`.
+In particular, prefer a small number of delivery packages per phase rather than
+opening a new implementation chat for every micro-stage.
+
 ## Current checkpoint
 
 - Accepted milestone: Phase 1 complete
@@ -483,6 +488,15 @@ Planning decision:
 - keep Mission 3/4 content extension as the next content track after the first
   baseline harness is real, or reopen earlier only if Phase 3 proves Mission 1
   too degenerate for useful comparisons
+
+External audit follow-up:
+
+- before opening the Phase 3 master-thread, review
+  `docs/internal/independent_audit_followups.md`
+- treat that file as preserved guidance for:
+  - non-blocking pre-Phase-3 corrections,
+  - architecture concerns to revisit before Mission 3/4,
+  - optional tooling and workflow polish
 
 ## Public docs after Phase 2 closeout
 

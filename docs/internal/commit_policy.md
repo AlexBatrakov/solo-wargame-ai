@@ -53,6 +53,76 @@ Examples:
 If a thread touched two clearly different concerns, split them into two commits
 instead of one large mixed commit.
 
+## Commit ownership by thread role
+
+Commit ownership should follow context locality, not ceremony.
+
+### Super Master Thread
+
+Usually commits only:
+
+- cross-phase planning updates,
+- workflow/policy updates,
+- external-audit assimilation,
+- milestone closeout records if they are not phase-local.
+
+### Phase Master Thread
+
+Usually commits only:
+
+- phase-plan updates,
+- phase status updates,
+- closeout/handoff docs,
+- other docs-only changes tied to phase orchestration.
+
+The Phase Master Thread should not normally re-handle implementation commits
+just because it reviewed them.
+
+### Delivery Thread
+
+Usually owns implementation commits for its accepted delivery package because it
+has the freshest local context on the diff and verification.
+
+Default rule:
+
+- implementation code and tests are committed from the Delivery Thread after
+  Phase Master acceptance
+- planning/status docs are committed from the Phase Master Thread
+
+This avoids duplicate re-review and repeated context loading in a different
+thread.
+
+## Commit timing inside a delivery package
+
+Do not commit after every micro-step.
+
+Default rule:
+
+- one accepted delivery package should usually become one commit or a small
+  coherent commit series
+- package-internal substeps should remain uncommitted until the package is
+  accepted, unless there is a strong reason to checkpoint earlier
+
+Examples of strong reasons:
+
+- a risky refactor has been stabilized,
+- the package naturally contains two clearly separable commit slices,
+- the user explicitly wants intermediate checkpoints.
+
+## Fix handling after review
+
+If the Phase Master Thread requests a narrow follow-up fix, keep that fix in the
+same Delivery Thread by default.
+
+Preferred handling:
+
+1. if the package is not committed yet, fold the fix into the same final commit
+2. if the package is already committed and the fix is narrow, create one small
+   follow-up `fix:` commit in the same Delivery Thread
+
+Do not open a new fix-only thread unless the fix changes subsystem or requires
+independent audit.
+
 ## Commit message style
 
 Use short imperative messages.

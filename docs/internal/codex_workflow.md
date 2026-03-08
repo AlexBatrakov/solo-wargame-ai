@@ -15,6 +15,7 @@ It is not public-facing documentation.
 
 This file should be read together with:
 - `docs/internal/repo_layout.md`
+- `docs/internal/orchestration_policy.md`
 - `docs/internal/commit_policy.md`
 - `docs/architecture.md`
 - `docs/game_spec.md`
@@ -25,6 +26,7 @@ This file should be read together with:
 
 Roles of these documents:
 - `repo_layout.md` = what the repository should look like
+- `orchestration_policy.md` = which thread types exist and how work moves between them
 - `codex_workflow.md` = how Codex should be asked to build it
 - `commit_policy.md` = when a thread should produce one commit vs several
 - public docs = stable project truth
@@ -109,15 +111,17 @@ If a task touches one of these areas, the prompt should explicitly constrain the
 When adding any nontrivial feature, the preferred order is:
 
 1. Check relevant docs.
-2. Create or update a local thread report if the task is nontrivial.
-3. Identify whether the change affects public spec or only implementation.
-4. Update docs if needed.
-5. Ask Codex for a plan or for narrowly scoped code changes.
-6. Make Codex implement the smallest useful slice.
-7. Ensure tests exist or are added.
-8. Review resulting structure for architectural drift.
-9. Update `ASSUMPTIONS.md` if a rule interpretation or simplification was introduced.
-10. Decide whether the result should become one commit or several under
+2. Determine which thread role should own the work under
+   `orchestration_policy.md`.
+3. Create or update a local thread report if the task is nontrivial.
+4. Identify whether the change affects public spec or only implementation.
+5. Update docs if needed.
+6. Ask Codex for a plan or for narrowly scoped code changes.
+7. Make Codex implement the smallest useful slice or delivery package.
+8. Ensure tests exist or are added.
+9. Review resulting structure for architectural drift.
+10. Update `ASSUMPTIONS.md` if a rule interpretation or simplification was introduced.
+11. Decide whether the result should become one commit or several under
     `commit_policy.md`.
 
 Local thread reports should live under `docs/internal/thread_reports/`.
@@ -167,6 +171,19 @@ Example intent:
 - add tests in `tests/test_hexgrid.py`,
 - do not add RL code,
 - do not refactor unrelated modules.
+
+### Pattern 2B — delivery-package prompt
+Use when one Delivery Thread should carry a bounded package across multiple
+turns.
+
+Structure:
+1. name the package and the package boundary,
+2. define substeps/checkpoints,
+3. define stop conditions,
+4. define verification expectations,
+5. require a structured checkpoint report back to the user.
+
+This is preferred over opening a new thread for every micro-stage.
 
 ### Pattern 3 — refactor prompt
 Use when improving structure.
