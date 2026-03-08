@@ -5,10 +5,10 @@
 This file is the current master control surface for repository-level planning,
 dispatch, and closeout.
 
-As of March 7, 2026, Phase 1 is complete.
-The active planning problem is no longer "how to finish Mission 1", but "how
-to harden the accepted Mission 1 engine enough that the next growth step is
-safe and well-sequenced."
+As of March 8, 2026, Phases 1 and 2 are complete and archived.
+The active planning problem is no longer "how to finish Mission 1" or "how to
+harden the accepted engine", but "how to open Phase 3 baselines without
+dragging in premature RL or Mission 3/4 work."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -18,20 +18,34 @@ After Phase 2, future phases should use the orchestration model in
 In particular, prefer a small number of delivery packages per phase rather than
 opening a new implementation chat for every micro-stage.
 
+This file should let a Phase 3 Master Thread do four things without recovering
+chat history:
+
+- hold the active phase packet,
+- dispatch Delivery A / B / C,
+- accept or reject completed packages,
+- close Phase 3 cleanly when the work is actually done.
+
 ## Current checkpoint
 
-- Accepted milestone: Phase 1 complete
-- Local tag: `phase1-complete`
-- Repository state checked on March 7, 2026:
+- Accepted milestones:
+  - Phase 1 complete
+  - Phase 2 complete
+- Local tags:
+  - `phase1-complete`
+  - `phase2-complete`
+- Repository state checked on March 8, 2026:
   - `git status --short` was empty
-  - `git log --oneline --decorate -12` showed `HEAD` on
+  - `git log --oneline --decorate -15` showed `HEAD` on
+    `aaa3afb docs: capture audit followups and orchestration policy`
+  - `git show --no-patch --decorate phase1-complete` resolved to
     `d6445d9 docs: sync public handoff after phase1 completion`
-  - `git show --no-patch --decorate phase1-complete` resolved to the same
-    commit
-  - `.venv/bin/pytest -q` passed with `106 passed`
-  - `.venv/bin/ruff check src tests` passed
+  - `git show --no-patch --decorate phase2-complete` resolved to
+    `1ef74ab docs: finalize phase2 closeout handoff`
+  - `.venv/bin/pytest -q` passed with `133 passed in 0.27s`
+  - `.venv/bin/ruff check src tests` passed with `All checks passed!`
 
-Accepted Phase 1 runtime surface:
+Accepted runtime surface before Phase 3:
 
 - `Mission` is static scenario data loaded from config.
 - `GameState` is runtime truth with explicit staged decision contexts.
@@ -39,115 +53,190 @@ Accepted Phase 1 runtime surface:
 - `io/replay.py` is a replay adapter over the resolver path, not a second
   engine.
 - Mission 1 is playable, deterministic, and regression-covered.
+- `tests/test_replay_contracts.py` already includes seeded replay round trips
+  for victory, morale-loss, and defeat trajectories.
+- No `agents/`, `eval/`, or `cli/` packages exist yet, so Phase 3 will be the
+  first phase that grows a stable agent/evaluation surface on top of the
+  domain engine.
 
-Phase 1 should be treated as archived implementation history, not as the active
-dispatch target.
+Phases 1 and 2 should be treated as archived implementation history, not as the
+active dispatch target.
 
-## Archived Phase 1 note
+## Phase 3 objective
 
-The detailed Phase 1 stage plan served its purpose and is now closed.
-Do not dispatch more "Phase 1" implementation work unless a bug found during
-Phase 2 hardening requires a narrow corrective fix.
+Phase 3 is now defined as:
 
-Historical context lives in:
+> Add the first non-learning baselines on top of the accepted Mission 1 engine,
+> pressure-test repeated episode execution, and freeze a minimal agent-facing
+> integration surface before any RL wrapper work.
 
-- `docs/internal/thread_reports/2026-03-07_phase1-master-thread.md`
-- `docs/internal/thread_reports/2026-03-07_phase1-full-audit.md`
+Desired outcome:
 
-## Why Phase 2 had to be replanned
+- Random and heuristic baselines exist.
+- Repeated episodes can be run over fixed seed sets.
+- Baseline comparisons use explicit metrics and a stable benchmark protocol.
+- The agent-facing engine surface is named clearly enough that Delivery Threads
+  do not invent ad hoc integration seams.
+- Mission 1 remains the only required content slice for the phase.
 
-The original `ROADMAP.md` Phase 2 checklist assumed that most testing and
-reproducibility work would happen after the first playable slice existed.
-That assumption is no longer true.
+## Phase 3 planning audit findings
 
-What changed in practice:
+- Baseline work should use `domain/resolver.py` as the public engine facade, not
+  `domain/legal_actions.py` internals.
+- External audit follow-up `P3-R1` is active: Phase 3 needs an explicit
+  agent-facing API note early so agents and harnesses do not bind themselves to
+  helper-level seams accidentally.
+- External audit follow-up `P3-R2` is already materially addressed by repo
+  fact: `tests/test_replay_contracts.py` includes a deterministic full-game
+  defeat replay path, so Phase 3 should retain that path as an acceptance
+  contract rather than reopen it as a missing blocker.
+- Repeated episode execution is more likely to stress package boundaries and
+  harness interfaces than the Mission 1 rule surface itself.
+- `legal_actions.py` growth and replay draw-prediction coupling remain real
+  future risks, but they are preserved watchpoints for Mission 3/4-era growth,
+  not default Phase 3 scope.
+- Synthetic fixtures, `mypy`, Python 3.12 CI, broader Ruff, and similar tooling
+  improvements remain backlog items unless a delivery package is blocked without
+  them.
 
-- The repository already has focused tests across primitives, loading, state
-  invariants, legality, reveal, combat, German phase, terminal conditions, and
-  replay.
-- Deterministic replay and text-trace regression already exist.
-- The accepted engine is stronger than the old setup-era wording implied.
+## Accepted Phase 3 scope
 
-Operational conclusion:
+In scope:
 
-- Phase 2 should not be interpreted as "add more tests in general."
-- Phase 2 should be treated as a short hardening cycle that locks down the
-  contracts future growth will rely on.
+- explicit Phase 3 agent-facing API contract
+- thin agent and evaluation package surfaces for Mission 1 only
+- `RandomAgent`
+- first heuristic baseline
+- repeated-episode harness over fixed seed sets
+- comparison metrics and a reproducible benchmark protocol
+- thin benchmark invocation surface if needed to make reruns practical
 
-## Audit of the old Phase 2 scope
+Out of scope:
 
-### Already completed by fact
+- Gymnasium-style env wrappers, `reset` / `step`, reward design, observation
+  encoding, action encoding, legal-action masks, or any other RL-facing
+  adapter surface
+- Mission 3/4 or broader rule/content expansion unless baseline work exposes a
+  real blocking engine bug in the current Mission 1 slice
+- refactors motivated only by anticipated `legal_actions.py` growth or replay
+  draw-prediction discomfort
+- synthetic fixture programs, `mypy` / `pyright`, Python 3.12 CI expansion,
+  broader Ruff, or coverage campaigns as default Phase 3 work
+- vectorized simulation, performance engineering, or experiment-platform
+  generalization beyond what fixed-seed baseline runs directly require
+- implementation commits or closeout work from this Phase Master Thread
 
-The following old Phase 2 items are already materially closed in the repo:
+## Phase 3 agent-facing API contract
 
-- primitive tests for grid, terrain, and RNG
-- mission loading and mission validation tests
-- initial-state and runtime-invariant tests
-- staged British activation-flow tests
-- reveal, movement, Scout, cover, and Rally tests
-- British combat and German phase tests
-- terminal-condition tests
-- deterministic replay support
-- fixed-seed replay regression coverage
+Stable Phase 3 contract:
 
-### Still open
+- the harness owns mission loading and episode initialization via
+  `load_mission(...)` and `create_initial_game_state(...)`
+- the player-facing step loop uses
+  `solo_wargame_ai.domain.resolver.get_legal_actions(state)` and
+  `solo_wargame_ai.domain.resolver.apply_action(state, action)`
+- agents choose one `GameAction` from the current legal set; they do not mutate
+  `GameState` directly and do not call `domain/legal_actions.py` helpers
+- terminal handling is based on `state.terminal_outcome` and the resolver
+  facade returning no legal actions for terminal states
+- `IllegalActionError` is a contract error, not normal control flow for agent
+  play
+- replay helpers are optional evaluation/debugging adapters; agents should not
+  need `ReplayTrace` or replay-event internals in order to act
 
-The following gaps remain meaningful even though the suite is already broad:
+Recommended external agent shape:
 
-- there is no minimal CI / automation gate for the accepted local verification
-  commands
-- several stable contracts are protected only indirectly or via one accepted
-  happy path
-- replay is strong enough to use, but its schema/serialization guarantees are
-  not yet explicitly frozen by dedicated contract tests
-- the old exit criterion "safe enough to extend without blind refactoring" has
-  not yet been closed by an explicit hardening audit
+- input: current `GameState` plus current legal `tuple[GameAction, ...]`
+- output: one selected `GameAction`
+- optional per-agent RNG or seed, but any randomness must remain explicit and
+  reproducible
 
-### Needs reframing
+## Defeat trace decision
 
-The following Phase 2 themes remain valid, but need narrower wording:
+Decision:
 
-- "testing" should mean contract hardening for extension safety
-- "reproducibility" should mean replay and deterministic regression contracts,
-  not generic tooling expansion
-- "regression support" should focus on stable engine surfaces that future
-  baselines and content extensions will consume
+- full-game defeat coverage stays inside Phase 3 acceptance scope, but it does
+  not need its own delivery package
+- it belongs in Delivery A because the first agent/harness package is where the
+  episode-loop contract is frozen
+- repo fact already provides a deterministic defeat replay round trip, so
+  Delivery A should preserve that path as a named acceptance check and add more
+  direct harness coverage only if the new runner surface bypasses the existing
+  replay contract
 
-### Not Phase 2 work
+## Phase 3 metrics and benchmark protocol
 
-Do not smuggle the following into Phase 2:
+Required comparison metrics:
 
-- Mission 3/4 implementation
-- broader rulebook content extension
-- baseline agents or batch-evaluation harnesses
-- RL wrappers, reward design, or action masking
-- performance work beyond what a hardening bug fix directly requires
-- test additions whose only purpose is coverage-number inflation
-- broad public-doc rewrites unless an accepted Phase 2 decision would otherwise
-  remain undocumented
+- episode count
+- terminal outcome counts plus win rate / defeat rate
+- mean terminal turn
+- mean resolved-marker count
+- mean removed-German count
+- mean player-decision count per episode
 
-## Phase 2 objective
+Why this set:
 
-Phase 2 is now defined as:
+- it keeps the first comparison grounded in mission success plus simple mission
+  progress diagnostics
+- it avoids coupling core baseline metrics to replay-event internals or future
+  RL reward design
 
-> Harden the accepted Mission 1 engine so that future growth can rely on
-> explicit, regression-protected contracts for legality, automatic progression,
-> replay/reproducibility, and basic repository verification.
+Benchmark protocol:
 
-The desired outcome is not a larger engine.
-The desired outcome is a safer engine.
+- Mission 1 only
+- same fixed seed list for all agents
+- two tiers:
+  - smoke: 16 seeds for package-local verification
+  - benchmark: 200 fixed seeds for accepted comparison
+- agent tie-breaking or randomness must be seeded explicitly and reported
+- comparison output should be a small stable table/report, not a general
+  experiment platform
+- benchmark runs are local/manual Phase 3 verification, not CI gates
 
-## Operational rules for Phase 2
+Acceptance expectation:
 
-- The master-thread owns this file and the Phase 2 status block.
-- Implementation threads should execute one stage only.
-- Dependent stages should not run in parallel.
-- If a hardening stage finds a real engine bug, fix only that bug and add the
-  protecting tests; do not expand scope to new content.
-- Public docs should stay mostly unchanged during Phase 2 unless stable public
-  truth would otherwise become misleading.
-- CI/tooling work should lock in the accepted local commands, not invent a new
-  verification stack.
+- both baselines complete the fixed benchmark without illegal actions or
+  crashes
+- heuristic behavior is measurably distinct from random on the recorded metrics
+- preferred outcome is heuristic better than random on win rate; if not, the
+  result must be explained explicitly before Phase 3 closeout
+
+## Boundary: baseline harness vs premature RL/env work
+
+Baseline harness work may include:
+
+- episode runner around existing resolver APIs
+- batch evaluation over fixed seeds
+- metrics/result dataclasses
+- thin CLI or script entrypoints
+- agent-local ranking and selection logic over concrete legal `GameAction`
+  objects
+
+Phase 3 must not include:
+
+- Gymnasium-style `reset` / `step`
+- reward definitions or shaping
+- observation encoders or tensor adapters
+- action masking or flattened action ids for RL libraries
+- vectorized env management
+- macro-action compression designed primarily for RL rather than the current
+  baseline agents
+
+## Operational rules for Phase 3
+
+- this master-thread owns the Phase 3 packet, status block, acceptance notes,
+  and closeout docs
+- Delivery Threads own implementation for one package only and normally make
+  implementation commits after acceptance
+- keep Phase 3 to two required Delivery Threads plus one optional package only
+  if needed
+- do not reopen stage-per-thread micro-slicing inside a delivery package
+- if repeated episodes expose a real Mission 1 engine bug, fix it narrowly in
+  the owning Delivery Thread and add protecting coverage; do not widen to
+  Mission 3/4
+- public docs can wait until Phase 3 deliverables are stable enough to describe
+  without churn
 
 Allowed status values:
 
@@ -156,288 +245,265 @@ Allowed status values:
 - `completed`
 - `blocked`
 
-## Phase 2 status block
+## Phase 3 status block
 
 Update this block only from a planning / audit / master-thread after checking
-repo state against the stage criteria.
+repo state against the package criteria.
 
-- Stage 0 - Phase 2 replanning audit: completed
-- Stage 1 - Engine contract regression hardening: completed
-- Stage 2 - Replay and reproducibility contract hardening: completed
-- Stage 3 - Minimal CI / automation gate: completed
-- Stage 4 - Phase 2 closeout audit and next-phase dispatch: completed
-- Phase 2 overall decision: completed
-- Closeout audit date: March 7, 2026
-- Blocking hardening findings: none
+- Package A - Agent-facing API and episode harness foundation: pending
+- Package B - Heuristic baseline and comparison loop: pending
+- Package C - Benchmark packaging and operator surface: pending (optional)
+- Phase 3 overall: pending
+- Planning audit date: March 8, 2026
+- Blocking findings before Delivery A: none
 
-## Phase 2 closeout summary
-
-March 7, 2026 closeout audit result:
-
-- accepted local verification gate passes:
-  - `.venv/bin/pytest -q` -> `133 passed`
-  - `.venv/bin/ruff check src tests` -> `All checks passed!`
-- Stage 1 deliverables are present in committed repo state:
-  - focused resolver/terminal/runtime-invariant hardening exists under
-    `tests/test_resolver_contracts.py`, `tests/test_state_validation.py`, and
-    `tests/test_terminal_conditions.py`
-  - the Stage 1 thread report records one narrow runtime-validation bug fix in
-    `src/solo_wargame_ai/domain/state.py`
-- Stage 2 deliverables are present in committed repo state:
-  - replay contract hardening exists under `tests/test_replay_contracts.py`
-    alongside the existing deterministic replay coverage
-  - no replay-adapter redesign was needed
-- Stage 3 deliverables are present in committed repo state:
-  - `.github/workflows/ci.yml` runs the accepted local gate on Python 3.11
-    with no widened CI scope
-- current repo state is clean before Stage 4 docs edits, so the closeout thread
-  starts from a reproducible baseline
-
-Residual notes after closeout:
-
-- public `README.md` and `ROADMAP.md` were minimally synced during the final
-  closeout audit so public status no longer stops at the Phase 1 handoff
-- later-phase work remains open by design:
-  - Phase 3 baselines
-  - Mission 3/4 content extension
-  - RL/environment work
-
-These are not Phase 2 blockers.
-
-## Stage 0 - Phase 2 replanning audit
+## Package A - Agent-facing API and episode harness foundation
 
 Status:
 
-- completed
+- pending
 
 Goal:
 
-- replace the stale setup-era interpretation of Phase 2 with a repo-true
-  hardening plan
+- freeze the minimal agent-facing contract and land the first repeated-episode
+  baseline path without introducing RL-oriented abstractions
 
 Concrete deliverables:
 
-- audited repo state against docs and the `phase1-complete` milestone
-- updated this file into a Phase 2 control document
-- updated `docs/internal/thread_playbook.md` for Phase 2 dispatch
-- created a local master-thread report for the planning pass
+- one explicit note or code-level contract naming the stable Phase 3
+  agent-facing API surface
+- `src/solo_wargame_ai/agents/` skeleton with a minimal agent protocol/base and
+  `RandomAgent`
+- minimal episode runner that owns mission init, decision looping, and
+  per-episode result recording
+- fixed-seed repeated-episode smoke path for Mission 1 only
+- explicit acceptance check that the defeat terminal path remains covered after
+  the new runner surface lands
 
 Likely files / subsystems touched:
 
-- `docs/internal/execution_plan.md`
-- `docs/internal/thread_playbook.md`
-- local report under `docs/internal/thread_reports/`
+- `src/solo_wargame_ai/agents/__init__.py`
+- `src/solo_wargame_ai/agents/base.py`
+- `src/solo_wargame_ai/agents/random_agent.py`
+- `src/solo_wargame_ai/eval/__init__.py`
+- `src/solo_wargame_ai/eval/episode_runner.py`
+- optional thin entrypoint under `src/solo_wargame_ai/cli/` or `scripts/`
+- narrow doc note only if the API surface needs one tracked local home beyond
+  code
 
-Verification artifacts:
+Required tests / verification:
 
-- checked git status, recent history, and the `phase1-complete` tag
-- reran `pytest` and `ruff`
-- reviewed the required public and internal docs in full
-
-Risks / traps:
-
-- silently inheriting the old Phase 2 wording even though the repo has moved on
-- overreacting and turning Phase 2 into a new broad architecture phase
-
-Completion criteria:
-
-- the new Phase 2 objective and stage plan are explicit
-- the master-thread can dispatch future hardening threads from this file alone
-
-## Stage 1 - Engine contract regression hardening
-
-Goal:
-
-- harden the domain/resolver contracts that future baselines and content work
-  will depend on
-
-Concrete deliverables:
-
-- focused tests for illegal-action rejection on the accepted engine path
-- focused tests for resolver automatic-progression behavior, including terminal
-  normalization and turn/phase rollover contracts
-- focused tests for runtime-state invariants that are present in code but still
-  only partially protected
-- narrow bug fixes only if those tests expose real Phase 1 contract gaps
-
-Likely files / subsystems touched:
-
-- `tests/test_activation_flow.py`
-- `tests/test_state_validation.py`
-- `tests/test_terminal_conditions.py`
-- one new focused resolver-contract test module if needed
-- possibly narrow fixes in:
-  - `src/solo_wargame_ai/domain/legal_actions.py`
-  - `src/solo_wargame_ai/domain/resolver.py`
-  - `src/solo_wargame_ai/domain/state.py`
-
-Verification artifacts that should appear:
-
-- targeted regression tests for:
-  - `IllegalActionError` paths
-  - terminal-state action rejection
-  - `resolve_automatic_progression()` idempotence and normalization behavior
-  - phase/pending-decision coupling invariants
-- passing targeted `pytest` on touched files
-- passing `ruff check` on touched files
+- focused tests that agents return only legal actions and do not bypass the
+  resolver facade
+- fixed-seed episode-runner tests that reach terminal states through actual
+  gameplay flow
+- repeated-episode smoke verification on the 16-seed smoke set
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
 
 Risks / traps:
 
-- rewriting accepted resolver semantics instead of testing them
-- locking in incidental implementation details that are not intended contracts
-- turning a hardening thread into Mission 3+ feature work
+- binding agents directly to `domain/legal_actions.py` or other helper-level
+  seams
+- using replay as the primary control path instead of the resolver facade
+- inventing a Gym-like interface before Phase 3 actually needs one
+- mixing API-boundary decisions with heuristic-policy design
 
 Completion criteria:
 
-- accepted engine entry points have explicit negative-path and normalization
-  coverage
-- any discovered Phase 1 bug is fixed narrowly with protecting tests
-- Mission 1 playable behavior remains unchanged
+- `RandomAgent` can play full Mission 1 episodes through the resolver facade
+- the runner returns deterministic per-episode results for fixed seeds
+- the Phase 3 agent-facing contract is explicit enough that Delivery B can build
+  on it without re-planning the integration surface
+- defeat-path acceptance coverage remains present by repo fact
 
-## Stage 2 - Replay and reproducibility contract hardening
+Commit shape:
 
-Goal:
+- one commit preferred
+- split into two only if the API note/contract surface and the runner/agent code
+  become awkwardly mixed in review
 
-- lock replay in as a dependable regression surface rather than a lightly
-  exercised debug helper
+Analysis-before-edit:
 
-Concrete deliverables:
+- required
 
-- focused tests for replay serialization and deterministic ordering
-- a small multi-seed replay matrix that covers more than the single accepted
-  victory path
-- replay round-trip checks for representative trajectories such as:
-  - accepted victory path
-  - German-fire morale loss path
-  - defeat or non-victory end-state path if a compact deterministic trace is
-    practical
-- narrow replay-adapter fixes only if the hardening tests expose real drift
-
-Likely files / subsystems touched:
-
-- `tests/test_replay_determinism.py`
-- one new replay-contract test module if needed
-- possibly narrow fixes in:
-  - `src/solo_wargame_ai/io/replay.py`
-
-Verification artifacts that should appear:
-
-- tests that directly exercise:
-  - `serialize_action()`
-  - `ReplayTrace.to_dict()`
-  - `summarize_state()`
-  - `replay_trace()`
-- at least one deterministic artifact beyond the current text snapshot if that
-  helps freeze structured replay output without overfitting formatting
-- passing targeted `pytest` and `ruff`
-
-Risks / traps:
-
-- redesigning replay format instead of hardening the accepted one
-- duplicating engine logic so heavily in tests that the tests become brittle
-- freezing cosmetic text details that should remain free to change
-
-Completion criteria:
-
-- replay round-trips remain deterministic across representative trajectories
-- structured replay output has explicit regression protection where future tools
-  are likely to rely on it
-- replay still remains an adapter over the accepted resolver path
-
-## Stage 3 - Minimal CI / automation gate
-
-Goal:
-
-- convert the accepted local verification commands into an automatic repository
-  gate
-
-Concrete deliverables:
-
-- one minimal CI workflow that runs the current accepted checks:
-  - `pytest -q`
-  - `ruff check src tests`
-- optional small local command unification such as `make verify` only if it
-  reduces drift between local and CI commands
-- minimal internal doc note if the invocation surface changes
-
-Likely files / subsystems touched:
-
-- `.github/workflows/ci.yml`
-- `Makefile` only if a shared verify target is justified
-- possibly one internal doc note if command naming changes
-
-Verification artifacts that should appear:
-
-- workflow file that installs the project and runs the accepted checks on
-  Python 3.11
-- local dry-run review of the workflow contents
-- unchanged local `pytest` and `ruff` behavior
-
-Risks / traps:
-
-- overengineering a matrix, coverage upload, or release pipeline before needed
-- adding gates stricter than the accepted local baseline
-- mixing CI work with unrelated hardening or content changes
-
-Completion criteria:
-
-- the repo has an automatic minimum-quality gate for the same commands already
-  used locally
-- the workflow remains intentionally small and easy to maintain
-
-## Stage 4 - Phase 2 closeout audit and next-phase dispatch
+## Package B - Heuristic baseline and comparison loop
 
 Status:
 
-- completed
+- pending
 
 Goal:
 
-- explicitly decide whether the hardening cycle is actually finished before
-  opening the next macro-step
+- add the first non-random baseline and lock the first comparison-ready metrics
+  and benchmark loop
 
 Concrete deliverables:
 
-- master-thread closeout audit against Stages 1-3
-- updated Phase 2 status block in this file
-- explicit recommendation for the next macro-step
-- note whether a public-roadmap sync is needed after the internal closeout
+- `HeuristicAgent` that acts only through legal `GameAction` choices
+- metrics aggregation over repeated episodes using the fixed seed sets
+- fixed benchmark seed/config surface for Phase 3 comparisons
+- thin comparison command or callable that evaluates random vs heuristic on the
+  same seeds and emits the required report table
 
 Likely files / subsystems touched:
 
-- `docs/internal/execution_plan.md`
-- possibly `docs/internal/thread_playbook.md` if dispatch rules need adjustment
-- local audit report under `docs/internal/thread_reports/`
-- public `ROADMAP.md` only in a separate docs-only follow-up if the divergence
-  is still material after acceptance
+- `src/solo_wargame_ai/agents/heuristic_agent.py`
+- `src/solo_wargame_ai/eval/metrics.py`
+- `src/solo_wargame_ai/eval/benchmark.py` or adjacent comparison module
+- optional thin entrypoint under `src/solo_wargame_ai/cli/` or `scripts/`
+- `configs/experiments/` or another small committed seed/config surface if that
+  is the cleanest way to freeze the benchmark
 
-Verification artifacts that should appear:
+Required tests / verification:
 
-- rerun of the accepted repo verification commands
-- explicit comparison between planned Stage 1-3 deliverables and actual repo
-  state
-- closeout note on residual risks, if any
+- focused tests for heuristic legality and targeted preference behavior
+- deterministic smoke comparison on the 16-seed smoke set
+- local rerun of the 200-seed benchmark comparison
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
 
 Risks / traps:
 
-- declaring Phase 2 complete without checking the actual remaining gaps
-- carrying open hardening debt into baseline-agent or mission-extension work
-- bundling public-doc cleanup into the same thread as the closeout audit
+- heuristic logic quietly re-encoding rule legality instead of consuming the
+  engine output
+- metrics drifting into replay-event coupling or reward-like proxy design
+- benchmark seeds or agent randomness staying implicit and making comparisons
+  irreproducible
+- mixing heuristic iteration with broader operator-surface or public-doc work
 
 Completion criteria:
 
-- every Phase 2 stage is either completed or explicitly deferred out of scope
-- the next macro-step is named and justified
-- the master-thread can hand off to the next phase without ambiguity
+- random vs heuristic can be compared on one committed fixed seed set
+- the required metrics are emitted in one stable report/table shape
+- heuristic behavior is measurably distinct from random and preferably better on
+  win rate
+- no RL/env abstractions were added to make the comparison work
 
-Closeout result:
+Commit shape:
 
-- Stages 1-3 are accepted by repo fact and local verification.
-- No remaining hardening gap found in the accepted Phase 2 scope is material
-  enough to block closeout.
-- Phase 2 is therefore accepted as complete.
+- one commit is acceptable if the diff stays coherent
+- a two-commit series is also acceptable if heuristic policy logic and
+  evaluation/report plumbing are cleaner to review separately
 
-## Recommended Codex thread slicing for Phase 2
+Analysis-before-edit:
+
+- straight to implementation after Package A is accepted
+- return to analysis first only if Package B needs to change the Package A API
+  contract rather than merely use it
+
+## Package C - Benchmark packaging and operator surface
+
+Status:
+
+- pending (optional)
+
+Goal:
+
+- package benchmark invocation so accepted comparisons are easy to rerun without
+  turning Phase 3 into an experiment-platform buildout
+
+Concrete deliverables:
+
+- one documented command or thin CLI entrypoint for smoke and benchmark runs
+- committed seed/config surface if it did not already land in Package B
+- only the narrow packaging/polish needed to make baseline comparisons
+  repeatable by operator command rather than ad hoc Python entry
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/cli/phase3_baselines.py` or
+  `scripts/run_phase3_baselines.py`
+- `configs/experiments/`
+- a small internal doc note only if invocation naming or location needs to be
+  frozen
+
+Required tests / verification:
+
+- local invocation of the accepted command on the 16-seed smoke set
+- local rerun of the full benchmark if the package changes benchmark entry
+  semantics
+- `.venv/bin/ruff check src tests`
+- targeted `pytest` if new logic lives outside existing coverage
+
+Risks / traps:
+
+- inventing a generic experiment-orchestration framework or RL config layer
+- mixing public-doc polish or Phase 3 closeout with operator-surface work
+- using Package C as a dumping ground for unresolved Package A/B design
+
+Completion criteria:
+
+- the accepted comparison can be rerun from one stable operator surface
+- the package remains a thin wrapper over Package A/B code
+- no new env/RL abstractions were introduced
+
+Commit shape:
+
+- one small commit only if the package actually exists
+
+Analysis-before-edit:
+
+- straight to implementation if the package stays a thin wrapper
+- analysis-before-edit is required if Package C starts adding generic config or
+  CLI architecture beyond a narrow benchmark entry surface
+
+## Recommended Delivery Thread sequence for Phase 3
+
+Default queue:
+
+1. Delivery A only: agent-facing API and episode harness foundation
+2. Delivery B only: heuristic baseline and comparison loop
+3. Delivery C only if Package B would otherwise mix operator-surface work with
+   heuristic/comparison logic, or if rerun ergonomics remain weak after
+   Package B
+
+Do not mix in one thread:
+
+- Package A API-boundary work with heuristic tuning or benchmark interpretation
+- Package B policy logic with public-doc polish or Phase 3 closeout
+- Package C packaging work with RL/env design or Mission 3/4 content extension
+- any Phase 3 package with backlog-only tooling expansions
+
+Straight to implementation is appropriate when the package scope is:
+
+- implementing Package B on top of an accepted Package A contract
+- implementing a thin Package C wrapper after Package B has settled the
+  benchmark shape
+- adding narrow benchmark/config plumbing that does not redefine interfaces
+
+Analysis-before-edit is required when a thread proposes to change:
+
+- the Package A contract boundary
+- the resolver facade or episode-loop ownership model
+- the benchmark/config surface in a way that implies general experiment
+  architecture
+- the role of replay helpers in core baseline metrics
+- scope boundaries toward RL/env or Mission 3/4 work
+
+## Archived Phase 1 / Phase 2 note
+
+The detailed Phase 1 stage plan and Phase 2 hardening plan served their purpose
+and are now closed.
+Do not dispatch more "Phase 1" or "Phase 2" implementation work unless
+repeated baseline execution exposes a narrow Mission 1 corrective bug.
+
+Historical context lives in:
+
+- `docs/internal/thread_reports/2026-03-07_phase1-master-thread.md`
+- `docs/internal/thread_reports/2026-03-07_phase1-full-audit.md`
+- `docs/internal/thread_reports/2026-03-07_phase2-master-thread.md`
+- `docs/internal/thread_reports/2026-03-07_phase2-stage4-closeout-audit.md`
+
+## Archived Phase 2 control record
+
+The Phase 2 plan below is preserved as archived local history because later
+threads may still need to understand what was hardened and why.
+
+Detailed Phase 2 stage reports now live primarily in the archived thread
+reports listed above.
+
+## Archived Phase 2 dispatch notes
 
 Default queue:
 

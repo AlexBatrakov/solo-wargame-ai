@@ -19,6 +19,19 @@ Phase-specific planning belongs in `docs/internal/execution_plan.md`.
 If a thread behaves as though Mission 1 still needs to be built from scratch, it
 is operating from stale context.
 
+## Current Phase 3 dispatch note
+
+While Phase 3 is the active phase:
+
+- use the Phase 3 packet in `docs/internal/execution_plan.md` as the first
+  dispatch surface
+- default to Delivery A, then Delivery B, then Delivery C only if the operator
+  surface still needs a clean bounded package
+- do not split Package A or Package B into extra micro-stage threads unless the
+  subsystem or architecture boundary actually changes
+- keep Phase Master work in planning / dispatch / acceptance / closeout mode;
+  implementation commits still belong to the Delivery Thread after acceptance
+
 ## Core operating model
 
 The repository now uses the orchestration model defined in:
