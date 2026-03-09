@@ -25,7 +25,11 @@ from solo_wargame_ai.domain.resolver import (
     resolve_automatic_progression,
 )
 from solo_wargame_ai.domain.state import GamePhase, TerminalOutcome, create_initial_game_state
-from solo_wargame_ai.domain.units import GermanUnitStatus, RevealedGermanUnitState
+from solo_wargame_ai.domain.units import (
+    BritishMorale,
+    GermanUnitStatus,
+    RevealedGermanUnitState,
+)
 from solo_wargame_ai.io.mission_loader import load_mission
 
 MISSION_PATH = (
@@ -50,6 +54,26 @@ def test_resolver_get_legal_actions_auto_rolls_over_nonterminal_german_end() -> 
         SelectBritishUnitAction(unit_id="rifle_squad_a"),
         SelectBritishUnitAction(unit_id="rifle_squad_b"),
     )
+
+
+def test_resolver_get_legal_actions_auto_advances_past_empty_british_phase() -> None:
+    base_state = _load_initial_state(seed=0)
+    state = replace(
+        base_state,
+        turn=4,
+        british_units={
+            unit_id: replace(unit_state, morale=BritishMorale.REMOVED)
+            for unit_id, unit_state in base_state.british_units.items()
+        },
+        german_units={
+            "qm_1": _german_unit("qm_1", HexCoord(0, 1)),
+        },
+        unresolved_markers={},
+    )
+
+    legal_actions = get_legal_actions(state)
+
+    assert legal_actions == (SelectGermanUnitAction(unit_id="qm_1"),)
 
 
 def test_resolver_apply_action_auto_rolls_over_before_applying_british_selection() -> None:

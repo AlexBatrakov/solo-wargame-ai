@@ -46,6 +46,10 @@ def resolve_automatic_progression(state: GameState) -> GameState:
             progressed_state = _mark_terminal_outcome(progressed_state, outcome)
             break
 
+        if _is_empty_british_phase(progressed_state):
+            progressed_state = _advance_to_german_phase(progressed_state)
+            continue
+
         if (
             progressed_state.phase is GamePhase.GERMAN
             and not selectable_german_unit_ids(progressed_state)
@@ -95,6 +99,25 @@ def _mark_terminal_outcome(
         pending_decision=pending_decision,
         current_activation=None,
         terminal_outcome=outcome,
+    )
+
+
+def _is_empty_british_phase(state: GameState) -> bool:
+    return (
+        state.phase is GamePhase.BRITISH
+        and isinstance(state.pending_decision, ChooseBritishUnitContext)
+        and state.current_activation is None
+        and not get_staged_legal_actions(state)
+    )
+
+
+def _advance_to_german_phase(state: GameState) -> GameState:
+    return replace(
+        state,
+        phase=GamePhase.GERMAN,
+        activated_german_unit_ids=frozenset(),
+        pending_decision=ChooseGermanUnitContext(),
+        current_activation=None,
     )
 
 
