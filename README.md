@@ -32,8 +32,8 @@ Current development focuses on:
 - keeping the domain model aligned with the written staged turn structure rather
   than a simplified macro-action abstraction;
 - preserving deterministic tests and replayable traces as the engine grows;
-- using the stable engine as the foundation for later baseline agents and RL
-  wrappers.
+- using the accepted Phase 3 baseline stack as the foundation for later RL
+  wrappers and learning experiments.
 
 ## Current engine slice
 
@@ -44,7 +44,10 @@ The current implemented slice supports:
 - legal action generation and state-driven resolution for British and German
   phases;
 - reveal, combat, morale, turn rollover, and terminal outcome handling;
-- deterministic seeded simulation and structured text replay.
+- deterministic seeded simulation and structured text replay;
+- a minimal Phase 3 agent contract over the resolver facade;
+- `RandomAgent`, `HeuristicAgent`, fixed-seed batch evaluation, and a manual
+  benchmark CLI.
 
 ## Non-goals for MVP
 
@@ -132,25 +135,34 @@ Current repository state:
 - deterministic replay / trace support exists under `src/solo_wargame_ai/io/`;
 - Phase 2 hardening is complete: engine contracts, replay/reproducibility
   contracts, and the minimal CI gate are in place;
+- Phase 3 baselines are complete: the repository now includes an explicit
+  agent-facing contract, random and heuristic baselines, fixed-seed comparison
+  metrics, and a manual baseline rerun command;
 - the repository verifies locally with `.venv/bin/pytest -q` and
   `.venv/bin/ruff check src tests`, and the same narrow gate is defined in
   GitHub Actions;
-- later milestones such as baseline agents, RL wrappers, broader mission
-  coverage, and experiments remain open.
+- later milestones such as RL wrappers, broader mission coverage, and learning
+  experiments remain open.
 
 ## Not implemented yet
 
 At this stage, the repository does **not** yet include:
-- baseline agents;
-- a baseline evaluation loop;
 - an RL environment;
 - broader mission and advanced-rule coverage;
-- benchmark results.
+- learning / training experiments;
+- stronger search-based or learned baselines.
 
 ## Next macro-step
 
-Phase 2 hardening is formally complete.
-The next planned macro-step is Phase 3 baseline agents and evaluation-harness
-work.
-Mission 3/4 extension, RL wrappers, and broader public polish remain later
-follow-on work.
+Phase 3 baselines are formally complete.
+The next planned macro-step is Phase 4 RL-environment boundary-setting and
+wrapper design on top of the accepted Mission 1 engine and baseline surfaces.
+Mission 3/4 extension, learning experiments, and broader public polish remain
+later follow-on work.
+
+## Manual baseline reruns
+
+Accepted local commands for Phase 3 benchmark reruns:
+
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`

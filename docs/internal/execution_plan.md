@@ -6,9 +6,11 @@ This file is the current master control surface for repository-level planning,
 dispatch, and closeout.
 
 As of March 8, 2026, Phases 1 and 2 are complete and archived.
-The active planning problem is no longer "how to finish Mission 1" or "how to
-harden the accepted engine", but "how to open Phase 3 baselines without
-dragging in premature RL or Mission 3/4 work."
+As of March 9, 2026, Phases 1, 2, and 3 are complete and archived.
+The active planning problem is no longer "how to finish Mission 1", "how to
+harden the accepted engine", or "how to open Phase 3 baselines", but "how to
+open Phase 4 RL-environment planning without contaminating the domain layer or
+forgetting the accepted Phase 3 benchmark surface."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -18,46 +20,51 @@ After Phase 2, future phases should use the orchestration model in
 In particular, prefer a small number of delivery packages per phase rather than
 opening a new implementation chat for every micro-stage.
 
-This file should let a Phase 3 Master Thread do four things without recovering
-chat history:
+This file should now let a future master-thread do four things without
+recovering chat history:
 
-- hold the active phase packet,
-- dispatch Delivery A / B / C,
-- accept or reject completed packages,
-- close Phase 3 cleanly when the work is actually done.
+- preserve the accepted Phase 3 packet and closeout record,
+- avoid reopening completed Delivery A / B / C work accidentally,
+- recover the accepted baseline contract and benchmark reference quickly,
+- point the next planning thread toward Phase 4.
 
 ## Current checkpoint
 
 - Accepted milestones:
   - Phase 1 complete
   - Phase 2 complete
+  - Phase 3 complete
 - Local tags:
   - `phase1-complete`
   - `phase2-complete`
-- Repository state checked on March 8, 2026:
+- Repository state checked on March 9, 2026 before closeout:
   - `git status --short` was empty
-  - `git log --oneline --decorate -15` showed `HEAD` on
-    `aaa3afb docs: capture audit followups and orchestration policy`
-  - `git show --no-patch --decorate phase1-complete` resolved to
-    `d6445d9 docs: sync public handoff after phase1 completion`
-  - `git show --no-patch --decorate phase2-complete` resolved to
-    `1ef74ab docs: finalize phase2 closeout handoff`
-  - `.venv/bin/pytest -q` passed with `133 passed in 0.27s`
+  - `git log --oneline --decorate -10` showed `HEAD` on
+    `291a121 phase3: add manual baselines cli`
+  - `.venv/bin/pytest -q` passed with `153 passed in 1.69s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+    succeeded
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`
+    succeeded
 
-Accepted runtime surface before Phase 3:
+Accepted runtime surface after Phase 3 closeout:
 
-- `Mission` is static scenario data loaded from config.
-- `GameState` is runtime truth with explicit staged decision contexts.
-- `domain/resolver.py` is the accepted playable engine entry path.
-- `io/replay.py` is a replay adapter over the resolver path, not a second
+- `Mission` remains static scenario data loaded from config.
+- `GameState` remains runtime truth with explicit staged decision contexts.
+- `domain/resolver.py` remains the accepted playable engine entry path.
+- `io/replay.py` remains a replay adapter over the resolver path, not a second
   engine.
-- Mission 1 is playable, deterministic, and regression-covered.
-- `tests/test_replay_contracts.py` already includes seeded replay round trips
-  for victory, morale-loss, and defeat trajectories.
-- No `agents/`, `eval/`, or `cli/` packages exist yet, so Phase 3 will be the
-  first phase that grows a stable agent/evaluation surface on top of the
-  domain engine.
+- `agents/base.py` records the accepted Phase 3 agent-facing contract.
+- `RandomAgent` and `HeuristicAgent` provide the first accepted non-learning
+  baselines on top of Mission 1.
+- `eval/episode_runner.py`, `eval/metrics.py`, and `eval/benchmark.py` provide
+  the accepted repeated-episode harness, metrics surface, and fixed-seed
+  benchmark protocol.
+- `cli/phase3_baselines.py` provides the accepted thin manual rerun surface for
+  smoke and benchmark comparisons.
+- Mission 1 remains playable, deterministic, regression-covered, and now
+  benchmarkable through fixed-seed baseline comparisons.
 
 Phases 1 and 2 should be treated as archived implementation history, not as the
 active dispatch target.
@@ -250,18 +257,39 @@ Allowed status values:
 Update this block only from a planning / audit / master-thread after checking
 repo state against the package criteria.
 
-- Package A - Agent-facing API and episode harness foundation: pending
-- Package B - Heuristic baseline and comparison loop: pending
-- Package C - Benchmark packaging and operator surface: pending (optional)
-- Phase 3 overall: pending
+- Package A - Agent-facing API and episode harness foundation: completed
+- Package B - Heuristic baseline and comparison loop: completed
+- Package C - Benchmark packaging and operator surface: completed (optional)
+- Phase 3 overall: completed
 - Planning audit date: March 8, 2026
+- Closeout verification date: March 9, 2026
 - Blocking findings before Delivery A: none
+
+## Phase 3 closeout record
+
+- Accepted implementation commits:
+  - `7b8937e phase3: add random agent and mission1 episode runner`
+  - `b34d247 phase3: add heuristic baseline and fixed-seed comparison`
+  - `291a121 phase3: add manual baselines cli`
+- Final verification:
+  - `.venv/bin/pytest -q` -> `153 passed in 1.69s`
+  - `.venv/bin/ruff check src tests` -> `All checks passed!`
+  - smoke CLI rerun succeeded on the fixed 16-seed set
+  - benchmark CLI rerun succeeded on the fixed 200-seed set
+- Accepted benchmark snapshot:
+  - smoke: `random` 2/16 wins vs `heuristic` 11/16 wins
+  - benchmark: `random` 11/200 wins vs `heuristic` 157/200 wins
+- Residual Phase 3 boundaries preserved at closeout:
+  - no RL/env wrapper surface was added
+  - Mission 3/4 remains out of scope
+  - broader tooling backlog remains deferred
 
 ## Package A - Agent-facing API and episode harness foundation
 
 Status:
 
-- pending
+- completed
+- accepted in `7b8937e phase3: add random agent and mission1 episode runner`
 
 Goal:
 
@@ -331,7 +359,8 @@ Analysis-before-edit:
 
 Status:
 
-- pending
+- completed
+- accepted in `b34d247 phase3: add heuristic baseline and fixed-seed comparison`
 
 Goal:
 
@@ -396,7 +425,8 @@ Analysis-before-edit:
 
 Status:
 
-- pending (optional)
+- completed (optional)
+- accepted in `291a121 phase3: add manual baselines cli`
 
 Goal:
 
@@ -533,7 +563,7 @@ Implementation can go straight to editing when the scope is:
 - adding the minimal CI workflow
 - updating status docs after a completed stage
 
-## Decision after Phase 2
+## Archived decision after Phase 2
 
 Recommended next macro-step:
 
@@ -564,14 +594,28 @@ External audit follow-up:
   - architecture concerns to revisit before Mission 3/4,
   - optional tooling and workflow polish
 
-## Public docs after Phase 2 closeout
+## Decision after Phase 3 closeout
 
-The final Phase 2 closeout audit leaves public status text aligned with
-accepted repo truth.
+Recommended next macro-step:
+
+- Phase 4 RL-environment planning
+
+Rationale:
+
+- the repository now has an accepted Mission 1 engine, deterministic replay
+  path, fixed-seed random/heuristic baselines, and a manual rerun surface
+- the next design problem is how to expose RL-facing observations, actions, and
+  wrapper semantics without contaminating the domain layer or discarding the
+  accepted Phase 3 comparison protocol
+- Mission 3/4 content extension remains a later content track unless Phase 4
+  planning proves the current Mission 1 slice structurally insufficient
+
+## Public docs after Phase 3 closeout
 
 During closeout, `README.md` and `ROADMAP.md` were synced to reflect that:
 
-- Phase 2 is complete
-- the next macro-step is Phase 3 baselines
+- Phase 3 is complete
+- the next macro-step is Phase 4 RL-environment planning
+- the accepted manual Phase 3 rerun commands are now documented in `README.md`
 
 Further public polish can happen later in separate docs-only threads.

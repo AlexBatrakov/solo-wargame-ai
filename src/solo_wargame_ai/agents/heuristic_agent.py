@@ -1,4 +1,11 @@
-"""Deterministic Mission 1 heuristic baseline for Phase 3 comparisons."""
+"""Deterministic Mission 1 heuristic baseline for Phase 3 comparisons.
+
+This agent is intentionally Mission-1-specific. It stays on the accepted Phase
+3 contract by choosing from the provided legal action tuple, but it also uses
+resolver-based lookahead plus a small amount of synthetic state fabrication to
+score those legal actions. Treat it as an accepted baseline policy, not as a
+general future-agent framework.
+"""
 
 from __future__ import annotations
 
@@ -186,6 +193,9 @@ class HeuristicAgent:
         unit_id: str,
         die_value: int,
     ) -> GameState:
+        # Phase 3 note: this fabricates a Mission 1 order-choice state outside
+        # the normal transition path to estimate activation value. Revisit this
+        # helper if later phases widen activation-state semantics.
         return replace(
             state,
             pending_decision=ChooseOrderExecutionContext(),

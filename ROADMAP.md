@@ -283,33 +283,43 @@ baselines.
 
 Goal: add simple non-learning agents to validate the usefulness of the environment and provide comparison baselines before RL.
 
+Status note: Phase 3 is complete in the repository. The accepted slice now
+includes a minimal agent contract, random and heuristic Mission 1 baselines, a
+fixed-seed evaluation harness and benchmark protocol, and a thin manual CLI for
+smoke / benchmark reruns.
+
 ### 3.1 Agent interfaces and simple policies
 
-- [ ] Define a minimal agent interface if needed
-- [ ] Implement Random agent
-- [ ] Implement first Heuristic agent
-- [ ] Ensure agents consume legal actions rather than mutating state directly
+- [x] Define a minimal agent interface if needed
+- [x] Implement Random agent
+- [x] Implement first Heuristic agent
+- [x] Ensure agents consume legal actions rather than mutating state directly
 
 ### 3.2 Simulation harness and metrics
 
-- [ ] Implement batch simulation script
-- [ ] Implement evaluation metrics
-- [ ] Decide which metrics matter most for early comparison
-- [ ] Define a fixed evaluation seed set / benchmark protocol for agent comparisons
-- [ ] Implement baseline comparison report
+- [x] Implement batch simulation script
+- [x] Implement evaluation metrics
+- [x] Decide which metrics matter most for early comparison
+- [x] Define a fixed evaluation seed set / benchmark protocol for agent comparisons
+- [x] Implement baseline comparison report
 
 ### 3.3 Baseline validation
 
-- [ ] Compare random vs heuristic behavior
-- [ ] Verify that baseline agents can complete full episodes in the MVP slice
-- [ ] Identify obvious failure modes before RL integration
+- [x] Compare random vs heuristic behavior
+- [x] Verify that baseline agents can complete full episodes in the MVP slice
+- [x] Identify obvious failure modes before RL integration
 
 ### 3.4 Exit criteria for Phase 3
 
-- [ ] at least one nontrivial baseline agent exists
-- [ ] agents can run many episodes automatically
-- [ ] basic metrics can be computed and compared
-- [ ] there is a baseline performance reference before RL work starts
+- [x] at least one nontrivial baseline agent exists
+- [x] agents can run many episodes automatically
+- [x] basic metrics can be computed and compared
+- [x] there is a baseline performance reference before RL work starts
+
+Closeout note: the accepted 200-seed Mission 1 benchmark now records a clear
+baseline gap before RL work begins, with `random` at 11/200 wins and
+`heuristic` at 157/200 wins. The next macro-step is Phase 4 RL-environment
+planning rather than more Phase 3 delivery slices.
 
 ---
 
