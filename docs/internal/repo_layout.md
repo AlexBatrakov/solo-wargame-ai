@@ -412,6 +412,21 @@ The project should eventually include tests such as:
 Tests should grow alongside features.
 The repository should resist adding large new rule modules without corresponding tests.
 
+After the first RL pass, a flat `tests/` root is no longer the preferred durable
+shape.
+When Phase 6 cleanup is opened, prefer a bounded regrouping such as:
+
+- `tests/domain/`
+- `tests/env/`
+- `tests/agents/`
+- `tests/eval/`
+- `tests/cli/`
+- `tests/integration/`
+
+The goal is navigation clarity, not clever taxonomy.
+Keep the regrouping mechanical and avoid coupling it to unrelated fixture or
+behavior changes.
+
 ---
 
 ## Scripts and notebooks policy
@@ -459,6 +474,11 @@ It may later be useful to keep curated small example outputs for demonstration, 
 4. Avoid broad “manager” classes unless they are clearly justified.
 5. Prefer deterministic interfaces around stochastic processes.
 6. Keep the engine inspectable and debuggable.
+7. Prefer responsibility-based names for durable library modules.
+8. Phase-based names are acceptable for thin operator CLIs, milestone docs,
+   thread reports, tags, and archived artifact directories, but they should not
+   dominate long-lived library surfaces once those surfaces outlive the phase
+   that introduced them.
 
 The project should optimize for clarity and correctness first, then convenience, then sophistication.
 

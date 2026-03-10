@@ -49,11 +49,11 @@ recovering chat history:
   - `phase3-complete`
   - `phase4-complete`
   - `phase5-complete`
-- Repository state checked on March 10, 2026 before opening this Phase 5
+- Repository state checked on March 10, 2026 before opening this Phase 6
   master-thread:
   - `git status --short` was empty
   - `git log --oneline --decorate -12` showed `HEAD` on
-    `0e4a6a8 docs: close phase4 rl-environment`
+    `ab20cee docs: refine phase6 roadmap and docs sync`
   - `git show --no-patch --decorate phase1-complete` resolved to
     `d6445d9 docs: sync public handoff after phase1 completion`
   - `git show --no-patch --decorate phase2-complete` resolved to
@@ -62,7 +62,9 @@ recovering chat history:
     `98519c7 docs: close phase3 baselines`
   - `git show --no-patch --decorate phase4-complete` resolved to
     `0e4a6a8 docs: close phase4 rl-environment`
-  - `.venv/bin/pytest -q` passed with `175 passed in 1.84s`
+  - `git show --no-patch --decorate phase5-complete` resolved to
+    `9d8beb9 docs: close phase5 learning experiments`
+  - `.venv/bin/pytest -q` passed with `197 passed in 3.51s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
     succeeded with the preserved `random` `2/16` wins vs `heuristic`
@@ -70,8 +72,11 @@ recovering chat history:
   - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
     succeeded with `action_catalog_size=32`, `decision_steps=35`,
     `terminal_outcome=defeat`, `final_reward=-1.0`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+    confirmed `best_benchmark_wins: 144`, `median_benchmark_wins: 133`,
+    `heuristic_anchor_wins: 157`, and `package_c_recommendation: Package C not recommended; proceed toward end-of-phase evaluation`
 
-Accepted runtime surface after Phase 4 closeout:
+Accepted runtime surface after Phase 5 closeout:
 
 - `Mission` remains static scenario data loaded from config.
 - `GameState` remains runtime truth with explicit staged decision contexts.
@@ -93,285 +98,282 @@ Accepted runtime surface after Phase 4 closeout:
 - `env/mission1_env.py` is a dependency-free wrapper with deterministic
   `reset(seed=...)`, `step(action_id)`, terminal-only default reward, and
   `terminated` / `truncated` semantics already frozen.
+- `agents/feature_adapter.py`, `agents/learned_policy.py`,
+  `agents/masked_action_selection.py`, and `agents/masked_actor_critic.py`
+  remain the accepted Phase 5 learning-side library surface.
+- `eval/learned_policy_eval.py` remains the accepted learned-policy evaluation
+  seam over the frozen Mission 1 env boundary.
 - `cli/phase3_baselines.py` and `cli/phase4_env_smoke.py` remain the accepted
-  manual operator surfaces.
-- `pyproject.toml` still has `dependencies = []`, and `configs/` currently
-  contains only the Mission 1 config rather than experiment presets.
+  preserved operator references.
+- `cli/phase5_train.py`, `cli/phase5_learned_policy_eval.py`, and
+  `cli/phase5_summary.py` remain the accepted Phase 5 operator surfaces.
+- `pyproject.toml` now carries the bounded `numpy` / `torch` learning
+  dependency pair, while `configs/` still contains only the Mission 1 mission
+  config and no broader experiment-platform surface.
+- `outputs/phase5/` contains the accepted first-learner artifacts and aggregate
+  summary files used as preserved comparison evidence.
 
-## Strategic update after opening the Phase 5 master-thread
+## Strategic update after opening the Phase 6 master-thread
 
-Current planning assumptions for later phases:
+Current planning assumptions for the active phase:
 
-- Phase 5 should answer whether the accepted Mission 1 wrapper is learnable
-  enough before widening content or architecture scope.
-- The accepted Phase 4 env surface should be used as-is unless learning work
-  exposes a narrow corrective bug; do not reopen observation/action/reward
-  boundary debates casually.
-- The accepted Phase 3 baseline benchmark remains the pre-RL comparison
-  reference and should not be replaced, reinterpreted, or translated into
-  reward.
-- Prefer one bounded first learner, one thin learning-side compatibility
-  adapter, and one fixed evaluation protocol over generic experiment-platform
-  buildout.
-- Reward shaping is not the default Phase 5 plan; it is an optional follow-up
-  only after the terminal-only first pass is measured honestly.
-- If Phase 5 exposes a narrow wrapper bug, treat that as Phase 4 corrective work
-  in a separate bounded thread, then resume the blocked learning package.
+- Phase 6 is not a continuation of Phase 5 learning implementation and not a
+  default Mission 3/4 extension track.
+- The accepted Mission 1 engine, env, random/heuristic baselines, and Phase 5
+  learner result are the stable foundation.
+- The two active questions are:
+  - how much headroom remains on Mission 1 for a stronger non-learning baseline
+    or bounded search/planning agent
+  - which repo-structure and naming fixes are worth doing now before another
+    research/content cycle lands on top of the current layout
+- Prefer one bounded stronger baseline/search package over a family of new
+  algorithms.
+- Prefer one bounded hygiene package over a broad refactor campaign.
+- Do not reopen the accepted env observation/action/reward boundary without
+  strong repo evidence from Phase 6 work itself.
+- Do not open Mission 3/4 content or generic experiment/search infrastructure by
+  default.
 
-Phases 1 through 4 should be treated as archived accepted history, not as the
-active dispatch target.
+## Phase 6 objective
 
-## Phase 5 objective
+Phase 6 is now defined as:
 
-Phase 5 is now defined as:
-
-> Run the first end-to-end learning experiments on the accepted Mission 1 env
-> wrapper to determine whether the current observation/action/reward surface is
-> learnable enough to justify further investment, while preserving comparability
-> with the accepted Phase 3 baselines and avoiding generic RL-platform growth.
+> Use the accepted Mission 1 stack to measure post-first-RL headroom and remove
+> the smallest structure/naming frictions that already impede further work,
+> without turning the repo into a refactor campaign or widening automatically
+> into new mission content.
 
 Desired outcome:
 
-- one bounded first learner and training setup are chosen explicitly
-- the accepted `Mission1Env` can support end-to-end learner runs without
-  reopening the wrapper contract
-- learned-policy evaluation is compared against the preserved Phase 3
-  references using the accepted seed sets and metrics
-- the phase ends with an explicit gate between:
-  - environment/action iteration
-  - stronger baselines/search
+- one bounded hygiene pass leaves the repo easier to navigate and extend
+- one stronger Mission 1 non-learning baseline/search result exists on the
+  preserved comparison protocol
+- the phase ends with a documented gate between:
+  - more Mission 1 strengthening/search
   - Mission 3/4 content extension
+  - a narrow env/action corrective iteration only if Phase 6 produces strong
+    contrary evidence
 
-## Phase 5 planning audit findings
+## Phase 6 planning audit findings
 
-- The accepted env already exposes everything a first masked discrete learner
-  needs: deterministic seeded episodes, fixed action ids, legal ids/masks, and
-  a structured observation boundary.
-- `Mission1Env` is usable directly for learning semantics, but
-  `observation.py` returns nested serializable dicts rather than tensor-ready
-  features, so a thin learning-side feature adapter is still required.
-- Current observation plus `info` is sufficient to reconstruct the accepted
-  Phase 3 metrics for learned episodes without changing the default env
-  contract:
-  - `terminal_outcome` and `turn` come from the terminal observation
-  - resolved markers come from initial marker count vs terminal
-    `unresolved_markers`
-  - removed German count comes from terminal `revealed_german_units`
-  - player-decision count already lives in `info["decision_step_count"]`
-- The accepted Phase 3 eval stack is domain-action-based and random/heuristic
-  specific, so learned-policy evaluation should reuse its seed sets and metric
-  schema without overloading the accepted benchmark module itself.
-- `pyproject.toml` and `configs/` still contain no learning/runtime layer, so
-  Phase 5 should add only the minimum new surface needed for one learner and
-  one evaluation protocol.
-- The dominant technical risk for the first learning pass is reward sparsity and
-  feature representation, not legality plumbing.
-- The fixed 32-id action catalog is large enough to require masking but still
-  small enough for a first masked learner; the current blocker risk is not raw
-  action count.
-- `HeuristicAgent` relies on Mission-1-specific lookahead and synthetic state
-  fabrication, so it remains a baseline to compare against, not a contract to
-  copy into the learning path.
+- Current repo state is clean and reproducible from the accepted Phase 5
+  baseline:
+  - `git status --short` was empty
+  - `.venv/bin/pytest -q` passed with `197 passed in 3.51s`
+  - `.venv/bin/ruff check src tests` passed with `All checks passed!`
+  - the preserved Phase 3 smoke reference and Phase 4 env smoke output still
+    match the accepted values
+  - `phase5_summary` confirms the accepted aggregate result `best 144/200`,
+    `median 133/200`, `heuristic 157/200`
+- The domain and env packages are mostly responsibility-named already and are
+  acceptable as-is for Phase 6; they are not the main current naming problem.
+- The most immediate repo-friction comes from durable library modules that still
+  carry phase-history names:
+  - `src/solo_wargame_ai/agents/phase5_training.py`
+  - `src/solo_wargame_ai/eval/phase5_seed_policy.py`
+  - `src/solo_wargame_ai/eval/phase5_reporting.py`
+  - `src/solo_wargame_ai/eval/phase5_summary.py`
+- Thin operator entrypoints under `src/solo_wargame_ai/cli/phase3_*`,
+  `phase4_*`, and `phase5_*` are acceptable as phase-tagged operator surfaces
+  and do not need to be renamed in the hygiene pass by default.
+- `tests/` is still a single flat directory. That was acceptable during early
+  growth, but with more than 40 test files it now materially slows navigation
+  and makes phase-history naming linger longer than it should.
+- `HeuristicAgent` is already a Mission-1-specific lookahead baseline with
+  synthetic-state assistance. The next high-value baseline should therefore be
+  an explicit bounded rollout/search/hybrid agent, not "HeuristicAgent v2"
+  through more ad hoc scoring rules.
+- Known audit items `legal_actions.py` growth and replay draw-prediction
+  coupling remain real, but they are still later-scope concerns unless Phase 6
+  search work exposes a direct blocker.
 
-## Active follow-ups and assumptions for Phase 5
+## Active follow-ups and assumptions for Phase 6
 
-Active external audit follow-ups for this phase:
+Active follow-ups from `docs/internal/independent_audit_followups.md`:
 
-- `P4-R1` through `P4-R3` are resolved by accepted repo evidence and now act as
-  frozen constraints rather than open planning work.
-- `P4-R4` remains active as a preservation constraint:
-  - keep the accepted 16-seed smoke surface and 200-seed snapshot explicit and
-    unchanged during learning work
+- `P4-R4` remains active as a preservation rule:
+  - keep the accepted Phase 3 smoke/benchmark references explicit and reusable
 - `C6` remains active as a caution:
-  - do not copy `HeuristicAgent` coupling into the learning contract or treat it
-    as the stable future-agent interface
+  - do not promote Mission-1-specific heuristic coupling into the durable future
+    agent contract just because a stronger baseline may reuse it as a rollout
+    policy or comparison target
 
-Not active by default in Phase 5 unless a concrete blocker appears:
+Not active by default in this phase unless a concrete blocker appears:
 
 - `C1` replay draw-prediction coupling
 - `C2` `legal_actions.py` growth / separation
 - `C3` multiple-start-hex support
 - `C4` objective-dispatch generalization
 - `C5` synthetic fixtures
-- `T1` through `T4` optional tooling backlog items
+- `T1` through `T4` tooling backlog items
 
 Active assumptions from current public docs:
 
-- `ASSUMPTIONS.md: O2` and `O6` stay active:
-  - the accepted structured observation remains the source of truth, but
-    learning code may derive a flattened/tensorized representation from it
-- `ASSUMPTIONS.md: O3` stays active:
-  - do not introduce macro-actions in Phase 5 unless the accepted 32-id staged
-    catalog proves a concrete blocker
-- `ASSUMPTIONS.md: O4` stays active:
-  - shaping is optional and experimental only after a default terminal-only pass
-    is measured
+- `ASSUMPTIONS.md: O2` / `O6`
+  - later agents may derive their own features, but the accepted observation
+    boundary stays intact
+- `ASSUMPTIONS.md: O3`
+  - do not introduce new macro-action abstractions for Phase 6 search/baselines
+    by default
+- `ASSUMPTIONS.md: O4` and `docs/reward_design.md`
+  - Phase 6 does not reopen reward shaping or the default terminal-only env
+    contract
 
-## Accepted Phase 5 scope
+## Accepted Phase 6 scope
 
 In scope:
 
-- one bounded first learner and training setup for Mission 1 only
-- a thin compatibility/feature adapter over the accepted env observation and
-  legal-action surface
-- masked discrete action selection using the accepted action ids and masks
-- one deterministic local training/evaluation protocol with explicit seed policy
-- learned-policy evaluation that preserves the accepted Phase 3 comparison
-  metrics and seed sets
-- one end-to-end terminal-only learner pass
-- one optional follow-up package for shaping or blocker response only if the
-  terminal-only pass fails to answer the learnability question cleanly
-- internal planning/status docs and a local thread report
+- one bounded repository-hygiene package focused on naming/layout clarity
+- one stronger Mission 1 non-learning baseline/search package on top of the
+  accepted domain/env stack
+- only the minimal evaluation/reporting widening needed to compare that new
+  baseline against the preserved references
+- internal planning/status docs and local thread reports for the active phase
+- Phase Master acceptance, closeout, and next-step gate after the comparison is
+  in hand
 
 Out of scope:
 
-- changing the accepted default Phase 4 env contract without a concrete blocker
-- automatic adoption of `gymnasium`, Stable-Baselines3, RLlib, or a generic RL
-  framework layer
-- generic training-platform, checkpoint-service, dashboard, or experiment-campaign
-  scaffolding
+- implementation work from this Phase Master Thread
 - Mission 3/4 or broader content/rule expansion
-- broad domain/env cleanup motivated by anticipated scale rather than a narrow
-  learning blocker
-- rewriting the accepted Phase 3 baselines or benchmark reference
-- translating Phase 3 metrics into reward terms
-- stronger search/planning baselines inside this phase packet
-- implementation commits from this Phase Master Thread
+- reopening the accepted env observation/action/reward boundary without strong
+  new evidence
+- reward shaping work
+- a generic search, experiment, or benchmark platform
+- broad domain refactors motivated mainly by anticipated scale
+- renaming accepted thin phase operator CLIs, milestone tags, or archived Phase
+  5 artifact directories purely for aesthetics
+- tooling/polish backlog such as `mypy`, broader Ruff, coverage, or multi-
+  version CI unless separately approved later
 
-## Phase 5 planning decisions
+## Phase 6 planning decisions
 
-- First learner / training setup:
-  - use one masked episodic actor-critic baseline for the first pass
-  - concretely, prefer a small policy/value learner in the style of
-    REINFORCE-plus-value-baseline rather than DQN replay infrastructure or a
-    PPO-style framework stack
-  - train directly against `Mission1Env` episodes; imitation learning is not the
-    primary Phase 5 question
-  - use the 16-seed smoke set for fast evaluation checkpoints and the accepted
-    200-seed set for the final comparison
-- Dependency / framework strategy:
-  - do not introduce a new env/framework layer in Phase 5
-  - no `gymnasium` compatibility work is required for the first pass
-  - no full RL framework should be added in this phase packet
-  - one bounded numerical/model dependency is acceptable if the chosen learner
-    needs it; if so, prefer `torch` over a full RL stack because it adds
-    tensor/autograd support without forcing env redesign
-- Wrapper usage vs thin adapter:
-  - treat `Mission1Env` as the truth surface for learning work
-  - add only a thin learning-side adapter for deterministic feature extraction
-    and mask shaping
-  - do not change the accepted observation schema or fixed action ids merely to
-    fit a first learner implementation
-- Reward policy for the first pass:
-  - the accepted terminal-only reward is sufficient and required for the first
-    end-to-end pass
-  - Delivery A and Delivery B should not add shaping
-  - shaping is admissible only in optional Delivery C after the terminal-only
-    pass is evaluated honestly and found insufficient
-  - any shaping must be explicit, bounded, and separate from the default env
-    reward contract
-- Evaluation metrics required for this phase:
-  - primary comparison remains mission outcome on the accepted 200-seed set
-  - final learned-policy reporting must include the accepted Phase 3 metric row:
+- Delivery order:
+  - start with a bounded cleanup package before stronger baseline/search work
+- Why cleanup comes first:
+  - current phase-history naming in durable library modules and the flat
+    `tests/` directory are already obstructing the very next package
+  - doing the bounded cleanup before new baseline/search code lands prevents
+    another round of imports/tests from immediately being built on confusing
+    names
+  - the cleanup budget is small enough to avoid becoming a separate refactor
+    campaign
+- Bounded cleanup target:
+  - rename durable library modules by responsibility rather than phase history
+  - regroup tests by subsystem when the move clearly improves navigation
+  - keep thin phase CLI names, thread reports, milestone tags, and `outputs/`
+    artifact names as historical/operator surfaces
+  - do not change accepted behavior or public env/domain contracts
+- Stronger baseline/search direction:
+  - prefer one explicit stochastic rollout/search or hybrid search baseline over
+    the accepted domain-action contract
+  - concretely, score the current legal action set via bounded forward
+    simulation from the resolver/state surface, optionally using the accepted
+    heuristic policy as a rollout or leaf policy
+  - do not start with another hand-tuned heuristic-only rewrite
+  - do not build a generic search framework, MCTS toolkit, or env-level planner
+    layer
+- Comparison protocol:
+  - keep the accepted Phase 3 anchors fixed at `random 11/200` and
+    `heuristic 157/200`
+  - keep the accepted Phase 5 learned references explicit:
+    `best 144/200`, `median 133/200`, plus the recorded seed results
+    `101 -> 144/200`, `202 -> 133/200`, `303 -> 121/200`
+  - keep the existing `EpisodeMetrics` row mandatory:
     `wins`, `defeats`, `win_rate`, `defeat_rate`, `mean_terminal_turn`,
     `mean_resolved_markers`, `mean_removed_german`, `mean_player_decisions`
-  - development-time smoke evaluation may use the fixed 16-seed set
-  - track training budget and training seeds separately from reward:
-    episodes, env steps, checkpoint step, invalid-action count
-- Minimum success criteria for Phase 5:
-  - at least one terminal-only learned checkpoint completes end-to-end training
-    and reaches `>= 50/200` wins on the accepted benchmark seed set
-  - the median result across the planned training seeds must beat the fixed
-    random reference of `11/200`
-  - if these conditions are not met, Phase 5 has not shown the current wrapper
-    to be convincingly learnable
+  - report search budget separately from outcome metrics:
+    for example rollout count, depth cap, leaf policy, or other bounded compute
+    knobs
 - End-of-phase decision gate:
-  - choose `environment/action iteration` if the terminal-only pass and any
-    bounded optional follow-up still fail the minimum bar or if failure analysis
-    points to observation/action/reward bottlenecks
-  - choose `stronger baselines/search` if the first learner clears the minimum
-    bar and the wrapper looks learnable, but the remaining question is how much
-    headroom exists above heuristic-style play
-  - choose `Mission 3/4 content extension` only if learning results approach the
-    current heuristic ceiling closely enough that Mission 1 looks saturated
-    rather than blocked by the wrapper; use `>= 140/200` wins as the rough
-    trigger band for that discussion rather than a casual impression
+  - choose `more Mission 1 strengthening/search` only if the new stronger
+    baseline beats the heuristic anchor by a material margin and still leaves a
+    nontrivial instructive failure set
+  - choose `Mission 3/4 content extension` if Phase 6 either:
+    - fails to beat the heuristic anchor meaningfully, so more Mission 1
+      baseline work is unlikely to pay back
+    - or drives Mission 1 close enough to saturation that additional gains would
+      mostly be compute-budget polishing rather than new structural insight
+  - choose `targeted env/action iteration` only if the stronger-baseline work
+    produces concrete evidence that the accepted wrapper/action surface itself is
+    the next blocker; that is not the default expectation
 
-## Comparability policy with the accepted Phase 3 benchmark
+## Comparability policy with the accepted Phase 3 and Phase 5 references
 
-- Keep the accepted Phase 3 baseline CLI, smoke set, and 200-seed snapshot
-  unchanged as the comparison anchor.
-- Evaluate the learned policy on the same Mission 1 config and the same fixed
-  evaluation seed ranges:
+- Preserve the accepted Phase 3 smoke and benchmark references as fixed anchor
+  values, not moving targets:
+  - smoke: `random 2/16` vs `heuristic 11/16`
+  - benchmark: `random 11/200` vs `heuristic 157/200`
+- Evaluate the stronger Phase 6 baseline on the same Mission 1 config and the
+  same fixed env seed sets:
   - smoke: `0..15`
   - benchmark: `0..199`
-- Keep the accepted baseline numbers explicit in docs and reports:
-  - `random`: `11/200`
-  - `heuristic`: `157/200`
-- Learned-policy reporting should add rows and deltas; it should not replace the
-  preserved baseline record.
-- Reward remains separate from comparison metrics even if optional shaping is
-  later tested.
-- Do not revise the accepted baseline benchmark module unless a future thread
-  gets explicit approval to do so; learned evaluation can reuse its metric
-  schema without overwriting its role.
+- Keep the accepted Phase 5 learned-policy aggregate explicit in docs and final
+  comparison reports rather than re-measuring Phase 5 from scratch.
+- If a Phase 6 package touches the preserved Phase 3 benchmark harness or the
+  accepted random/heuristic implementations directly, rerun the full
+  `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`
+  check and confirm the accepted `11/200` and `157/200` anchors are unchanged.
+- Reward stays separate from comparison metrics and from search/planning
+  scoring.
+- Do not reinterpret the accepted Phase 3 or Phase 5 references as training
+  targets or reward terms.
 
-## Boundary: Phase 5 learning vs Phase 4 corrective work vs later tracks
+## Boundary: cleanup vs stronger baselines vs later tracks
 
-Phase 5 learning work includes:
+Phase 6 repository cleanup includes:
 
-- feature extraction over the accepted observation
-- masked learner action selection over the accepted action ids/masks
-- training-loop implementation for one chosen learner
-- learned-policy evaluation on the preserved seed sets
-- bounded analysis of failure modes and, if needed, one explicit shaping retry
+- responsibility-based renaming of durable library modules
+- import updates required by those renames
+- regrouping existing tests into clearer subsystem directories
+- minimal docs updates needed to explain the intended long-lived repo layout
 
-Phase 4 corrective work begins only when:
+Phase 6 stronger baselines/search includes:
 
-- a narrow bug is found in the accepted env boundary itself
-- the current legal mask/action catalog is incorrect by repo evidence
-- `reset` / `step` determinism or termination semantics are wrong
-- the required fix restores the accepted contract rather than redesigning it
-
-If such a bug appears, stop the blocked Phase 5 package, open a narrow
-corrective thread, and then return to the learning package.
-
-Stronger search/planning baseline work begins only when:
-
-- a new search, rollout, or planning baseline is being designed
-- the baseline comparison matrix is being widened beyond the accepted
-  random/heuristic reference plus the first learner
-- the project question has shifted from "is the wrapper learnable?" to "what is
-  the stronger non-learning ceiling on Mission 1?"
+- one stronger Mission 1 non-learning baseline/search agent
+- only the evaluation/reporting code needed to compare it on the preserved seed
+  sets and metric schema
+- a thin operator surface for Phase 6 comparison runs if the package needs one
 
 Later Mission 3/4 content extension begins only when:
 
-- new terrain/unit/objective families are being added to the domain engine
-- multiple-start-hex support or objective-dispatch generalization is being
-  implemented
-- Mission 1 is no longer the right content slice for the next answerable
-  project question
+- new terrain/unit/objective families are being added
+- Mission 1-only guards such as multiple-start-hex limits or Mission 1
+  objective dispatch are being widened
+- the project has already decided that another Mission 1 strengthening cycle is
+  not the best next investment
 
-## Operational rules for Phase 5
+Later broader tooling/platform work includes:
 
-- this master-thread owns the Phase 5 packet, status block, acceptance notes,
-  and closeout docs
-- Delivery Threads own implementation for one package only and normally make
-  implementation commits after acceptance
-- keep Phase 5 to Delivery A plus Delivery B, with optional Delivery C only if
-  the terminal-only pass leaves the learnability decision unresolved
-- do not mix learning packages with Mission 3/4 extension, stronger
-  search/planning baselines, or generic experiment-platform buildout
-- if a package needs to revise the accepted observation/action/reward boundary,
-  return to the Phase Master Thread before editing
-- routine package verification should continue to include:
+- generic experiment config layers
+- generic search frameworks or pluggable planning backends
+- type-checking and coverage expansion
+- wider CI/runtime matrix work
+- replay-system redesign for future RNG-heavy content
+
+## Operational rules for Phase 6
+
+- this Phase Master Thread owns the Phase 6 packet, status block, acceptance
+  notes, and closeout docs
+- Delivery Threads own implementation for one package only and normally make the
+  implementation commit after acceptance
+- keep Phase 6 to Delivery A plus Delivery B, with Delivery C only if Package B
+  does not already produce a closeout-ready comparison/report surface
+- do not mix repo cleanup with stronger-baseline implementation in the same
+  Delivery Thread
+- do not mix any Phase 6 package with Mission 3/4 content work or tooling
+  backlog
+- if a package proposes to change domain/env/reward contracts, return to the
+  Phase Master Thread before editing
+- routine Phase 6 verification continues to include:
   - `.venv/bin/pytest -q`
   - `.venv/bin/ruff check src tests`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
-- rerun the accepted 200-seed baseline benchmark only if a Phase 5 package
-  touches the preserved baseline comparison surface directly; otherwise preserve
-  the accepted snapshot and compare learned results against it
+- Package A verification should additionally preserve at least one accepted
+  Phase 5 operator surface
+- Package B/C verification should include the new Phase 6 smoke/benchmark
+  comparison command if introduced
 
 Allowed status values:
 
@@ -379,382 +381,267 @@ Allowed status values:
 - `in_progress`
 - `completed`
 - `blocked`
+- `conditional`
 
-## Phase 5 status block
+## Phase 6 status block
 
 Update this block only from a planning / audit / master-thread after checking
 repo state against the package criteria.
 
-- Package A: completed
-- Package B: completed
-- Package C: completed
-- Package C disposition: not opened; Package B and the external audit did not
-  justify it
-- Phase 5 overall: completed
+- Package A: pending
+- Package B: pending
+- Package C: conditional
+- Phase 6 overall: pending
 - Planning audit date: March 10, 2026
-- Package A acceptance verification date: March 10, 2026
-- Package B acceptance verification date: March 10, 2026
-- Package C recommendation after Package B: not recommended
-- External audit gate: completed on March 10, 2026
-- Closeout/tag gate: closeout docs synced; ready for milestone tag
-  `phase5-complete`
 - Blocking findings before Delivery A: none
+- Preferred package order: Delivery A -> Delivery B -> Delivery C only if needed
+- Closeout/tag gate: not ready
 
-## Package A - Learning adapter and experiment contract foundation
-
-Status:
-
-- completed
-- accepted by the Phase 5 master-thread; implementation diff is commit-ready
-
-Goal:
-
-- freeze the first learner choice, dependency boundary, feature-adapter seam,
-  and evaluation contract on top of the accepted `Mission1Env` surface without
-  mixing in reward-shaping or closeout work
-
-Concrete deliverables:
-
-- one thin learning-side observation/feature adapter derived from the accepted
-  structured observation
-- one masked action-selection seam that consumes the accepted legal ids/masks
-- one bounded learner/policy module for the chosen actor-critic baseline
-- one narrow training/evaluation configuration surface for this learner only
-- one evaluation path for learned policies that emits the accepted Phase 3
-  metric schema without rewriting the baseline benchmark module
-- only the minimal dependency and packaging changes needed to support the above
-
-Likely files / subsystems touched:
-
-- `pyproject.toml` if Package A adds a bounded numerical/model dependency
-- `src/solo_wargame_ai/agents/` for learned-policy modules
-- `src/solo_wargame_ai/eval/` for learned-policy episode/eval helpers
-- `src/solo_wargame_ai/cli/` for a thin Phase 5 train/eval operator surface
-- `configs/experiments/` only if one or two narrow experiment presets clearly
-  improve reproducibility
-- focused tests under `tests/` for feature extraction, mask handling, and
-  learned-policy contract wiring
-
-Required tests / verification:
-
-- focused tests that feature extraction is deterministic and only depends on the
-  accepted env observation surface
-- focused tests that masked action selection never emits an illegal action id
-- focused tests that learned-policy evaluation reproduces the accepted metric
-  schema on fixed seeds
-- `.venv/bin/pytest -q`
-- `.venv/bin/ruff check src tests`
-- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
-- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
-
-Risks / traps:
-
-- changing the accepted env contract instead of adapting to it
-- creating a generic experiment/config platform instead of one learner seam
-- coupling the learner to domain internals or `HeuristicAgent` helpers
-- introducing multiple algorithms before the first one is even comparable
-
-Completion criteria:
-
-- Package B can train and evaluate one learner without reopening dependency,
-  adapter, or metric-comparability questions
-- the feature and mask path is deterministic and testable
-- the accepted Phase 3 comparison anchor remains intact
-
-Acceptance record:
-
-- accepted implementation surface:
-  - `pyproject.toml`
-  - `src/solo_wargame_ai/agents/feature_adapter.py`
-  - `src/solo_wargame_ai/agents/learned_policy.py`
-  - `src/solo_wargame_ai/agents/masked_action_selection.py`
-  - `src/solo_wargame_ai/agents/masked_actor_critic.py`
-  - `src/solo_wargame_ai/eval/learned_policy_eval.py`
-  - `src/solo_wargame_ai/eval/phase5_seed_policy.py`
-  - focused Package A tests under `tests/`
-- acceptance verification:
-  - `.venv/bin/pytest -q tests/test_phase5_feature_adapter.py tests/test_phase5_learned_policy_eval.py tests/test_phase5_masked_actor_critic.py tests/test_phase5_torch_actor_critic.py`
-    -> `10 passed in 1.12s`
-  - `.venv/bin/pytest -q` -> `185 passed in 2.38s`
-  - `.venv/bin/ruff check src tests` -> `All checks passed!`
-  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
-    preserved the accepted Phase 3 reference:
-    `random` `2/16` wins vs `heuristic` `11/16` wins
-  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
-    preserved the accepted Phase 4 smoke output:
-    `action_catalog_size=32`, `decision_steps=35`,
-    `terminal_outcome=defeat`, `final_reward=-1.0`
-- accepted boundary notes:
-  - Delivery A froze the first learner boundary around a masked episodic
-    actor-critic seam, a deterministic observation-only feature adapter, and a
-    learned-policy evaluation path that reuses the accepted Phase 3 metric
-    schema
-  - training seeds remain explicitly separated from accepted evaluation seeds
-  - `torch` is the intended learner dependency; `numpy` is also allowed here as
-    an operator-approved bootstrap companion dependency for local torch install
-    stability and should not be treated as a broader framework decision
-
-Commit shape:
-
-- one commit preferred
-- two commits acceptable only if dependency setup and the learning-side adapter
-  surface are substantially cleaner to review separately
-
-Analysis-before-edit:
-
-- required
-
-## Package B - Terminal-only first learner pass and baseline comparison
+## Package A - Bounded repo hygiene and naming cleanup
 
 Status:
 
-- completed
-- accepted by the Phase 5 master-thread; implementation commit `c6d2142`
-  is the active Package B slice
+- pending
 
 Goal:
 
-- implement and run the chosen learner end-to-end on the accepted terminal-only
-  Mission 1 env contract and compare the result against the preserved Phase 3
-  references
+- remove the smallest repo-structure and naming frictions that already impede
+  Phase 6 work without changing accepted behavior
 
 Concrete deliverables:
 
-- the first bounded training loop for the chosen learner
-- deterministic training-seed protocol and checkpoint-selection policy
-- one accepted train-smoke command and one accepted learned-policy evaluation
-  command
-- final learned-policy comparison on the fixed 16-seed smoke set and the
-  accepted 200-seed benchmark seed set
-- a compact report for the Phase Master Thread stating whether the minimum
-  success bar was met and whether optional Package C is needed
+- rename durable library modules in `agents/` and `eval/` by responsibility
+  rather than phase history where the current names now describe historical
+  origin more than stable purpose
+- keep thin phase CLI names and artifact paths unchanged unless a rename is
+  required only at the import level
+- regroup the flat `tests/` root into clearer subsystem directories such as
+  `domain/`, `env/`, `agents/`, `eval/`, `cli/`, and `integration/` if the move
+  remains mechanical and low-risk
+- update internal layout/control docs to record the intended long-lived naming
+  policy
 
 Likely files / subsystems touched:
 
 - `src/solo_wargame_ai/agents/`
 - `src/solo_wargame_ai/eval/`
-- `src/solo_wargame_ai/cli/`
-- optional narrow presets under `configs/experiments/`
-- local `outputs/` artifacts such as checkpoints or reports if the package needs
-  them
+- import sites under `src/solo_wargame_ai/cli/`
+- `tests/`
+- `docs/internal/repo_layout.md`
+- `docs/internal/execution_plan.md`
 
 Required tests / verification:
 
-- focused tests for any nontrivial rollout/training state handling introduced by
-  the package
 - `.venv/bin/pytest -q`
 - `.venv/bin/ruff check src tests`
 - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
 - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
-- one accepted Phase 5 train-smoke run
-- one accepted learned-policy evaluation on the 16-seed smoke set
-- one accepted learned-policy evaluation on the 200-seed benchmark set
+- `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+- one stored-checkpoint Phase 5 learned-policy smoke eval if Package A renames
+  imports used by the learned-policy CLI path
 
 Risks / traps:
 
-- conflating reward optimization with benchmark comparison metrics
-- hand-tuning against the preserved benchmark snapshot instead of using a fixed
-  protocol
-- opening checkpoint-management, reporting, or dashboard architecture that is
-  larger than the first learner itself
-- declaring success from one lucky seed without the fixed final evaluation
+- letting "cleanup" turn into a broad architecture redesign
+- renaming operator-facing phase CLIs or artifact directories that are already
+  useful historical anchors
+- mixing behavior changes with mechanical moves/renames
+- inventing a deep test-fixture refactor instead of a simple directory
+  regrouping
 
 Completion criteria:
 
-- one terminal-only learner runs end-to-end through training and evaluation
-- final reporting includes the accepted comparison metrics and an explicit
-  success/failure verdict against the minimum bar
-- the package returns a clear recommendation about whether Package C is needed
-
-Acceptance record:
-
-- accepted implementation commit:
-  - `c6d2142 phase5: add bounded learner train and eval flow`
-- accepted implementation surface:
-  - bounded Phase 5 masked actor-critic training loop with checkpoint selection
-  - narrow train / learned-policy-eval / aggregate-summary CLIs
-  - checkpoint metadata persistence and loader backfill for pre-fix artifacts
-  - machine-readable eval and aggregate summary payloads
-  - focused tests for training, reporting, CLI behavior, and eval inference mode
-- acceptance verification:
-  - `.venv/bin/pytest -q` -> `197 passed in 3.49s`
-  - `.venv/bin/ruff check src tests` -> `All checks passed!`
-  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
-    preserved the accepted Phase 3 smoke reference:
-    `random` `2/16` wins vs `heuristic` `11/16` wins
-  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
-    preserved the accepted Phase 4 smoke output:
-    `action_catalog_size=32`, `decision_steps=35`,
-    `terminal_outcome=defeat`, `final_reward=-1.0`
-  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
-    confirmed:
-    `best_benchmark_wins: 144`, `median_benchmark_wins: 133`,
-    `minimum_success_verdict: met`,
-    `package_c_recommendation: Package C not recommended; proceed toward end-of-phase evaluation`
-  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_learned_policy_eval --checkpoint outputs/phase5/train_seed_101_ep_2000/checkpoints/selected_checkpoint.pt --mode smoke --json-output /tmp/phase5_smoke_eval_check.json`
-    confirmed:
-    checkpoint metadata surfaced in text output, JSON payload was written, and
-    the reused smoke result remained `14/16`
-- accepted result notes:
-  - benchmark wins by training seed:
-    `101 -> 144/200`, `202 -> 133/200`, `303 -> 121/200`
-  - the median benchmark result `133/200` beats the preserved random anchor
-    `11/200`
-  - the best terminal-only result `144/200` demonstrates learnability on the
-    accepted wrapper without opening Package C, but it remains below the
-    preserved heuristic anchor `157/200`
+- durable library/module names are clearer than before the package
+- tests are easier to navigate than the current flat dump-style root
+- accepted behavior and operator outputs stay intact
+- Package B can add a new baseline without immediately adding more phase-history
+  naming debt
 
 Commit shape:
 
-- one coherent commit preferred
-- split only if the training loop and the learned-policy evaluation/reporting
+- one refactor/docs commit preferred
+- split only if test-directory regrouping is materially cleaner to review
+  separately from library-module renames
+
+Analysis-before-edit:
+
+- required
+
+## Package B - Stronger Mission 1 rollout/search baseline
+
+Status:
+
+- pending
+
+Goal:
+
+- add one stronger non-learning Mission 1 baseline that measures headroom above
+  the accepted heuristic and first learner without widening scope into a search
+  platform
+
+Concrete deliverables:
+
+- one bounded stronger baseline/search agent over the accepted domain-action
+  contract
+- one explicit deterministic search/rollout budget policy
+- only the minimal harness/reporting additions needed to evaluate the new agent
+  on the preserved smoke and benchmark seed sets
+- one thin Phase 6 operator surface for smoke/benchmark comparison if the
+  package needs it
+- one package report that states whether the new baseline materially changes the
+  current headroom picture
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/agents/`
+- `src/solo_wargame_ai/eval/`
+- optional thin operator entrypoint under `src/solo_wargame_ai/cli/`
+- focused tests under `tests/agents/`, `tests/eval/`, and `tests/cli/`
+
+Required tests / verification:
+
+- focused tests for legality preservation, deterministic seed/budget behavior,
+  and the search agent's action-selection contract
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- one Phase 6 stronger-baseline smoke run
+- one Phase 6 stronger-baseline benchmark run on `0..199`
+- rerun `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`
+  if Package B touched the preserved Phase 3 benchmark surface directly
+
+Risks / traps:
+
+- implementing another brittle heuristic-only score sheet instead of explicit
+  bounded search/rollout
+- building a generic search framework rather than one answer-oriented baseline
+- coupling the new baseline to RL artifacts or reward shaping
+- smuggling env/action redesign into a baseline/search package
+- weakening the preserved Phase 3 comparison reference while trying to widen it
+
+Completion criteria:
+
+- one stronger baseline/search result exists on the accepted 200-seed benchmark
+- the result is comparable against `random`, `heuristic`, and the accepted
+  Phase 5 learned references on the same metric schema
+- the package returns a clear verdict about whether heuristic remains the
+  practical ceiling on Mission 1
+
+Commit shape:
+
+- one implementation commit preferred
+- two commits acceptable only if the new agent and the minimal comparison
   surface are materially cleaner to review separately
 
 Analysis-before-edit:
 
 - straight to implementation after Package A is accepted
 
-## Package C - Optional shaping or blocker-response pass
+## Package C - Optional comparison/reporting finish for the Phase 6 gate
 
 Status:
 
-- completed
-- not opened; neither Package B results nor the external audit justified this
-  optional package
+- conditional
 
 Goal:
 
-- only if Package B fails to answer the learnability question cleanly, run one
-  bounded follow-up that isolates either reward sparsity or a narrow blocker
-  without reopening the whole phase
+- only if Package B does not already leave the Phase Master Thread with a clean
+  closeout-ready comparison surface, add the smallest extra reporting/evaluation
+  slice needed to make the final macro-step decision cleanly
 
 Concrete deliverables:
 
-- exactly one of:
-  - one explicit shaped-reward variant on top of the accepted env contract
-  - one narrow corrective bridge around a confirmed blocker
-- an A/B comparison against the terminal-only Package B result on fixed seeds
-- a final recommendation stating whether the next macro-step should be env
-  iteration, stronger baselines/search, or later content extension
+- at most one compact comparison/report surface showing:
+  - preserved Phase 3 anchors
+  - accepted Phase 5 learned references
+  - the new stronger Phase 6 baseline result
+- any narrow payload/report formatting needed for that matrix
+- a closeout-ready recommendation input for the Phase Master Thread
 
 Likely files / subsystems touched:
 
-- `src/solo_wargame_ai/env/` only if a confirmed Phase 4 corrective bug exists
-  or the shaped reward is implemented as an explicit wrapper variant
-- `src/solo_wargame_ai/agents/`
 - `src/solo_wargame_ai/eval/`
-- `src/solo_wargame_ai/cli/`
-- narrow doc notes only if the package reveals a stable contract correction
+- optional thin operator entrypoint under `src/solo_wargame_ai/cli/`
+- focused reporting tests under `tests/eval/` or `tests/cli/`
+- local report artifacts under `outputs/` if useful
 
 Required tests / verification:
 
+- focused tests for any new summary/report formatting
 - `.venv/bin/pytest -q`
 - `.venv/bin/ruff check src tests`
 - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
 - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
-- fixed-seed comparison between the terminal-only result and the Package C
-  variant
-- one final learned-policy evaluation on the accepted 200-seed benchmark set
+- the final Phase 6 comparison command/report if Package C is opened
 
 Risks / traps:
 
-- hiding an env redesign inside a "reward shaping" package
-- turning Phase 5 into a reward/hyperparameter campaign
-- mutating the default `Mission1Env` reward contract instead of adding an
-  explicit experimental variant
-- mixing a real Phase 4 bug fix with broader learning redesign in the same
-  thread
+- turning a closeout-support package into another algorithm package
+- changing metric schema or anchor values late in the phase
+- building a dashboard or generic reporting platform when one compact report
+  would answer the question
+- mixing phase closeout docs and implementation changes in a way that obscures
+  review
 
 Completion criteria:
 
-- the package isolates whether the failure came from sparse reward or from a
-  separate blocker
-- the Phase Master Thread can make the end-of-phase decision without opening
-  additional learning packages
+- the Phase Master Thread can close Phase 6 without opening another
+  implementation package
+- the comparison matrix is compact, explicit, and anchored to the preserved
+  references
 
 Commit shape:
 
-- one small commit only if the package is actually opened
+- one small eval/reporting commit only if Package C is actually opened
 
 Analysis-before-edit:
 
 - required
 
-## External audit assimilation for Phase 5 closeout
-
-Completed external audit:
-
-- independent Claude Opus 4.6 audit dated March 10, 2026
-
-Accepted audit conclusions:
-
-- Phase 5 is ready for closeout by repository evidence
-- no new implementation blocker remains inside the accepted Package A / Package
-  B surfaces
-- Package C should stay closed
-- the next justified macro-step is stronger baselines/search rather than env
-  iteration or Mission 3/4 content extension
-
-Accepted minor closeout actions from that audit:
-
-- sync `README.md` to reflect the accepted Phase 5 result and operator surface
-- sync `ROADMAP.md` to mark Phase 5 complete and record the closeout note
-
-Accepted deferred later ideas from that audit:
-
-- regenerate benchmark/smoke eval artifacts with JSON payloads if later
-  re-analysis benefits from it
-- add a defensive `model.train()` restore around model-selection evaluation if
-  the learner architecture later starts to care about train/eval mode
-- consider a combined local verification command only if it clearly pays for
-  itself in a later phase
-
-## Phase 5 closeout record
-
-Sequence completed:
-
-1. Package B accepted and recorded in this phase packet
-2. one external audit run and reviewed
-3. no additional in-scope follow-up was required before closeout
-4. Phase 5 closeout docs were synced
-5. milestone tag `phase5-complete` may now be created from the accepted
-   closeout commit
-
-## Recommended Delivery Thread sequence for Phase 5
+## Recommended Delivery Thread sequence for Phase 6
 
 Preferred sequence:
 
 1. Delivery A
 2. Delivery B
-3. Delivery C only if Delivery B reports either:
-   - below-minimum terminal-only results with evidence that sparse reward is the
-     likely blocker
-   - or a narrow confirmed blocker that needs one bounded follow-up
+3. Delivery C only if Delivery B does not already produce a clean closeout-ready
+   comparison/report surface
 
 Do not mix in one thread:
 
-- Package A contract/adapter/dependency decisions with Package B training runs
-- Package B terminal-only training work with Package C shaping or corrective
-  work
-- any Phase 5 package with Mission 3/4 content extension
-- any Phase 5 package with stronger search/planning baseline design
-- any Phase 5 package with generic experiment-platform architecture
+- Package A repo hygiene with Package B stronger-baseline implementation
+- Package B search/baseline work with Package C closeout-support reporting
+- any Phase 6 package with Mission 3/4 content extension
+- any Phase 6 package with broad domain refactors such as `legal_actions.py`
+  decomposition unless a concrete blocker is proven first
+- any Phase 6 package with generic experiment/search platform buildout
 
-Straight to implementation is appropriate when the package scope is:
+## Archived Phase 5 control record
 
-- implementing Package B on top of an accepted Package A contract
-- adding a thin train/eval operator surface that does not redefine env or
-  reward contracts
-
-Analysis-before-edit is required when a thread proposes to change:
-
-- the accepted observation boundary
-- the fixed staged action-catalog semantics
-- legality ownership or invalid-action policy
-- reward semantics beyond the accepted terminal-only default
-- dependency strategy for the first learner
-- the preserved relationship between learned evaluation and the accepted Phase 3
-  benchmark reference
+- Accepted implementation commits:
+  - `035d8f1 phase5: add learning adapter and evaluation foundation`
+  - `c6d2142 phase5: add bounded learner train and eval flow`
+  - `9d8beb9 docs: close phase5 learning experiments`
+- Accepted verification at closeout:
+  - `.venv/bin/pytest -q`
+  - `.venv/bin/ruff check src tests`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+- Accepted aggregate result:
+  - `101 -> 144/200`
+  - `202 -> 133/200`
+  - `303 -> 121/200`
+  - `best 144/200`
+  - `median 133/200`
+  - Package C was not opened
+- Detailed Phase 5 planning and acceptance history lives in:
+  - `docs/internal/thread_reports/2026-03-10_phase5-master-thread.md`
+  - `docs/internal/thread_reports/2026-03-10_phase5-delivery-a-dispatch.md`
+  - `docs/internal/thread_reports/2026-03-10_phase5-package-a-acceptance-review.md`
+  - `docs/internal/thread_reports/2026-03-10_phase5-package-b-acceptance-review.md`
+  - `docs/internal/thread_reports/2026-03-10_phase5-closeout.md`
 
 ## Archived Phase 4 control record
 

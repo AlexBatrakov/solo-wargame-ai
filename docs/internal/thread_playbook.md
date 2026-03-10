@@ -31,6 +31,11 @@ After Phase 5 closeout:
 
 - use `docs/internal/execution_plan.md` as the first dispatch surface for the
   next active packet
+- open Phase 6 as:
+  - Delivery A: bounded repo hygiene / naming cleanup
+  - Delivery B: stronger Mission 1 baseline/search work
+  - Delivery C only if Delivery B does not already leave a closeout-ready
+    comparison surface
 - treat Phase 4 Delivery A / B / C work as archived unless repeated use
   exposes a narrow corrective bug
 - keep the preserved Phase 3 baseline CLI and accepted 200-seed snapshot
@@ -39,8 +44,10 @@ After Phase 5 closeout:
   numbers discoverable during post-first-RL planning
 - treat Package C as closed unless new evidence creates a real bounded reason to
   reopen it
-- do not open Mission 3/4 extension, stronger search/planning baselines, or a
-  generic RL-platform buildout casually; start from the accepted Phase 5
+- do not mix repo hygiene with stronger-baseline implementation in one delivery
+  thread
+- do not open Mission 3/4 extension, env-boundary redesign, or a generic
+  search / RL-platform buildout casually; start from the accepted Phase 5
   decision that stronger baselines/search is the preferred next macro-step
 
 ## Core operating model
