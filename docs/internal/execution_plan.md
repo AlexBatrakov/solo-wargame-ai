@@ -48,8 +48,7 @@ recovering chat history:
   - `phase2-complete`
   - `phase3-complete`
   - `phase4-complete`
-  - `phase5-complete` should be created from the accepted Phase 5 closeout
-    commit
+  - `phase5-complete`
 - Repository state checked on March 10, 2026 before opening this Phase 5
   master-thread:
   - `git status --short` was empty

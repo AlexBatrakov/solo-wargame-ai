@@ -15,11 +15,10 @@ Phase-specific planning belongs in `docs/internal/execution_plan.md`.
 - Phase 4 is complete and accepted.
 - Phase 5 is complete and accepted.
 - `phase1-complete`, `phase2-complete`, `phase3-complete`, and
-  `phase4-complete` are the current local milestone tags.
-- `phase5-complete` should be created from the accepted Phase 5 closeout
-  commit.
-- The next active phase packet should be Phase 6 post-first-RL planning, with
-  stronger baselines/search as the preferred next macro-step.
+  `phase4-complete`, `phase5-complete` are the current local milestone tags.
+- The next active phase packet should be Phase 6 post-first-RL strengthening
+  planning, with stronger baselines/search as the preferred next macro-step and
+  bounded repository cleanup as an early supporting track.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 

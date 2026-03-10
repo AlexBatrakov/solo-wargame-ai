@@ -442,31 +442,56 @@ extension.
 
 ---
 
-## Phase 6 — Post-first-RL expansion
+## Phase 6 — Post-first-RL strengthening
 
-Goal: extend the project beyond the first Mission 1 learning loop using
-evidence from Phases 3-5 rather than guesses made before the first RL pass
-existed.
+Goal: use the accepted Mission 1 engine, wrapper, baselines, and first learner
+result to answer the next high-value questions before widening content:
+1. how much headroom still exists on Mission 1 for stronger non-learning
+   baselines / search;
+2. which repository-structure and naming issues should be cleaned up now so the
+   next research/content cycle is easier to work on.
 
 Status note: after accepted Phase 5 closeout, stronger baselines/search is the
-preferred first track inside Phase 6 unless new evidence changes that choice.
+preferred primary track inside Phase 6. A bounded repository-hygiene pass is
+also justified early because some `src/` and `tests/` naming now reflects phase
+history more than durable responsibility.
 
-### 6.1 Content-extension track
+### 6.1 Repository hygiene and naming cleanup
 
-- [ ] Add the next mission / content slice when broader tactical variety is
-      needed
-- [ ] Add advanced rule support only as required by the chosen mission slice
-- [ ] Generalize known Mission-1-specific seams such as multiple start hexes
-      and objective dispatch when new content actually requires them
+- [ ] Rename durable `src/` modules by responsibility rather than phase history
+      where practical
+- [ ] Keep phase-based naming only where it is genuinely useful, such as thin
+      operator commands, milestone docs, or archived artifacts
+- [ ] Reorganize `tests/` into clearer subsystem-oriented groups if that
+      improves navigation and future maintenance
+- [ ] Reduce mixed or confusing naming in `agents/`, `eval/`, and `cli/`
+      without changing accepted behavior
+- [ ] Update repository-layout docs if structural cleanup changes the intended
+      long-lived package organization
 
-### 6.2 Baseline and evaluation track
+### 6.2 Stronger baselines and search track
 
-- [ ] Add stronger heuristic, search-based, or planning baselines
-- [ ] Expand benchmarking beyond Mission 1 when additional content exists
-- [ ] Improve experiment reporting, replay-assisted debugging, and comparison
-      tooling
+- [ ] Add at least one stronger non-learning baseline, search baseline, or
+      planning-style baseline on Mission 1
+- [ ] Compare stronger baselines against the preserved `random`, `heuristic`,
+      and accepted Phase 5 learned-policy references
+- [ ] Determine how much Mission 1 headroom remains above the current best
+      learned result
+- [ ] Record whether stronger baselines/search change the recommendation about
+      Mission 3/4 timing
 
-### 6.3 Infrastructure and maintainability track
+### 6.3 Comparative evaluation and decision gate
+
+- [ ] Improve comparison reporting only as needed to answer the stronger-
+      baseline question cleanly
+- [ ] Record whether Mission 1 now looks strategically saturated or still
+      informative
+- [ ] Decide whether the next major investment after Phase 6 should be:
+      stronger baselines/search iteration,
+      Mission 3/4 content extension,
+      or targeted environment/action iteration
+
+### 6.4 Deferred maintainability and scaling work
 
 - [ ] Revisit `legal_actions.py` structure before major rule / content growth
 - [ ] Revisit replay draw-prediction coupling before adding more RNG-heavy
@@ -475,12 +500,56 @@ preferred first track inside Phase 6 unless new evidence changes that choice.
 - [ ] Consider tooling upgrades such as `mypy`, Python 3.12 CI, broader Ruff,
       or coverage if they clearly pay for themselves
 
-### 6.4 Exit criteria for Phase 6
+### 6.5 Exit criteria for Phase 6
 
-- [ ] at least one post-Mission-1 extension track has produced accepted new
-      capability
-- [ ] the main scaling bottlenecks for broader content or stronger agents are
-      understood and documented
+- [ ] at least one stronger post-Phase-5 baseline/search result exists
+- [ ] the repository structure is cleaner and easier to extend than it was at
+      the start of the phase
+- [ ] the project has a documented recommendation for the next macro-step after
+      the Mission 1 strengthening pass
+
+Closeout note template: Phase 6 should end by saying whether Mission 1 still
+has meaningful headroom for stronger baselines/search, whether repository
+cleanup reduced future extension friction, and whether the next best investment
+is Mission 3/4 content, more search/baselines, or a targeted env/action
+iteration.
+
+---
+
+## Optional Future Tracks After Phase 6
+
+The project is now in a more research-like regime.
+Instead of freezing Phase 7 / Phase 8 up front, keep the following ranked
+future tracks as an evidence-driven backlog to revisit after Phase 6.
+
+### Higher-likelihood / higher-value tracks
+
+1. Bounded Mission 3/4 content extension with only the new rule support needed
+   for that slice
+2. Stronger search/planning baselines on top of the accepted Mission 1 or
+   next-content slice
+3. Better evaluation, reporting, and replay-assisted debugging for comparing
+   stronger agents across fixed seed sets
+
+### Medium-likelihood tracks
+
+1. Observation/action redesign only if later evidence shows the accepted
+   wrapper is constraining learning or search unfairly
+2. Explicit reward-variant experiments only if later learning work justifies
+   them
+3. Synthetic fixtures and bounded maintainability refactors ahead of broader
+   multi-mission content growth
+4. Broader benchmarking across more than one mission once additional content is
+   accepted
+
+### Lower-priority / opportunistic tracks
+
+1. Wider tooling upgrades such as `mypy`, Python 3.12 CI, broader Ruff, or
+   coverage-driven cleanup
+2. Generic config / artifact / experiment-platform buildout if repeated manual
+   work starts to dominate progress
+3. Additional framework compatibility layers, richer operator UX, or optional
+   visualization/debug views
 
 ---
 

@@ -32,8 +32,10 @@ Current development focuses on:
 - keeping the domain model aligned with the written staged turn structure rather
   than a simplified macro-action abstraction;
 - preserving deterministic tests and replayable traces as the engine grows;
-- using the accepted Phase 3 baseline stack as the foundation for later RL
-  wrappers and learning experiments.
+- using the accepted baseline, env, and first-learning stack as the foundation
+  for stronger baselines/search and later content-extension decisions;
+- keeping repository structure and naming understandable as the implementation
+  grows beyond the first RL pass.
 
 ## Current engine slice
 
@@ -154,8 +156,8 @@ Current repository state:
 - the repository verifies locally with `.venv/bin/pytest -q` and
   `.venv/bin/ruff check src tests`, and the same narrow gate is defined in
   GitHub Actions;
-- later milestones such as stronger baselines/search, broader mission coverage,
-  and post-first-RL expansion remain open.
+- later milestones such as stronger baselines/search, repository hygiene /
+  naming cleanup, and broader mission coverage remain open.
 
 ## Not implemented yet
 
@@ -163,7 +165,8 @@ At this stage, the repository does **not** yet include:
 - a `gymnasium` dependency or generic RL experiment platform;
 - broader mission and advanced-rule coverage;
 - stronger search-based baselines;
-- post-first-RL scaling work beyond the accepted initial learner path.
+- the Phase 6 repository cleanup and post-first-RL strengthening work beyond
+  the accepted initial learner path.
 
 ## Next macro-step
 
@@ -174,7 +177,8 @@ Phase 5 demonstrated terminal-only learnability with `144/200` best wins and
 accepted heuristic anchor of `157/200`.
 The next macro-step is stronger baselines/search planning on top of the
 preserved Phase 3 comparison reference and the accepted Phase 5 operator
-surface. Mission 3/4 extension remains later follow-on work.
+surface, together with a bounded repository hygiene / naming cleanup pass.
+Mission 3/4 extension remains later follow-on work.
 
 ## Manual operator commands
 
