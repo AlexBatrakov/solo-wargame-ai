@@ -156,6 +156,8 @@ env.bak/
 venv.bak/
 !src/solo_wargame_ai/env/
 !src/solo_wargame_ai/env/**
+src/solo_wargame_ai/env/__pycache__/
+src/solo_wargame_ai/env/*.py[codz]
 
 # Spyder project settings
 .spyderproject
