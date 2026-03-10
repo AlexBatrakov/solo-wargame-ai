@@ -14,8 +14,7 @@ Phase-specific planning belongs in `docs/internal/execution_plan.md`.
 - Phase 3 is complete and accepted.
 - Phase 4 is complete and accepted.
 - `phase1-complete`, `phase2-complete`, `phase3-complete`, and
-  `phase4-complete` are the intended local milestone tags once the Phase 4
-  closeout commit is tagged.
+  `phase4-complete` are the current local milestone tags.
 - The next active phase packet should be Phase 5 learning-experiments planning
   / dispatch.
 - Preserved external-audit follow-ups live in
@@ -29,14 +28,16 @@ is operating from stale context.
 After Phase 4 closeout:
 
 - use `docs/internal/execution_plan.md` as the first dispatch surface for the
-  accepted Phase 4 record and the Phase 5 handoff note
+  active Phase 5 packet
 - treat Phase 4 Delivery A / B / C work as archived unless repeated use
   exposes a narrow corrective bug
-- keep the preserved Phase 3 baseline CLI discoverable as the accepted pre-RL
-  comparison reference during Phase 5 planning
-- do not open Mission 3/4 extension or generic RL-platform work until a Phase 5
-  planning thread has decided whether the accepted Mission 1 wrapper is
-  learnable enough or needs iteration first
+- keep the preserved Phase 3 baseline CLI and accepted 200-seed snapshot
+  discoverable as the pre-RL comparison reference during Phase 5 work
+- keep Phase 5 to Delivery A plus Delivery B, with optional Delivery C only if
+  the first terminal-only pass leaves the learnability decision unresolved
+- do not open Mission 3/4 extension, stronger search/planning baselines, or a
+  generic RL-platform buildout until the Phase 5 packet says they are the next
+  justified macro-step
 
 ## Core operating model
 
@@ -71,6 +72,7 @@ Then add only the docs relevant to the package:
 - `docs/game_spec.md` if the work touches domain behavior
 - `docs/state_model.md` if the work touches runtime state
 - `docs/action_model.md` if the work touches actions or legality
+- `docs/reward_design.md` if reward or learning experiments are in scope
 - `docs/testing_strategy.md` if tests are in scope
 - `docs/development_workflow.md` if workflow/public process may change
 - `docs/internal/repo_layout.md` if package/file boundaries may change
