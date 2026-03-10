@@ -380,11 +380,17 @@ Update this block only from a planning / audit / master-thread after checking
 repo state against the package criteria.
 
 - Package A: completed
-- Package B: pending
+- Package B: completed
 - Package C: pending / optional
-- Phase 5 overall: pending
+- Phase 5 overall: in_progress
 - Planning audit date: March 10, 2026
 - Package A acceptance verification date: March 10, 2026
+- Package B acceptance verification date: March 10, 2026
+- Package C recommendation after Package B: not recommended; keep closed unless
+  the external audit or later review identifies one bounded in-scope blocker
+- External audit gate: pending
+- Closeout/tag gate: blocked pending the external audit and any accepted narrow
+  follow-ups
 - Blocking findings before Delivery A: none
 
 ## Package A - Learning adapter and experiment contract foundation
@@ -495,7 +501,9 @@ Analysis-before-edit:
 
 Status:
 
-- pending
+- completed
+- accepted by the Phase 5 master-thread; implementation commit `c6d2142`
+  is the active Package B slice
 
 Goal:
 
@@ -550,6 +558,44 @@ Completion criteria:
 - final reporting includes the accepted comparison metrics and an explicit
   success/failure verdict against the minimum bar
 - the package returns a clear recommendation about whether Package C is needed
+
+Acceptance record:
+
+- accepted implementation commit:
+  - `c6d2142 phase5: add bounded learner train and eval flow`
+- accepted implementation surface:
+  - bounded Phase 5 masked actor-critic training loop with checkpoint selection
+  - narrow train / learned-policy-eval / aggregate-summary CLIs
+  - checkpoint metadata persistence and loader backfill for pre-fix artifacts
+  - machine-readable eval and aggregate summary payloads
+  - focused tests for training, reporting, CLI behavior, and eval inference mode
+- acceptance verification:
+  - `.venv/bin/pytest -q` -> `197 passed in 3.49s`
+  - `.venv/bin/ruff check src tests` -> `All checks passed!`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+    preserved the accepted Phase 3 smoke reference:
+    `random` `2/16` wins vs `heuristic` `11/16` wins
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+    preserved the accepted Phase 4 smoke output:
+    `action_catalog_size=32`, `decision_steps=35`,
+    `terminal_outcome=defeat`, `final_reward=-1.0`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+    confirmed:
+    `best_benchmark_wins: 144`, `median_benchmark_wins: 133`,
+    `minimum_success_verdict: met`,
+    `package_c_recommendation: Package C not recommended; proceed toward end-of-phase evaluation`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_learned_policy_eval --checkpoint outputs/phase5/train_seed_101_ep_2000/checkpoints/selected_checkpoint.pt --mode smoke --json-output /tmp/phase5_smoke_eval_check.json`
+    confirmed:
+    checkpoint metadata surfaced in text output, JSON payload was written, and
+    the reused smoke result remained `14/16`
+- accepted result notes:
+  - benchmark wins by training seed:
+    `101 -> 144/200`, `202 -> 133/200`, `303 -> 121/200`
+  - the median benchmark result `133/200` beats the preserved random anchor
+    `11/200`
+  - the best terminal-only result `144/200` demonstrates learnability on the
+    accepted wrapper without opening Package C, but it remains below the
+    preserved heuristic anchor `157/200`
 
 Commit shape:
 
@@ -624,6 +670,40 @@ Commit shape:
 Analysis-before-edit:
 
 - required
+
+## External audit gate before Phase 5 closeout
+
+Before `phase5-complete` is tagged:
+
+1. run one independent external audit against the accepted Phase 5 state
+2. scope that audit to:
+   - the accepted Package A and Package B implementation surfaces
+   - the Phase 5 learnability claim and decision gate
+   - bounded improvement opportunities that still belong inside Phase 5
+3. if the audit finds a narrow accepted follow-up, complete that bounded work
+   before closeout
+4. if the audit does not find a new in-scope blocker, move straight to closeout
+   docs and milestone tagging
+
+Audit-assimilation rules:
+
+- do not reopen Package C casually just because an external reviewer can imagine
+  alternate reward designs
+- do not widen the phase into Mission 3/4 or stronger baseline work during the
+  audit-assimilation step
+- write any accepted new audit findings into
+  `docs/internal/independent_audit_followups.md` before final closeout if they
+  should remain discoverable beyond chat history
+
+## Phase 5 closeout sequence
+
+Preferred order from the current repo state:
+
+1. Package B accepted and recorded in this phase packet
+2. one external audit run and reviewed
+3. any accepted narrow follow-up landed and re-verified
+4. one Phase 5 closeout docs commit
+5. milestone tag `phase5-complete`
 
 ## Recommended Delivery Thread sequence for Phase 5
 

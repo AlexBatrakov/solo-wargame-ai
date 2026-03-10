@@ -15,8 +15,8 @@ Phase-specific planning belongs in `docs/internal/execution_plan.md`.
 - Phase 4 is complete and accepted.
 - `phase1-complete`, `phase2-complete`, `phase3-complete`, and
   `phase4-complete` are the current local milestone tags.
-- The next active phase packet should be Phase 5 learning-experiments planning
-  / dispatch.
+- The next active phase packet should be Phase 5 learning-experiments
+  acceptance / external-audit / closeout.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 
@@ -35,6 +35,8 @@ After Phase 4 closeout:
   discoverable as the pre-RL comparison reference during Phase 5 work
 - keep Phase 5 to Delivery A plus Delivery B, with optional Delivery C only if
   the first terminal-only pass leaves the learnability decision unresolved
+- before tagging `phase5-complete`, run the external audit step if the active
+  Phase 5 packet still requires it
 - do not open Mission 3/4 extension, stronger search/planning baselines, or a
   generic RL-platform buildout until the Phase 5 packet says they are the next
   justified macro-step
