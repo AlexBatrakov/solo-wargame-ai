@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from contextlib import nullcontext
 from dataclasses import dataclass
 
 from solo_wargame_ai.agents.learned_policy import (
@@ -20,6 +21,11 @@ from solo_wargame_ai.eval.episode_runner import EpisodeResult
 from solo_wargame_ai.eval.metrics import EpisodeMetrics, aggregate_episode_results
 
 from .phase5_seed_policy import PHASE5_BENCHMARK_EVAL_SEEDS, PHASE5_SMOKE_EVAL_SEEDS
+
+try:
+    import torch
+except ModuleNotFoundError:  # pragma: no cover - exercised only without torch installed.
+    torch = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,24 +64,25 @@ def run_learned_episode(
     terminated = False
     truncated = False
 
-    while not (terminated or truncated):
-        legal_action_ids = legal_action_ids_from_info(info)
-        if not legal_action_ids:
-            raise RuntimeError(
-                "Learned-policy evaluation reached a nonterminal state without legal actions",
-            )
+    with _torch_eval_context():
+        while not (terminated or truncated):
+            legal_action_ids = legal_action_ids_from_info(info)
+            if not legal_action_ids:
+                raise RuntimeError(
+                    "Learned-policy evaluation reached a nonterminal state without legal actions",
+                )
 
-        action_id = policy.select_action(
-            observation,
-            info,
-            evaluation=evaluation,
-        )
-        if action_id not in legal_action_ids:
-            raise ValueError(
-                f"Policy {policy_name(policy)!r} returned an illegal action id: {action_id}",
+            action_id = policy.select_action(
+                observation,
+                info,
+                evaluation=evaluation,
             )
+            if action_id not in legal_action_ids:
+                raise ValueError(
+                    f"Policy {policy_name(policy)!r} returned an illegal action id: {action_id}",
+                )
 
-        observation, _, terminated, truncated, info = env.step(action_id)
+            observation, _, terminated, truncated, info = env.step(action_id)
 
     if truncated:
         raise RuntimeError(
@@ -190,3 +197,9 @@ __all__ = [
     "run_learned_episode",
     "run_learned_episodes",
 ]
+
+
+def _torch_eval_context():
+    if torch is None:
+        return nullcontext()
+    return torch.inference_mode()

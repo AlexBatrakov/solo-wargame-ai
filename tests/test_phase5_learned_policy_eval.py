@@ -7,6 +7,8 @@ from solo_wargame_ai.eval.learned_policy_eval import evaluate_learned_policy
 from solo_wargame_ai.eval.metrics import aggregate_episode_results
 from solo_wargame_ai.eval.phase5_seed_policy import (
     PHASE5_BENCHMARK_EVAL_SEEDS,
+    PHASE5_FEATURE_ADAPTER_SEED,
+    PHASE5_MODEL_SELECTION_SEEDS,
     PHASE5_SMOKE_EVAL_SEEDS,
     PHASE5_TRAINING_SEEDS,
     training_rollout_seed,
@@ -71,9 +73,12 @@ def test_training_rollout_seed_policy_stays_separate_from_eval_seed_sets() -> No
 
     assert rollout_seeds.isdisjoint(PHASE5_SMOKE_EVAL_SEEDS)
     assert rollout_seeds.isdisjoint(PHASE5_BENCHMARK_EVAL_SEEDS)
+    assert rollout_seeds.isdisjoint(PHASE5_MODEL_SELECTION_SEEDS)
 
 
 def test_phase5_seed_policy_constants_are_frozen_to_the_accepted_ranges() -> None:
     assert PHASE5_TRAINING_SEEDS == (101, 202, 303)
+    assert PHASE5_FEATURE_ADAPTER_SEED == 4_000
+    assert PHASE5_MODEL_SELECTION_SEEDS == tuple(range(2_000, 2_016))
     assert PHASE5_SMOKE_EVAL_SEEDS == tuple(range(16))
     assert PHASE5_BENCHMARK_EVAL_SEEDS == tuple(range(200))

@@ -68,3 +68,42 @@ def test_torch_network_forward_matches_the_feature_and_action_dimensions() -> No
     assert isinstance(values, torch.Tensor)
     assert tuple(policy_logits.shape) == (1, env.action_space_size)
     assert tuple(values.shape) == (1,)
+
+
+def test_learned_policy_evaluation_runs_under_torch_inference_mode() -> None:
+    from solo_wargame_ai.eval.learned_policy_eval import evaluate_learned_policy
+    from solo_wargame_ai.io.mission_loader import load_mission
+
+    mission = load_mission(MISSION_PATH)
+    observed_flags: list[tuple[bool, bool]] = []
+
+    class TorchAwareFirstLegalPolicy:
+        name = "torch_aware_first_legal"
+
+        def reset(self) -> None:
+            return None
+
+        def select_action(
+            self,
+            observation: object,
+            info: dict[str, object],
+            *,
+            evaluation: bool,
+        ) -> int:
+            del observation, evaluation
+            observed_flags.append(
+                (torch.is_grad_enabled(), torch.is_inference_mode_enabled()),
+            )
+            return int(info["legal_action_ids"][0])
+
+    evaluation = evaluate_learned_policy(
+        mission,
+        policy_factory=TorchAwareFirstLegalPolicy,
+        seeds=(0,),
+        evaluation=True,
+    )
+
+    assert evaluation.metrics.episode_count == 1
+    assert observed_flags
+    assert all(grad_enabled is False for grad_enabled, _ in observed_flags)
+    assert all(inference_enabled is True for _, inference_enabled in observed_flags)
