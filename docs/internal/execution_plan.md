@@ -379,18 +379,20 @@ Allowed status values:
 Update this block only from a planning / audit / master-thread after checking
 repo state against the package criteria.
 
-- Package A: pending
+- Package A: completed
 - Package B: pending
 - Package C: pending / optional
 - Phase 5 overall: pending
 - Planning audit date: March 10, 2026
+- Package A acceptance verification date: March 10, 2026
 - Blocking findings before Delivery A: none
 
 ## Package A - Learning adapter and experiment contract foundation
 
 Status:
 
-- pending
+- completed
+- accepted by the Phase 5 master-thread; implementation diff is commit-ready
 
 Goal:
 
@@ -445,6 +447,39 @@ Completion criteria:
   adapter, or metric-comparability questions
 - the feature and mask path is deterministic and testable
 - the accepted Phase 3 comparison anchor remains intact
+
+Acceptance record:
+
+- accepted implementation surface:
+  - `pyproject.toml`
+  - `src/solo_wargame_ai/agents/feature_adapter.py`
+  - `src/solo_wargame_ai/agents/learned_policy.py`
+  - `src/solo_wargame_ai/agents/masked_action_selection.py`
+  - `src/solo_wargame_ai/agents/masked_actor_critic.py`
+  - `src/solo_wargame_ai/eval/learned_policy_eval.py`
+  - `src/solo_wargame_ai/eval/phase5_seed_policy.py`
+  - focused Package A tests under `tests/`
+- acceptance verification:
+  - `.venv/bin/pytest -q tests/test_phase5_feature_adapter.py tests/test_phase5_learned_policy_eval.py tests/test_phase5_masked_actor_critic.py tests/test_phase5_torch_actor_critic.py`
+    -> `10 passed in 1.12s`
+  - `.venv/bin/pytest -q` -> `185 passed in 2.38s`
+  - `.venv/bin/ruff check src tests` -> `All checks passed!`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+    preserved the accepted Phase 3 reference:
+    `random` `2/16` wins vs `heuristic` `11/16` wins
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+    preserved the accepted Phase 4 smoke output:
+    `action_catalog_size=32`, `decision_steps=35`,
+    `terminal_outcome=defeat`, `final_reward=-1.0`
+- accepted boundary notes:
+  - Delivery A froze the first learner boundary around a masked episodic
+    actor-critic seam, a deterministic observation-only feature adapter, and a
+    learned-policy evaluation path that reuses the accepted Phase 3 metric
+    schema
+  - training seeds remain explicitly separated from accepted evaluation seeds
+  - `torch` is the intended learner dependency; `numpy` is also allowed here as
+    an operator-approved bootstrap companion dependency for local torch install
+    stability and should not be treated as a broader framework decision
 
 Commit shape:
 
