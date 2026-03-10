@@ -6,11 +6,12 @@ This file is the current master control surface for repository-level planning,
 dispatch, and closeout.
 
 As of March 10, 2026, Phases 1, 2, and 3 are complete and archived.
+Phase 4 is now also complete by repository evidence.
 The active planning problem is no longer "how to finish Mission 1", "how to
-harden the accepted engine", or "how to open Phase 3 baselines", but "how to
-open Phase 4 RL-environment planning without contaminating the domain layer,
-without discarding the accepted Phase 3 benchmark surface, and without
-overcommitting to a later content track too early."
+harden the accepted engine", "how to open Phase 3 baselines", or "how to open
+Phase 4 RL-environment planning", but "how to use the accepted Mission 1 env
+wrapper to answer whether the current observation/action design is learnable
+before widening scope."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -25,9 +26,10 @@ recovering chat history:
 
 - preserve the accepted Phase 3 packet, closeout record, and benchmark
   reference,
+- preserve the accepted Phase 4 packet and closeout record,
 - avoid reopening completed Delivery A / B / C work accidentally,
-- recover the accepted baseline contract and benchmark reference quickly,
-- point the next planning thread toward Phase 4 and later-phase decision gates.
+- recover the accepted baseline, wrapper, and benchmark references quickly,
+- point the next planning thread toward Phase 5 and later-phase decision gates.
 
 ## Current checkpoint
 
@@ -35,10 +37,12 @@ recovering chat history:
   - Phase 1 complete
   - Phase 2 complete
   - Phase 3 complete
+  - Phase 4 complete
 - Local tags:
   - `phase1-complete`
   - `phase2-complete`
 - `phase3-complete`
+- `phase4-complete` after the closeout commit is tagged
 - Repository state checked on March 10, 2026 before opening this Phase 4
   master-thread:
   - `git status --short` was empty
@@ -281,19 +285,24 @@ Allowed status values:
 Update this block only from a planning / audit / master-thread after checking
 repo state against the package criteria.
 
-- Package A - Observation/action/legality contract foundation: pending
-- Package B - Wrapper step/reset semantics and reward contract: pending
-- Package C - Operator surface and reference-preservation polish: pending
-  (optional)
-- Phase 4 overall: pending
+- Package A - Observation/action/legality contract foundation: completed
+- Package B - Wrapper step/reset semantics and reward contract: completed
+- Package C - Operator surface and reference-preservation polish: completed
+- Phase 4 overall: completed
 - Planning audit date: March 10, 2026
-- Blocking findings before Delivery A: none
+- Package A acceptance verification date: March 10, 2026
+- Package B acceptance verification date: March 10, 2026
+- Package C acceptance verification date: March 10, 2026
+- Phase 4 closeout verification date: March 10, 2026
+- Blocking findings before Phase 5 handoff: none
 
 ## Package A - Observation/action/legality contract foundation
 
 Status:
 
-- pending
+- completed
+- accepted in `ad57a63 phase4: add mission1 env contract foundation`
+- narrow follow-up accepted in `a4eadc4 fix: re-ignore env cache artifacts`
 
 Goal:
 
@@ -353,6 +362,24 @@ Completion criteria:
 - Package B can build `reset` / `step` on top of this contract without reopening
   boundary decisions
 
+Acceptance record:
+
+- accepted implementation commits:
+  - `ad57a63 phase4: add mission1 env contract foundation`
+  - `a4eadc4 fix: re-ignore env cache artifacts`
+- acceptance verification:
+  - focused Package A env tests passed
+  - `.venv/bin/pytest -q` -> `166 passed in 1.65s`
+  - `.venv/bin/ruff check src tests` -> `All checks passed!`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+    succeeded with the preserved Phase 3 baseline surface
+- accepted boundary notes:
+  - observation and legality now share `normalize_env_state(...)` as the env
+    boundary
+  - the Mission 1 action catalog is fixed to 32 ids and remains Mission-1-only
+  - the `.gitignore` fix keeps `src/solo_wargame_ai/env/` trackable while
+    re-ignoring local cache artifacts
+
 Commit shape:
 
 - one commit preferred
@@ -367,7 +394,8 @@ Analysis-before-edit:
 
 Status:
 
-- pending
+- completed
+- accepted in `5bd81a3 phase4: add mission1 env wrapper semantics`
 
 Goal:
 
@@ -421,6 +449,26 @@ Completion criteria:
 - Package A contracts remain intact
 - the accepted Phase 3 baseline surface still reruns unchanged
 
+Acceptance record:
+
+- accepted implementation commit:
+  - `5bd81a3 phase4: add mission1 env wrapper semantics`
+- acceptance verification:
+  - focused Package B env tests passed
+  - `.venv/bin/pytest -q` -> `174 passed in 1.67s`
+  - `.venv/bin/ruff check src tests` -> `All checks passed!`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+    succeeded with the preserved Phase 3 baseline surface
+- accepted boundary notes:
+  - `Mission1Env` is a dependency-free wrapper over the accepted Package A seam
+  - default reward remains terminal-only: victory `+1`, defeat `-1`,
+    nonterminal `0`
+  - mission victory and turn-limit defeat map to
+    `terminated=True, truncated=False`
+  - truncation is reserved for external wrapper limits only
+  - `info` stays inside the env boundary and does not expose raw simulator
+    objects
+
 Commit shape:
 
 - one coherent commit preferred
@@ -437,7 +485,8 @@ Analysis-before-edit:
 
 Status:
 
-- pending (optional)
+- completed
+- accepted in `79f188f phase4: sync env operator surface and public docs`
 
 Goal:
 
@@ -482,6 +531,29 @@ Completion criteria:
 - the preserved Phase 3 comparison reference remains explicit in docs
 - Phase 5 can start from accepted wrapper commands without extra planning churn
 
+Acceptance record:
+
+- accepted implementation commit:
+  - `79f188f phase4: sync env operator surface and public docs`
+- acceptance verification:
+  - `.venv/bin/ruff check src tests` -> `All checks passed!`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+    preserved the accepted Phase 3 reference:
+    `random` `2/16` wins vs `heuristic` `11/16` wins
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+    succeeded with:
+    `action_catalog_size=32`, `decision_steps=35`,
+    `terminal_outcome=defeat`, `final_reward=-1.0`
+  - `.venv/bin/pytest -q tests/test_phase4_env_smoke_cli.py`
+    -> `1 passed in 0.04s`
+  - `.venv/bin/pytest -q` -> `175 passed in 1.71s`
+- accepted boundary notes:
+  - public docs now reflect the accepted Mission 1 env wrapper reality
+  - `phase4_env_smoke.py` remains a thin operator command, not an evaluation or
+    training harness
+  - `docs/internal/execution_plan.md` remained Phase Master Thread territory and
+    stayed out of the Delivery C implementation commit
+
 Commit shape:
 
 - one small commit only if this optional package is actually needed
@@ -494,12 +566,15 @@ Analysis-before-edit:
 
 ## Recommended Delivery Thread sequence for Phase 4
 
-Default queue:
+Phase 4 delivery work is now closed:
 
-1. Delivery A only: observation/action/legality contract foundation
-2. Delivery B only: wrapper step/reset semantics and reward contract
-3. Delivery C only if Package B leaves operator-surface or closeout ergonomics
-   awkward, or if Phase 5 handoff would otherwise depend on ad hoc commands/docs
+1. Delivery A accepted
+2. Delivery B accepted
+3. Delivery C accepted
+
+Phase 5 planning can start from the accepted wrapper and operator surfaces
+without reopening Phase 4 delivery packages unless learning work exposes a
+narrow corrective bug.
 
 Do not mix in one thread:
 
@@ -647,6 +722,31 @@ Rationale:
 - Mission 3/4 content extension remains a later content track unless Phase 4
   planning proves the current Mission 1 slice structurally insufficient
 
+## Decision after Phase 4 closeout
+
+Recommended next macro-step:
+
+- Phase 5 learning experiments planning
+
+Rationale:
+
+- the repository now has an accepted Mission 1 env boundary, legality surface,
+  reward/termination contract, and thin operator smoke command
+- the preserved Phase 3 baseline CLI remains intact as the accepted pre-RL
+  comparison reference
+- the next project question is no longer wrapper shape, but whether the current
+  Mission 1 observation/action design is actually learnable
+- Mission 3/4 content extension remains a later content track unless Phase 5
+  evidence shows the accepted Mission 1 wrapper is too degenerate to answer the
+  learning question cleanly
+
+Closeout note:
+
+- the accepted 200-seed Phase 3 benchmark snapshot remains:
+  `random` `11/200` wins vs `heuristic` `157/200` wins
+- the benchmark was not rerun at Phase 4 closeout because accepted Phase 4 work
+  preserved the baseline comparison surface rather than modifying it directly
+
 ## Public docs after Phase 3 closeout
 
 During closeout, `README.md` and `ROADMAP.md` were synced to reflect that:
@@ -656,3 +756,14 @@ During closeout, `README.md` and `ROADMAP.md` were synced to reflect that:
 - the accepted manual Phase 3 rerun commands are now documented in `README.md`
 
 Further public polish can happen later in separate docs-only threads.
+
+## Public docs after Phase 4 closeout
+
+During closeout, public docs were synced to reflect that:
+
+- the first Mission 1 RL-friendly wrapper is accepted
+- the default reward remains terminal-only and `terminated` / `truncated`
+  semantics are explicit
+- the accepted manual Phase 4 env smoke command is now documented
+- the preserved Phase 3 baseline CLI remains the comparison reference
+- the next macro-step is Phase 5 learning experiments planning

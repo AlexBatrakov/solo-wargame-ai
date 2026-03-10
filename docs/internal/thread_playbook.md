@@ -12,28 +12,31 @@ Phase-specific planning belongs in `docs/internal/execution_plan.md`.
 - Phase 1 is complete and accepted.
 - Phase 2 is complete and accepted.
 - Phase 3 is complete and accepted.
-- `phase1-complete`, `phase2-complete`, and `phase3-complete` are the current
-  local milestone tags.
-- The active phase packet is Phase 4 RL-environment planning / dispatch.
+- Phase 4 is complete and accepted.
+- `phase1-complete`, `phase2-complete`, `phase3-complete`, and
+  `phase4-complete` are the intended local milestone tags once the Phase 4
+  closeout commit is tagged.
+- The next active phase packet should be Phase 5 learning-experiments planning
+  / dispatch.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 
 If a thread behaves as though Mission 1 still needs to be built from scratch, it
 is operating from stale context.
 
-## Current Phase 4 dispatch note
+## Current post-Phase-4 dispatch note
 
-While Phase 4 planning is active:
+After Phase 4 closeout:
 
-- use the active Phase 4 packet in `docs/internal/execution_plan.md` as the
-  first dispatch surface
-- treat Phase 3 delivery work as archived unless repeated use exposes a narrow
-  corrective bug
-- do not open Phase 5 training, Mission 3/4 extension, or generic RL-platform
-  work until the Phase 4 packet has accepted the wrapper boundary,
-  observation/action contract, reward boundary, and benchmark relationship
-- keep Phase 4 implementation inside Delivery A / Delivery B and optional
-  Delivery C rather than returning to stage-per-thread micro-slicing
+- use `docs/internal/execution_plan.md` as the first dispatch surface for the
+  accepted Phase 4 record and the Phase 5 handoff note
+- treat Phase 4 Delivery A / B / C work as archived unless repeated use
+  exposes a narrow corrective bug
+- keep the preserved Phase 3 baseline CLI discoverable as the accepted pre-RL
+  comparison reference during Phase 5 planning
+- do not open Mission 3/4 extension or generic RL-platform work until a Phase 5
+  planning thread has decided whether the accepted Mission 1 wrapper is
+  learnable enough or needs iteration first
 
 ## Core operating model
 
