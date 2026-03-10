@@ -46,8 +46,12 @@ The current implemented slice supports:
 - reveal, combat, morale, turn rollover, and terminal outcome handling;
 - deterministic seeded simulation and structured text replay;
 - a minimal Phase 3 agent contract over the resolver facade;
+- a dependency-free Phase 4 `Mission1Env` wrapper with structured
+  player-visible observation, fixed Mission 1 action ids, resolver-derived
+  legal-action ids / masks, deterministic `reset(seed=...)`, and terminal-only
+  default reward;
 - `RandomAgent`, `HeuristicAgent`, fixed-seed batch evaluation, and a manual
-  benchmark CLI.
+  benchmark CLI that remains the accepted pre-RL comparison reference.
 
 ## Non-goals for MVP
 
@@ -122,7 +126,7 @@ Mission data conventions are documented in `docs/mission_config.md`.
 2. Implement minimal domain model.
 3. Implement one playable mission with deterministic seeding.
 4. Add baseline agents.
-5. Add Gymnasium-compatible environment.
+5. Add a first RL-friendly environment wrapper.
 6. Experiment with RL and compare against baselines.
 
 ## Status
@@ -138,31 +142,40 @@ Current repository state:
 - Phase 3 baselines are complete: the repository now includes an explicit
   agent-facing contract, random and heuristic baselines, fixed-seed comparison
   metrics, and a manual baseline rerun command;
+- Phase 4 Mission 1 wrapper foundations are accepted: `src/solo_wargame_ai/env/`
+  now exposes the dependency-free `Mission1Env` surface together with the
+  accepted observation, action-id, legality, reward, and termination
+  contracts;
 - the repository verifies locally with `.venv/bin/pytest -q` and
   `.venv/bin/ruff check src tests`, and the same narrow gate is defined in
   GitHub Actions;
-- later milestones such as RL wrappers, broader mission coverage, and learning
-  experiments remain open.
+- later milestones such as learning experiments, broader mission coverage, and
+  stronger learned baselines remain open.
 
 ## Not implemented yet
 
 At this stage, the repository does **not** yet include:
-- an RL environment;
+- a `gymnasium` dependency or generic RL experiment platform;
 - broader mission and advanced-rule coverage;
 - learning / training experiments;
 - stronger search-based or learned baselines.
 
 ## Next macro-step
 
-Phase 3 baselines are formally complete.
-The next planned macro-step is Phase 4 RL-environment boundary-setting and
-wrapper design on top of the accepted Mission 1 engine and baseline surfaces.
-Mission 3/4 extension, learning experiments, and broader public polish remain
-later follow-on work.
+The first Mission 1 RL-friendly wrapper is now in place.
+The next macro-step is Phase 5 learning-experiment planning on top of the
+accepted env surface while keeping the Phase 3 baseline CLI as the preserved
+comparison reference.
+Mission 3/4 extension and broader learning/runtime expansion remain later
+follow-on work.
 
-## Manual baseline reruns
+## Manual operator commands
 
-Accepted local commands for Phase 3 benchmark reruns:
+Accepted local commands:
 
-- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
-- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`
+- Phase 4 env smoke:
+  `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- Phase 3 comparison reference:
+  `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- Phase 3 benchmark reference:
+  `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`

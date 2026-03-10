@@ -329,56 +329,63 @@ Goal: expose the accepted Mission 1 engine through a minimal RL-friendly
 wrapper without contaminating the domain layer or discarding the accepted
 Phase 3 baseline / benchmark surface.
 
-Status note: after Phase 3 closeout, this phase should stay Mission-1-only.
-Its first job is to solve interface and contract questions cleanly, not to
-widen rule coverage.
+Status note: the first Mission 1 RL-friendly wrapper is now implemented in the
+repository. Phase 4 closeout should focus on preserving the accepted operator
+surface and Phase 3 comparison path rather than reopening wrapper-boundary
+questions.
 
 ### 4.1 Wrapper contract and boundary decisions
 
-- [ ] Decide the first observation boundary and document whether it is
+- [x] Decide the first observation boundary and document whether it is
       player-visible, full-state, or another explicitly justified view
-- [ ] Ensure the observation shape is conditioned on the current staged
+- [x] Ensure the observation shape is conditioned on the current staged
       decision context
-- [ ] Decide the first RL-facing action exposure around the staged domain
+- [x] Decide the first RL-facing action exposure around the staged domain
       decisions
-- [ ] Decide how legal actions are surfaced to RL code
-- [ ] Freeze the first reward contract, keeping terminal mission outcome as the
+- [x] Decide how legal actions are surfaced to RL code
+- [x] Freeze the first reward contract, keeping terminal mission outcome as the
       anchor and any shaping explicit
-- [ ] Decide `terminated` vs `truncated` semantics for mission completion and
+- [x] Decide `terminated` vs `truncated` semantics for mission completion and
       turn-limit defeat
-- [ ] Preserve compatibility with the accepted Phase 3 benchmark/reference path
+- [x] Preserve compatibility with the accepted Phase 3 benchmark/reference path
 
 ### 4.2 Wrapper implementation
 
-- [ ] Implement observation encoding
-- [ ] Implement action encoding
-- [ ] Implement legal-action masking or equivalent constrained-action support
-- [ ] Implement a Gymnasium-compatible wrapper
-- [ ] Implement any required action adapter on top of the staged domain engine
+- [x] Implement observation encoding
+- [x] Implement action encoding
+- [x] Implement legal-action masking or equivalent constrained-action support
+- [x] Implement a dependency-free Gym-style wrapper
+- [x] Implement any required action adapter on top of the staged domain engine
       without redefining rules
-- [ ] Ensure the wrapper delegates actual rules to the domain engine
-- [ ] Verify deterministic seeded resets / episodes where appropriate
+- [x] Ensure the wrapper delegates actual rules to the domain engine
+- [x] Verify deterministic seeded resets / episodes where appropriate
 
 ### 4.3 RL usability checks
 
-- [ ] Verify that the environment can run complete Mission 1 episodes through
+- [x] Verify that the environment can run complete Mission 1 episodes through
       `reset` / `step`
-- [ ] Verify that invalid actions are masked or rejected correctly
-- [ ] Verify that reward signals are documented and testable
-- [ ] Verify that seeded rollouts are reproducible enough for debugging and
+- [x] Verify that invalid actions are masked or rejected correctly
+- [x] Verify that reward signals are documented and testable
+- [x] Verify that seeded rollouts are reproducible enough for debugging and
       comparison
-- [ ] Verify that the wrapper does not silently leak simulator-only truth unless
+- [x] Verify that the wrapper does not silently leak simulator-only truth unless
       that choice is explicitly documented
 
 ### 4.4 Exit criteria for Phase 4
 
-- [ ] the simulator is exposed through a clean Mission-1 RL-friendly interface
-- [ ] observation, action, legality, and reward contracts are documented
+- [x] the simulator is exposed through a clean Mission-1 RL-friendly interface
+- [x] observation, action, legality, and reward contracts are documented
       explicitly
-- [ ] the wrapper can run deterministic seeded episodes without redefining game
+- [x] the wrapper can run deterministic seeded episodes without redefining game
       rules
-- [ ] the accepted Phase 3 baseline surface remains usable as the comparison
+- [x] the accepted Phase 3 baseline surface remains usable as the comparison
       reference for later RL work
+
+Closeout note: the accepted manual Phase 4 env smoke command is
+`.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`, and the
+preserved Phase 3 comparison reference remains
+`.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke` /
+`.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`.
 
 ---
 

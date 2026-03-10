@@ -161,6 +161,35 @@ separate from revealed unit state.
 It also preserves the distinction between simulator truth, player-visible
 information, and replay/debugging behavior.
 
+### A12. First env observation is structured and player-visible
+The first accepted RL-facing observation is a structured Mission 1 view derived
+from runtime state rather than a raw `GameState` export.
+
+Rationale:
+The accepted wrapper exposes the current decision context, public mission/map
+data, British units, revealed German units, and unresolved marker positions,
+while keeping RNG state and other simulator-only debugging fields out of the
+observation boundary.
+
+### A13. First env action surface uses fixed Mission 1 action ids
+The first accepted RL-facing action interface is a fixed Mission 1 action
+catalog that encodes the staged domain `GameAction` family directly.
+
+Rationale:
+This preserves the written staged decision flow, keeps legality owned by the
+resolver, and avoids hiding doubles, activation-die choice, order sequencing,
+or German activation order inside undocumented macro-actions.
+
+### A14. First env reward and termination contract stays terminal-only
+The first accepted env reward contract is terminal-only: victory `+1`, defeat
+`-1`, and nonterminal states `0`.
+
+Rationale:
+Reward remains an env-layer concern, not a domain-layer concern. Mission
+victory and mission defeat, including turn-limit defeat, map to
+`terminated=True` and `truncated=False`; truncation is reserved for external
+wrapper limits such as optional step caps.
+
 ---
 
 ## Open assumptions to resolve later
@@ -181,47 +210,52 @@ Questions:
 - Are there any rule interactions that would justify pulling a later mechanic
   slightly earlier?
 
-### O2. Hidden-information observation boundary
-The current implementation resolves hidden markers by sampling at reveal time,
-but the exact boundary between full simulator truth and future agent-visible
-observation remains open.
+### O2. Future observation variants beyond the accepted wrapper
+The first Mission 1 observation boundary is now resolved, but later alternative
+observation families remain open.
 
 Current implementation fact:
 - hidden enemy markers are stored as unresolved markers, not as pre-sampled
-  concealed units.
+  concealed units
+- the accepted env observation exposes unresolved marker positions and revealed
+  German units without exporting raw `GameState`
 
 Questions:
-- How should future agent-visible observation expose unresolved markers versus
-  revealed enemies?
-- Should there be a distinct observation-layer model rather than exposing
-  filtered `GameState` views directly?
+- Should later learning code consume the current structured observation
+  directly, or should it derive a flattened/tensorized representation from it?
+- Should the project ever support an intentionally simulator-truth-rich
+  debugging observation alongside the player-visible default?
 - Which hidden-information details belong in replay/debugging traces but not in
   future agent observation?
 
-### O3. Action granularity
-The domain-engine decision granularity is now resolved, but the future RL-facing
-action abstraction is still open.
+### O3. Alternative action abstractions
+The first RL-facing action abstraction is now resolved, but later alternatives
+remain open.
 
-Current planning preference:
-Model the written turn flow explicitly in the domain engine and defer any
-macro-action compression to the environment layer.
+Current implementation fact:
+- the accepted Mission 1 wrapper uses a fixed action-id catalog over staged
+  domain actions
+- legality is still derived from `resolver.get_legal_actions(...)`
 
 Questions:
 - How much of the written turn structure can later be compressed for RL without
   distorting the game too much?
-- Which staged domain decisions should remain directly visible to future agents?
-- Will the first RL wrapper use the domain action flow directly or expose a
-  higher-level adapter on top of it?
+- If later experiments add macro-actions, how should they stay auditable
+  against the accepted staged-action reference?
 
-### O4. Reward shaping
-Reward design is deferred until the environment layer exists.
+### O4. Reward shaping beyond the default contract
+The default reward contract is now resolved, but later shaping choices remain
+open.
 
-Current planning preference:
-Keep terminal reward primary and add shaping carefully only when needed.
+Current implementation fact:
+- the accepted default env reward is terminal-only
+- Phase 3 evaluation metrics remain analysis/comparison signals, not reward
+  terms
 
 Questions:
 - What minimal shaping is necessary to make early learning stable?
-- How can shaping avoid teaching behavior that optimizes proxy rewards instead of mission success?
+- How can shaping avoid teaching behavior that optimizes proxy rewards instead
+  of mission success?
 - Which evaluation metrics should remain separate from reward?
 
 ### O5. Advanced rules
@@ -232,13 +266,17 @@ Questions:
 - Which rules can be stubbed conceptually without misleading future design?
 - Which advanced rules most strongly affect the future state/action model and therefore should be considered earlier?
 
-### O6. Observation design
-The exact future observation schema for ML/RL is unresolved.
+### O6. Learning-oriented observation representation
+The first observation schema now exists, but the representation used directly
+by future learning code is still unresolved.
 
 Questions:
-- Should observation be structured, flattened, or hybrid?
-- How much mission metadata should appear directly in observation?
-- How should hidden information be masked consistently?
+- Should the current structured observation remain the training interface, or
+  should it be transformed into flattened/tensorized features?
+- Which mission metadata should stay explicit versus being encoded into derived
+  features?
+- How should hidden information be masked consistently if multiple observation
+  representations are introduced?
 
 ### O7. Replay granularity
 The exact level of detail for replay traces is unresolved.
