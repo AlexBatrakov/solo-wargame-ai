@@ -12,7 +12,10 @@ license = { text = "MIT" }
 authors = [
   { name = "abatrakov" }
 ]
-dependencies = []
+dependencies = [
+  "numpy>=1.26",
+  "torch>=2.2",
+]
 
 [project.optional-dependencies]
 dev = [
