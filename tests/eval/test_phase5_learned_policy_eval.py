@@ -4,8 +4,7 @@ from pathlib import Path
 
 from solo_wargame_ai.domain.state import TerminalOutcome
 from solo_wargame_ai.eval.learned_policy_eval import evaluate_learned_policy
-from solo_wargame_ai.eval.metrics import aggregate_episode_results
-from solo_wargame_ai.eval.phase5_seed_policy import (
+from solo_wargame_ai.eval.learned_policy_seeds import (
     PHASE5_BENCHMARK_EVAL_SEEDS,
     PHASE5_FEATURE_ADAPTER_SEED,
     PHASE5_MODEL_SELECTION_SEEDS,
@@ -13,10 +12,11 @@ from solo_wargame_ai.eval.phase5_seed_policy import (
     PHASE5_TRAINING_SEEDS,
     training_rollout_seed,
 )
+from solo_wargame_ai.eval.metrics import aggregate_episode_results
 from solo_wargame_ai.io.mission_loader import load_mission
 
 MISSION_PATH = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[2]
     / "configs"
     / "missions"
     / "mission_01_secure_the_woods_1.toml"

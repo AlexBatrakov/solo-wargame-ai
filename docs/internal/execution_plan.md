@@ -167,18 +167,20 @@ Desired outcome:
     `median 133/200`, `heuristic 157/200`
 - The domain and env packages are mostly responsibility-named already and are
   acceptable as-is for Phase 6; they are not the main current naming problem.
-- The most immediate repo-friction comes from durable library modules that still
-  carry phase-history names:
-  - `src/solo_wargame_ai/agents/phase5_training.py`
-  - `src/solo_wargame_ai/eval/phase5_seed_policy.py`
-  - `src/solo_wargame_ai/eval/phase5_reporting.py`
-  - `src/solo_wargame_ai/eval/phase5_summary.py`
+- The most immediate repo-friction at Phase 6 open came from durable library
+  modules that carried phase-history names. Delivery A is expected to retire
+  those names in favor of responsibility-based paths:
+  - `src/solo_wargame_ai/agents/masked_actor_critic_training.py`
+  - `src/solo_wargame_ai/eval/learned_policy_seeds.py`
+  - `src/solo_wargame_ai/eval/learned_policy_reporting.py`
+  - `src/solo_wargame_ai/eval/learned_policy_summary.py`
 - Thin operator entrypoints under `src/solo_wargame_ai/cli/phase3_*`,
   `phase4_*`, and `phase5_*` are acceptable as phase-tagged operator surfaces
   and do not need to be renamed in the hygiene pass by default.
-- `tests/` is still a single flat directory. That was acceptable during early
-  growth, but with more than 40 test files it now materially slows navigation
-  and makes phase-history naming linger longer than it should.
+- `tests/` started Phase 6 as a single flat directory. That was acceptable
+  during early growth, but with more than 40 test files it now materially
+  slows navigation and makes phase-history naming linger longer than it
+  should.
 - `HeuristicAgent` is already a Mission-1-specific lookahead baseline with
   synthetic-state assistance. The next high-value baseline should therefore be
   an explicit bounded rollout/search/hybrid agent, not "HeuristicAgent v2"

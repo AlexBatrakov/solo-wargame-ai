@@ -20,7 +20,7 @@ from solo_wargame_ai.env.observation import Observation
 from solo_wargame_ai.eval.episode_runner import EpisodeResult
 from solo_wargame_ai.eval.metrics import EpisodeMetrics, aggregate_episode_results
 
-from .phase5_seed_policy import PHASE5_BENCHMARK_EVAL_SEEDS, PHASE5_SMOKE_EVAL_SEEDS
+from .learned_policy_seeds import PHASE5_BENCHMARK_EVAL_SEEDS, PHASE5_SMOKE_EVAL_SEEDS
 
 try:
     import torch

@@ -4,12 +4,12 @@ import json
 from pathlib import Path
 
 from solo_wargame_ai.cli import phase5_learned_policy_eval, phase5_summary, phase5_train
-from solo_wargame_ai.eval.metrics import EpisodeMetrics
-from solo_wargame_ai.eval.phase5_reporting import (
+from solo_wargame_ai.eval.learned_policy_reporting import (
     Phase5EvalCheckpointMetadata,
     build_phase5_anchor_comparison,
     format_phase5_eval_report,
 )
+from solo_wargame_ai.eval.metrics import EpisodeMetrics
 
 
 def _metrics(

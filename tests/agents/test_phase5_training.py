@@ -4,14 +4,14 @@ from pathlib import Path
 
 import pytest
 
-from solo_wargame_ai.agents.phase5_training import (
+from solo_wargame_ai.agents.masked_actor_critic_training import (
     PHASE5_CHECKPOINT_SELECTION_POLICY,
     Phase5TrainingConfig,
     build_phase5_policy_factory,
     load_phase5_checkpoint,
     train_masked_actor_critic,
 )
-from solo_wargame_ai.eval.phase5_seed_policy import (
+from solo_wargame_ai.eval.learned_policy_seeds import (
     PHASE5_BENCHMARK_EVAL_SEEDS,
     PHASE5_FEATURE_ADAPTER_SEED,
     PHASE5_MODEL_SELECTION_SEEDS,
@@ -22,7 +22,7 @@ from solo_wargame_ai.eval.phase5_seed_policy import (
 from solo_wargame_ai.io.mission_loader import load_mission
 
 MISSION_PATH = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[2]
     / "configs"
     / "missions"
     / "mission_01_secure_the_woods_1.toml"

@@ -1,4 +1,4 @@
-"""Compact Phase 5 reporting helpers for learned-policy comparisons."""
+"""Compact reporting helpers for learned-policy comparisons."""
 
 from __future__ import annotations
 

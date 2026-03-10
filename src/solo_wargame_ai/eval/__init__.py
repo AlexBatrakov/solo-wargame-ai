@@ -1,4 +1,4 @@
-"""Evaluation helpers for Phase 3 baseline harness work."""
+"""Evaluation helpers for baseline and learned-policy workflows."""
 
 from .benchmark import (
     PHASE3_BENCHMARK_SEEDS,
@@ -26,14 +26,7 @@ from .learned_policy_eval import (
     run_learned_episode,
     run_learned_episodes,
 )
-from .metrics import (
-    EpisodeMetrics,
-    EpisodeMetricsDelta,
-    aggregate_episode_results,
-    diff_episode_metrics,
-    format_metrics_table,
-)
-from .phase5_reporting import (
+from .learned_policy_reporting import (
     Phase5AnchorComparison,
     Phase5AnchorReference,
     Phase5EvalCheckpointMetadata,
@@ -45,7 +38,7 @@ from .phase5_reporting import (
     format_seed_set,
     phase5_eval_payload,
 )
-from .phase5_seed_policy import (
+from .learned_policy_seeds import (
     PHASE5_BENCHMARK_EVAL_SEEDS,
     PHASE5_FEATURE_ADAPTER_SEED,
     PHASE5_MODEL_SELECTION_SEEDS,
@@ -53,13 +46,20 @@ from .phase5_seed_policy import (
     PHASE5_TRAINING_SEEDS,
     training_rollout_seed,
 )
-from .phase5_summary import (
+from .learned_policy_summary import (
     Phase5AggregateSummary,
     Phase5ArtifactResult,
     build_phase5_aggregate_summary,
     format_phase5_aggregate_summary,
     load_phase5_artifact_result,
     phase5_aggregate_summary_payload,
+)
+from .metrics import (
+    EpisodeMetrics,
+    EpisodeMetricsDelta,
+    aggregate_episode_results,
+    diff_episode_metrics,
+    format_metrics_table,
 )
 
 __all__ = [

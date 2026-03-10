@@ -182,6 +182,9 @@ Expected contents over time:
 
 Agents should consume legal actions and observations/interfaces.
 They should not implement or duplicate the underlying game rules.
+Durable library modules under this package should be named by responsibility;
+phase-history tags are acceptable only for thin operator entrypoints and
+archived artifacts.
 
 ### `src/solo_wargame_ai/env/`
 Environment-facing code for ML / RL integration.

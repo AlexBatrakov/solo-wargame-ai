@@ -1,4 +1,4 @@
-"""Minimal agent surfaces for Phase 3 baselines."""
+"""Agent, learned-policy, and action-selection surfaces."""
 
 from importlib import import_module
 from typing import Any

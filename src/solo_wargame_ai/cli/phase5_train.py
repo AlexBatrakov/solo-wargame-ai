@@ -6,7 +6,7 @@ import argparse
 from collections.abc import Sequence
 from pathlib import Path
 
-from solo_wargame_ai.agents.phase5_training import (
+from solo_wargame_ai.agents.masked_actor_critic_training import (
     Phase5TrainingConfig,
     default_phase5_output_dir,
     format_phase5_training_report,

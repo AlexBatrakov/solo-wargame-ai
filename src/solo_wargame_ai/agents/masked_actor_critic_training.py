@@ -1,4 +1,4 @@
-"""Bounded Phase 5 training and checkpoint helpers for the first learner."""
+"""Masked actor-critic training and checkpoint helpers for the first learner."""
 
 from __future__ import annotations
 
@@ -12,9 +12,8 @@ from typing import Any
 from solo_wargame_ai.domain.mission import Mission
 from solo_wargame_ai.env import Mission1Env
 from solo_wargame_ai.eval.learned_policy_eval import evaluate_learned_policy
-from solo_wargame_ai.eval.metrics import EpisodeMetrics, format_metrics_table
-from solo_wargame_ai.eval.phase5_reporting import format_seed_set
-from solo_wargame_ai.eval.phase5_seed_policy import (
+from solo_wargame_ai.eval.learned_policy_reporting import format_seed_set
+from solo_wargame_ai.eval.learned_policy_seeds import (
     PHASE5_BENCHMARK_EVAL_SEEDS,
     PHASE5_FEATURE_ADAPTER_SEED,
     PHASE5_MODEL_SELECTION_SEEDS,
@@ -22,6 +21,7 @@ from solo_wargame_ai.eval.phase5_seed_policy import (
     PHASE5_TRAINING_SEEDS,
     training_rollout_seed,
 )
+from solo_wargame_ai.eval.metrics import EpisodeMetrics, format_metrics_table
 
 from .feature_adapter import ObservationFeatureAdapter
 from .learned_policy import legal_action_ids_from_info, legal_action_mask_from_info

@@ -1,4 +1,4 @@
-"""Explicit seed-policy separation for the first Phase 5 learner."""
+"""Explicit seed-policy separation for the first learned-policy stack."""
 
 from __future__ import annotations
 

@@ -31,7 +31,7 @@ from solo_wargame_ai.domain.units import GermanUnitStatus, RevealedGermanUnitSta
 from solo_wargame_ai.io.mission_loader import load_mission
 
 MISSION_PATH = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[2]
     / "configs"
     / "missions"
     / "mission_01_secure_the_woods_1.toml"

@@ -1,4 +1,4 @@
-"""Aggregate summary helpers for the accepted Phase 5 training seeds."""
+"""Aggregate summary helpers for the accepted learned-policy training seeds."""
 
 from __future__ import annotations
 
@@ -8,13 +8,13 @@ from pathlib import Path
 from statistics import median
 from typing import Any
 
-from .metrics import EpisodeMetrics
-from .phase5_reporting import (
+from .learned_policy_reporting import (
     accepted_phase3_anchor,
     episode_metrics_from_payload,
     episode_metrics_payload,
 )
-from .phase5_seed_policy import PHASE5_TRAINING_SEEDS
+from .learned_policy_seeds import PHASE5_TRAINING_SEEDS
+from .metrics import EpisodeMetrics
 
 
 @dataclass(frozen=True, slots=True)

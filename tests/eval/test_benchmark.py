@@ -13,7 +13,7 @@ from solo_wargame_ai.eval.metrics import aggregate_episode_results, diff_episode
 from solo_wargame_ai.io.mission_loader import load_mission
 
 MISSION_PATH = (
-    Path(__file__).resolve().parents[1]
+    Path(__file__).resolve().parents[2]
     / "configs"
     / "missions"
     / "mission_01_secure_the_woods_1.toml"

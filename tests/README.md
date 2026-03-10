@@ -1,6 +1,16 @@
 # Tests Directory
 
-This directory now contains the focused test suite that closed out Phase 1.
+This directory now contains the focused project test suite.
+
+Current durable layout favors subsystem-oriented grouping where it improves
+navigation without forcing broad fixture churn:
+
+- `tests/agents/`
+- `tests/eval/`
+- `tests/cli/`
+- `tests/integration/`
+- additional domain and env tests may remain at the root until a later
+  mechanical regrouping is justified
 
 Current coverage includes:
 

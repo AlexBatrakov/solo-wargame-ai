@@ -8,12 +8,12 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from solo_wargame_ai.agents.masked_actor_critic import MaskedActorCriticPolicy
-from solo_wargame_ai.agents.phase5_training import load_phase5_checkpoint
+from solo_wargame_ai.agents.masked_actor_critic_training import load_phase5_checkpoint
 from solo_wargame_ai.eval.learned_policy_eval import (
     evaluate_phase5_benchmark_policy,
     evaluate_phase5_smoke_policy,
 )
-from solo_wargame_ai.eval.phase5_reporting import (
+from solo_wargame_ai.eval.learned_policy_reporting import (
     Phase5EvalCheckpointMetadata,
     format_phase5_eval_report,
     phase5_eval_payload,
