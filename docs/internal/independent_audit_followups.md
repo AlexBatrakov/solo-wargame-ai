@@ -22,6 +22,7 @@ Current source captured here:
 
 - independent Claude Opus 4.6 audit dated March 8, 2026
 - independent Claude Opus 4.6 audit dated March 9, 2026
+- independent Claude Opus 4.6 audit dated March 10, 2026
 
 High-level verdict accepted from that audit:
 
@@ -34,6 +35,12 @@ High-level verdict accepted from that audit:
   - preservation of the accepted Phase 3 benchmark reference,
   - and architecture-maintenance items that matter more for content extension
     than for the first RL wrapper pass.
+- Phase 5 is complete by repository evidence and ready for closeout with minor
+  public-doc sync only, not with new implementation blockers.
+- The accepted Phase 5 result demonstrates terminal-only learnability on the
+  current Mission 1 wrapper, does not justify reopening Package C, and points
+  the next macro-step toward stronger baselines/search rather than Mission 3/4
+  content extension.
 
 ## Accepted conclusions
 
@@ -51,6 +58,10 @@ evidence changes them:
 6. `HeuristicAgent` coupling to domain internals is acceptable as a
    Mission-1-specific baseline, not as a general contract future agents or RL
    wrappers should copy.
+7. The accepted Phase 5 learner result is strong enough to validate the current
+   wrapper/action design as learnable without reward shaping.
+8. The correct post-Phase-5 default is stronger baselines/search planning, not
+   reopening the env boundary or widening immediately into Mission 3/4 content.
 
 ## Resolved follow-ups since the Phase 2 audit
 

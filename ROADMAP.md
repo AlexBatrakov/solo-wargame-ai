@@ -395,37 +395,50 @@ Goal: run the first end-to-end learning experiments on the accepted Mission 1
 wrapper and learn whether the current environment/action design is actually
 usable.
 
+Status note: Phase 5 is complete in the repository. The accepted slice now
+includes a bounded masked actor-critic training/evaluation path, preserved
+Phase 3 anchor comparison, explicit seed separation, and an external-audit-
+confirmed decision not to open Package C.
+
 ### 5.1 First training loop
 
-- [ ] Select and document one narrow first RL baseline / training setup
-- [ ] Define experiment configuration, seed policy, and local run protocol for
+- [x] Select and document one narrow first RL baseline / training setup
+- [x] Define experiment configuration, seed policy, and local run protocol for
       early RL runs
-- [ ] Record how evaluation is compared against the accepted Phase 3 baselines
-- [ ] Decide what counts as a minimally successful first learning result
+- [x] Record how evaluation is compared against the accepted Phase 3 baselines
+- [x] Decide what counts as a minimally successful first learning result
 
 ### 5.2 Evaluation and comparison
 
-- [ ] Run at least one end-to-end training / evaluation cycle
-- [ ] Evaluate against random and heuristic agents
-- [ ] Analyze failure modes and sample-efficiency problems
-- [ ] Evaluate whether the chosen RL-facing action abstraction is helping or hurting learning
-- [ ] Refine reward design only if experiments justify it explicitly
-- [ ] Record which limitations come from engine scope vs RL method choice
+- [x] Run at least one end-to-end training / evaluation cycle
+- [x] Evaluate against random and heuristic agents
+- [x] Analyze failure modes and sample-efficiency problems
+- [x] Evaluate whether the chosen RL-facing action abstraction is helping or hurting learning
+- [x] Refine reward design only if experiments justify it explicitly
+- [x] Record which limitations come from engine scope vs RL method choice
 
 ### 5.3 Decision gate after the first RL pass
 
-- [ ] Decide whether the next major investment should be environment iteration,
+- [x] Decide whether the next major investment should be environment iteration,
       stronger baselines, or Mission 3/4 content extension
-- [ ] Decide whether Mission 1 is a sufficient learning target or now too small
+- [x] Decide whether Mission 1 is a sufficient learning target or now too small
       / degenerate
-- [ ] Record the recommended next macro-step in the docs
+- [x] Record the recommended next macro-step in the docs
 
 ### 5.4 Exit criteria for Phase 5
 
-- [ ] at least one RL experiment has been run end-to-end
-- [ ] RL performance has been compared against the accepted baselines
-- [ ] the project has a documented recommendation for what to do after the
+- [x] at least one RL experiment has been run end-to-end
+- [x] RL performance has been compared against the accepted baselines
+- [x] the project has a documented recommendation for what to do after the
       first RL pass
+
+Closeout note: Phase 5 demonstrated terminal-only learnability on the accepted
+Mission 1 wrapper without opening Package C. The accepted aggregate result is
+`101 -> 144/200`, `202 -> 133/200`, `303 -> 121/200`, with `133/200` median
+wins against the preserved anchors `random` `11/200` and `heuristic`
+`157/200`. The next macro-step is stronger baselines/search planning rather
+than more Phase 5 delivery work, environment iteration, or Mission 3/4 content
+extension.
 
 ---
 
@@ -434,6 +447,9 @@ usable.
 Goal: extend the project beyond the first Mission 1 learning loop using
 evidence from Phases 3-5 rather than guesses made before the first RL pass
 existed.
+
+Status note: after accepted Phase 5 closeout, stronger baselines/search is the
+preferred first track inside Phase 6 unless new evidence changes that choice.
 
 ### 6.1 Content-extension track
 

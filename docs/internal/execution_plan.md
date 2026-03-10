@@ -5,13 +5,14 @@
 This file is the current master control surface for repository-level planning,
 dispatch, and closeout.
 
-As of March 10, 2026, Phases 1, 2, and 3 are complete and archived.
-Phase 4 is now also complete by repository evidence.
+As of March 10, 2026, Phases 1 through 5 are complete and archived by
+repository evidence.
 The active planning problem is no longer "how to finish Mission 1", "how to
-harden the accepted engine", "how to open Phase 3 baselines", or "how to open
-Phase 4 RL-environment planning", but "how to use the accepted Mission 1 env
-wrapper to answer whether the current observation/action design is learnable
-before widening scope."
+harden the accepted engine", "how to open Phase 3 baselines", "how to open
+Phase 4 RL-environment planning", or "whether the accepted Mission 1 wrapper is
+learnable", but "which post-first-RL macro-step is justified next, with
+stronger baselines/search as the default target unless new evidence says
+otherwise."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -27,9 +28,12 @@ recovering chat history:
 - preserve the accepted Phase 3 packet, closeout record, and benchmark
   reference,
 - preserve the accepted Phase 4 packet and closeout record,
+- preserve the accepted Phase 5 packet, closeout record, and external-audit
+  outcome,
 - avoid reopening completed Delivery A / B / C work accidentally,
 - recover the accepted baseline, wrapper, and benchmark references quickly,
-- point the next planning thread toward Phase 5 and later-phase decision gates.
+- point the next planning thread toward the post-first-RL macro-step and later
+  decision gates.
 
 ## Current checkpoint
 
@@ -38,11 +42,14 @@ recovering chat history:
   - Phase 2 complete
   - Phase 3 complete
   - Phase 4 complete
+  - Phase 5 complete
 - Local tags:
   - `phase1-complete`
   - `phase2-complete`
   - `phase3-complete`
   - `phase4-complete`
+  - `phase5-complete` should be created from the accepted Phase 5 closeout
+    commit
 - Repository state checked on March 10, 2026 before opening this Phase 5
   master-thread:
   - `git status --short` was empty
@@ -381,16 +388,17 @@ repo state against the package criteria.
 
 - Package A: completed
 - Package B: completed
-- Package C: pending / optional
-- Phase 5 overall: in_progress
+- Package C: completed
+- Package C disposition: not opened; Package B and the external audit did not
+  justify it
+- Phase 5 overall: completed
 - Planning audit date: March 10, 2026
 - Package A acceptance verification date: March 10, 2026
 - Package B acceptance verification date: March 10, 2026
-- Package C recommendation after Package B: not recommended; keep closed unless
-  the external audit or later review identifies one bounded in-scope blocker
-- External audit gate: pending
-- Closeout/tag gate: blocked pending the external audit and any accepted narrow
-  follow-ups
+- Package C recommendation after Package B: not recommended
+- External audit gate: completed on March 10, 2026
+- Closeout/tag gate: closeout docs synced; ready for milestone tag
+  `phase5-complete`
 - Blocking findings before Delivery A: none
 
 ## Package A - Learning adapter and experiment contract foundation
@@ -611,7 +619,9 @@ Analysis-before-edit:
 
 Status:
 
-- pending / optional
+- completed
+- not opened; neither Package B results nor the external audit justified this
+  optional package
 
 Goal:
 
@@ -671,39 +681,45 @@ Analysis-before-edit:
 
 - required
 
-## External audit gate before Phase 5 closeout
+## External audit assimilation for Phase 5 closeout
 
-Before `phase5-complete` is tagged:
+Completed external audit:
 
-1. run one independent external audit against the accepted Phase 5 state
-2. scope that audit to:
-   - the accepted Package A and Package B implementation surfaces
-   - the Phase 5 learnability claim and decision gate
-   - bounded improvement opportunities that still belong inside Phase 5
-3. if the audit finds a narrow accepted follow-up, complete that bounded work
-   before closeout
-4. if the audit does not find a new in-scope blocker, move straight to closeout
-   docs and milestone tagging
+- independent Claude Opus 4.6 audit dated March 10, 2026
 
-Audit-assimilation rules:
+Accepted audit conclusions:
 
-- do not reopen Package C casually just because an external reviewer can imagine
-  alternate reward designs
-- do not widen the phase into Mission 3/4 or stronger baseline work during the
-  audit-assimilation step
-- write any accepted new audit findings into
-  `docs/internal/independent_audit_followups.md` before final closeout if they
-  should remain discoverable beyond chat history
+- Phase 5 is ready for closeout by repository evidence
+- no new implementation blocker remains inside the accepted Package A / Package
+  B surfaces
+- Package C should stay closed
+- the next justified macro-step is stronger baselines/search rather than env
+  iteration or Mission 3/4 content extension
 
-## Phase 5 closeout sequence
+Accepted minor closeout actions from that audit:
 
-Preferred order from the current repo state:
+- sync `README.md` to reflect the accepted Phase 5 result and operator surface
+- sync `ROADMAP.md` to mark Phase 5 complete and record the closeout note
+
+Accepted deferred later ideas from that audit:
+
+- regenerate benchmark/smoke eval artifacts with JSON payloads if later
+  re-analysis benefits from it
+- add a defensive `model.train()` restore around model-selection evaluation if
+  the learner architecture later starts to care about train/eval mode
+- consider a combined local verification command only if it clearly pays for
+  itself in a later phase
+
+## Phase 5 closeout record
+
+Sequence completed:
 
 1. Package B accepted and recorded in this phase packet
 2. one external audit run and reviewed
-3. any accepted narrow follow-up landed and re-verified
-4. one Phase 5 closeout docs commit
-5. milestone tag `phase5-complete`
+3. no additional in-scope follow-up was required before closeout
+4. Phase 5 closeout docs were synced
+5. milestone tag `phase5-complete` may now be created from the accepted
+   closeout commit
 
 ## Recommended Delivery Thread sequence for Phase 5
 
@@ -934,3 +950,39 @@ During closeout, public docs were synced to reflect that:
 - the accepted manual Phase 4 env smoke command is now documented
 - the preserved Phase 3 baseline CLI remains the comparison reference
 - the next macro-step is Phase 5 learning experiments planning
+
+## Decision after Phase 5 closeout
+
+Recommended next macro-step:
+
+- stronger baselines/search planning inside the post-first-RL expansion track
+
+Rationale:
+
+- the accepted Mission 1 wrapper/action/reward surface was shown to be learnable
+  without shaping
+- the best bounded Phase 5 learner reached `144/200` wins and the median across
+  accepted training seeds reached `133/200`, comfortably above the preserved
+  random reference of `11/200`
+- the best learned result remains below the preserved heuristic anchor
+  `157/200`, so the next question is headroom above the first learner rather
+  than whether the wrapper itself works
+- external audit did not justify reopening Package C, env iteration, or Mission
+  3/4 content work inside Phase 5
+
+Closeout note:
+
+- the accepted Phase 5 aggregate summary records:
+  `101 -> 144/200`, `202 -> 133/200`, `303 -> 121/200`
+- the minimum-success verdict is `met`
+- Package C remained closed and was not needed for closeout
+
+## Public docs after Phase 5 closeout
+
+During closeout, public docs were synced to reflect that:
+
+- Phase 5 learning experiments are complete
+- the repository now includes accepted Phase 5 train / learned-eval / summary
+  operator commands
+- the next macro-step is stronger baselines/search planning rather than more
+  Phase 5 delivery work

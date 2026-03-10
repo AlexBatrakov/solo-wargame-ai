@@ -146,28 +146,35 @@ Current repository state:
   now exposes the dependency-free `Mission1Env` surface together with the
   accepted observation, action-id, legality, reward, and termination
   contracts;
+- Phase 5 learning experiments are complete: the repository now includes a
+  bounded masked actor-critic training/evaluation path, explicit seed-policy
+  separation, Phase 5 train/eval/summary CLIs, and an accepted Mission 1
+  result with `144/200` best wins and `133/200` median wins on the preserved
+  200-seed benchmark;
 - the repository verifies locally with `.venv/bin/pytest -q` and
   `.venv/bin/ruff check src tests`, and the same narrow gate is defined in
   GitHub Actions;
-- later milestones such as learning experiments, broader mission coverage, and
-  stronger learned baselines remain open.
+- later milestones such as stronger baselines/search, broader mission coverage,
+  and post-first-RL expansion remain open.
 
 ## Not implemented yet
 
 At this stage, the repository does **not** yet include:
 - a `gymnasium` dependency or generic RL experiment platform;
 - broader mission and advanced-rule coverage;
-- learning / training experiments;
-- stronger search-based or learned baselines.
+- stronger search-based baselines;
+- post-first-RL scaling work beyond the accepted initial learner path.
 
 ## Next macro-step
 
-The first Mission 1 RL-friendly wrapper is now in place.
-The next macro-step is Phase 5 learning-experiment planning on top of the
-accepted env surface while keeping the Phase 3 baseline CLI as the preserved
-comparison reference.
-Mission 3/4 extension and broader learning/runtime expansion remain later
-follow-on work.
+The first end-to-end Mission 1 learning pass is now complete on the accepted env
+surface.
+Phase 5 demonstrated terminal-only learnability with `144/200` best wins and
+`133/200` median wins on the preserved 200-seed benchmark, still below the
+accepted heuristic anchor of `157/200`.
+The next macro-step is stronger baselines/search planning on top of the
+preserved Phase 3 comparison reference and the accepted Phase 5 operator
+surface. Mission 3/4 extension remains later follow-on work.
 
 ## Manual operator commands
 
@@ -179,3 +186,11 @@ Accepted local commands:
   `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
 - Phase 3 benchmark reference:
   `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`
+- Phase 5 train smoke:
+  `.venv/bin/python -m solo_wargame_ai.cli.phase5_train --training-seed 101 --episodes 8 --checkpoint-interval 4 --output-dir outputs/phase5/train_smoke_seed_101_ep_8`
+- Phase 5 learned-policy smoke eval:
+  `.venv/bin/python -m solo_wargame_ai.cli.phase5_learned_policy_eval --checkpoint outputs/phase5/train_seed_101_ep_2000/checkpoints/selected_checkpoint.pt --mode smoke`
+- Phase 5 learned-policy benchmark eval:
+  `.venv/bin/python -m solo_wargame_ai.cli.phase5_learned_policy_eval --checkpoint outputs/phase5/train_seed_101_ep_2000/checkpoints/selected_checkpoint.pt --mode benchmark`
+- Phase 5 aggregate summary:
+  `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`

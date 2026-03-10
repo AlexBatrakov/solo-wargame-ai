@@ -13,33 +13,36 @@ Phase-specific planning belongs in `docs/internal/execution_plan.md`.
 - Phase 2 is complete and accepted.
 - Phase 3 is complete and accepted.
 - Phase 4 is complete and accepted.
+- Phase 5 is complete and accepted.
 - `phase1-complete`, `phase2-complete`, `phase3-complete`, and
   `phase4-complete` are the current local milestone tags.
-- The next active phase packet should be Phase 5 learning-experiments
-  acceptance / external-audit / closeout.
+- `phase5-complete` should be created from the accepted Phase 5 closeout
+  commit.
+- The next active phase packet should be Phase 6 post-first-RL planning, with
+  stronger baselines/search as the preferred next macro-step.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 
 If a thread behaves as though Mission 1 still needs to be built from scratch, it
 is operating from stale context.
 
-## Current post-Phase-4 dispatch note
+## Current post-Phase-5 dispatch note
 
-After Phase 4 closeout:
+After Phase 5 closeout:
 
 - use `docs/internal/execution_plan.md` as the first dispatch surface for the
-  active Phase 5 packet
+  next active packet
 - treat Phase 4 Delivery A / B / C work as archived unless repeated use
   exposes a narrow corrective bug
 - keep the preserved Phase 3 baseline CLI and accepted 200-seed snapshot
-  discoverable as the pre-RL comparison reference during Phase 5 work
-- keep Phase 5 to Delivery A plus Delivery B, with optional Delivery C only if
-  the first terminal-only pass leaves the learnability decision unresolved
-- before tagging `phase5-complete`, run the external audit step if the active
-  Phase 5 packet still requires it
+  discoverable as the pre-RL comparison reference during later work
+- keep the accepted Phase 5 learned-policy result and aggregate benchmark
+  numbers discoverable during post-first-RL planning
+- treat Package C as closed unless new evidence creates a real bounded reason to
+  reopen it
 - do not open Mission 3/4 extension, stronger search/planning baselines, or a
-  generic RL-platform buildout until the Phase 5 packet says they are the next
-  justified macro-step
+  generic RL-platform buildout casually; start from the accepted Phase 5
+  decision that stronger baselines/search is the preferred next macro-step
 
 ## Core operating model
 
