@@ -5,12 +5,12 @@
 This file is the current master control surface for repository-level planning,
 dispatch, and closeout.
 
-As of March 8, 2026, Phases 1 and 2 are complete and archived.
-As of March 9, 2026, Phases 1, 2, and 3 are complete and archived.
+As of March 10, 2026, Phases 1, 2, and 3 are complete and archived.
 The active planning problem is no longer "how to finish Mission 1", "how to
 harden the accepted engine", or "how to open Phase 3 baselines", but "how to
-open Phase 4 RL-environment planning without contaminating the domain layer or
-forgetting the accepted Phase 3 benchmark surface."
+open Phase 4 RL-environment planning without contaminating the domain layer,
+without discarding the accepted Phase 3 benchmark surface, and without
+overcommitting to a later content track too early."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -23,10 +23,11 @@ opening a new implementation chat for every micro-stage.
 This file should now let a future master-thread do four things without
 recovering chat history:
 
-- preserve the accepted Phase 3 packet and closeout record,
+- preserve the accepted Phase 3 packet, closeout record, and benchmark
+  reference,
 - avoid reopening completed Delivery A / B / C work accidentally,
 - recover the accepted baseline contract and benchmark reference quickly,
-- point the next planning thread toward Phase 4.
+- point the next planning thread toward Phase 4 and later-phase decision gates.
 
 ## Current checkpoint
 
@@ -37,11 +38,12 @@ recovering chat history:
 - Local tags:
   - `phase1-complete`
   - `phase2-complete`
-- Repository state checked on March 9, 2026 before closeout:
+- `phase3-complete`
+- Repository state checked on March 10, 2026 after Phase 3 closeout:
   - `git status --short` was empty
   - `git log --oneline --decorate -10` showed `HEAD` on
-    `291a121 phase3: add manual baselines cli`
-  - `.venv/bin/pytest -q` passed with `153 passed in 1.69s`
+    `98519c7 docs: close phase3 baselines`
+  - `.venv/bin/pytest -q` passed with `153 passed in 1.70s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
     succeeded
@@ -65,6 +67,31 @@ Accepted runtime surface after Phase 3 closeout:
   smoke and benchmark comparisons.
 - Mission 1 remains playable, deterministic, regression-covered, and now
   benchmarkable through fixed-seed baseline comparisons.
+
+## Strategic update after Phase 3 closeout
+
+Current planning assumptions for later phases:
+
+- Phase 4 should stay Mission-1-only and focus on wrapper/interface decisions
+  first, not content expansion.
+- The accepted Phase 3 baseline benchmark remains the pre-RL comparison
+  reference and should not be replaced casually during env/training work.
+- The first RL wrapper should continue to delegate legality and transitions to
+  the accepted domain resolver facade rather than creating a parallel rules
+  path.
+- The default planning assumption for Phase 4 should be:
+  - observation is player-visible and conditioned on the current staged
+    decision context unless a planning thread documents a different choice
+  - action exposure stays close to staged domain decisions unless a later
+    adapter is justified explicitly
+  - reward starts from terminal mission outcome, with any shaping documented as
+    an environment-level choice rather than inferred from baseline metrics
+- Phase 5 should answer whether the chosen Mission 1 wrapper/action design is
+  learnable enough, not just whether training can run mechanically.
+- After the first RL pass, the project should make an explicit decision between:
+  - environment/action iteration,
+  - stronger baselines/search,
+  - or Mission 3/4 content extension.
 
 Phases 1 and 2 should be treated as archived implementation history, not as the
 active dispatch target.

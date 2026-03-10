@@ -325,93 +325,139 @@ planning rather than more Phase 3 delivery slices.
 
 ## Phase 4 — RL environment
 
-Goal: wrap the simulator in an RL-friendly interface without contaminating the domain layer.
+Goal: expose the accepted Mission 1 engine through a minimal RL-friendly
+wrapper without contaminating the domain layer or discarding the accepted
+Phase 3 baseline / benchmark surface.
 
-### 4.1 Observation and action interfaces
+Status note: after Phase 3 closeout, this phase should stay Mission-1-only.
+Its first job is to solve interface and contract questions cleanly, not to
+widen rule coverage.
 
-- [ ] Observation encoding
-- [ ] Action encoding
-- [ ] Decide whether RL observations are full-state, player-visible, or another documented partial view
-- [ ] Ensure observation and action encoding are conditioned on the current staged decision context
-- [ ] Decide whether the RL wrapper exposes staged domain decisions directly or uses a higher-level action adapter
-- [ ] Decide how legal actions are exposed to RL code
-- [ ] Implement Legal action masking
+### 4.1 Wrapper contract and boundary decisions
 
-### 4.2 Environment wrapper
+- [ ] Decide the first observation boundary and document whether it is
+      player-visible, full-state, or another explicitly justified view
+- [ ] Ensure the observation shape is conditioned on the current staged
+      decision context
+- [ ] Decide the first RL-facing action exposure around the staged domain
+      decisions
+- [ ] Decide how legal actions are surfaced to RL code
+- [ ] Freeze the first reward contract, keeping terminal mission outcome as the
+      anchor and any shaping explicit
+- [ ] Decide `terminated` vs `truncated` semantics for mission completion and
+      turn-limit defeat
+- [ ] Preserve compatibility with the accepted Phase 3 benchmark/reference path
 
-- [ ] Reward function
-- [ ] Gymnasium-compatible wrapper
-- [ ] Decide `terminated` vs `truncated` semantics for mission end and turn-limit defeat
-- [ ] Implement any required action adapter on top of the staged domain engine without redefining rules
-- [ ] Ensure wrapper delegates actual rules to the domain engine
+### 4.2 Wrapper implementation
+
+- [ ] Implement observation encoding
+- [ ] Implement action encoding
+- [ ] Implement legal-action masking or equivalent constrained-action support
+- [ ] Implement a Gymnasium-compatible wrapper
+- [ ] Implement any required action adapter on top of the staged domain engine
+      without redefining rules
+- [ ] Ensure the wrapper delegates actual rules to the domain engine
 - [ ] Verify deterministic seeded resets / episodes where appropriate
 
 ### 4.3 RL usability checks
 
-- [ ] Verify that the environment can run complete episodes
+- [ ] Verify that the environment can run complete Mission 1 episodes through
+      `reset` / `step`
 - [ ] Verify that invalid actions are masked or rejected correctly
-- [ ] Verify that reward signals are at least minimally coherent
+- [ ] Verify that reward signals are documented and testable
+- [ ] Verify that seeded rollouts are reproducible enough for debugging and
+      comparison
+- [ ] Verify that the wrapper does not silently leak simulator-only truth unless
+      that choice is explicitly documented
 
 ### 4.4 Exit criteria for Phase 4
 
-- [ ] the simulator is exposed through a clean RL-friendly interface
-- [ ] legal actions are handled explicitly
-- [ ] reward behavior is documented well enough for experiments
-- [ ] the environment can be used in training loops without redefining game rules
+- [ ] the simulator is exposed through a clean Mission-1 RL-friendly interface
+- [ ] observation, action, legality, and reward contracts are documented
+      explicitly
+- [ ] the wrapper can run deterministic seeded episodes without redefining game
+      rules
+- [ ] the accepted Phase 3 baseline surface remains usable as the comparison
+      reference for later RL work
 
 ---
 
 ## Phase 5 — Learning experiments
 
-Goal: run the first learning-based agent experiments and compare them against non-learning baselines.
+Goal: run the first end-to-end learning experiments on the accepted Mission 1
+wrapper and learn whether the current environment/action design is actually
+usable.
 
 ### 5.1 First training loop
 
-- [ ] First RL baseline
-- [ ] Select and document the first training setup
-- [ ] Define experiment configuration for early RL runs
-- [ ] Record seeds, config versions, and evaluation protocol for each experiment run
+- [ ] Select and document one narrow first RL baseline / training setup
+- [ ] Define experiment configuration, seed policy, and local run protocol for
+      early RL runs
+- [ ] Record how evaluation is compared against the accepted Phase 3 baselines
+- [ ] Decide what counts as a minimally successful first learning result
 
 ### 5.2 Evaluation and comparison
 
+- [ ] Run at least one end-to-end training / evaluation cycle
 - [ ] Evaluate against random and heuristic agents
-- [ ] Analyze failure modes
+- [ ] Analyze failure modes and sample-efficiency problems
 - [ ] Evaluate whether the chosen RL-facing action abstraction is helping or hurting learning
-- [ ] Refine reward design and action abstraction
+- [ ] Refine reward design only if experiments justify it explicitly
 - [ ] Record which limitations come from engine scope vs RL method choice
 
-### 5.3 Exit criteria for Phase 5
+### 5.3 Decision gate after the first RL pass
+
+- [ ] Decide whether the next major investment should be environment iteration,
+      stronger baselines, or Mission 3/4 content extension
+- [ ] Decide whether Mission 1 is a sufficient learning target or now too small
+      / degenerate
+- [ ] Record the recommended next macro-step in the docs
+
+### 5.4 Exit criteria for Phase 5
 
 - [ ] at least one RL experiment has been run end-to-end
-- [ ] RL performance has been compared to baselines
-- [ ] main bottlenecks are understood well enough to guide the next iteration
+- [ ] RL performance has been compared against the accepted baselines
+- [ ] the project has a documented recommendation for what to do after the
+      first RL pass
 
 ---
 
-## Phase 6 — Extensions
+## Phase 6 — Post-first-RL expansion
 
-Goal: extend the project beyond the first MVP slice once the core simulator and first learning loop are established.
+Goal: extend the project beyond the first Mission 1 learning loop using
+evidence from Phases 3-5 rather than guesses made before the first RL pass
+existed.
 
-### 6.1 Content extensions
+### 6.1 Content-extension track
 
-- [ ] More missions
-- [ ] Advanced rule support
-- [ ] Additional unit / terrain / event mechanics as needed
+- [ ] Add the next mission / content slice when broader tactical variety is
+      needed
+- [ ] Add advanced rule support only as required by the chosen mission slice
+- [ ] Generalize known Mission-1-specific seams such as multiple start hexes
+      and objective dispatch when new content actually requires them
 
-### 6.2 Agent extensions
+### 6.2 Baseline and evaluation track
 
-- [ ] Search-based agent
-- [ ] Curriculum learning
-- [ ] Better experiment reporting
-- [ ] Stronger heuristic or planning baselines
+- [ ] Add stronger heuristic, search-based, or planning baselines
+- [ ] Expand benchmarking beyond Mission 1 when additional content exists
+- [ ] Improve experiment reporting, replay-assisted debugging, and comparison
+      tooling
 
-### 6.3 Possible future directions
+### 6.3 Infrastructure and maintainability track
 
-- [ ] richer observation design
-- [ ] improved replay / debugging tools
-- [ ] scenario generalization analysis
-- [ ] broader benchmarking across missions
-- [ ] optional visualization layer after the engine is mature
+- [ ] Revisit `legal_actions.py` structure before major rule / content growth
+- [ ] Revisit replay draw-prediction coupling before adding more RNG-heavy
+      mechanics
+- [ ] Introduce synthetic fixtures if new content/testing work needs them
+- [ ] Consider tooling upgrades such as `mypy`, Python 3.12 CI, broader Ruff,
+      or coverage if they clearly pay for themselves
+
+### 6.4 Exit criteria for Phase 6
+
+- [ ] at least one post-Mission-1 extension track has produced accepted new
+      capability
+- [ ] the main scaling bottlenecks for broader content or stronger agents are
+      understood and documented
 
 ---
 
