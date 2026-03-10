@@ -14,26 +14,26 @@ Phase-specific planning belongs in `docs/internal/execution_plan.md`.
 - Phase 3 is complete and accepted.
 - `phase1-complete`, `phase2-complete`, and `phase3-complete` are the current
   local milestone tags.
-- The next macro-step is Phase 4 RL-environment planning.
+- The active phase packet is Phase 4 RL-environment planning / dispatch.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 
 If a thread behaves as though Mission 1 still needs to be built from scratch, it
 is operating from stale context.
 
-## Current pre-Phase-4 dispatch note
+## Current Phase 4 dispatch note
 
-Before Phase 4 planning is opened:
+While Phase 4 planning is active:
 
-- use the active strategic update in `docs/internal/execution_plan.md` as the
+- use the active Phase 4 packet in `docs/internal/execution_plan.md` as the
   first dispatch surface
 - treat Phase 3 delivery work as archived unless repeated use exposes a narrow
   corrective bug
-- do not start RL implementation until a Phase 4 master-thread has fixed the
-  wrapper boundary, observation/action contract, reward boundary, and benchmark
-  relationship
-- keep future phase work in delivery packages rather than returning to
-  stage-per-thread micro-slicing
+- do not open Phase 5 training, Mission 3/4 extension, or generic RL-platform
+  work until the Phase 4 packet has accepted the wrapper boundary,
+  observation/action contract, reward boundary, and benchmark relationship
+- keep Phase 4 implementation inside Delivery A / Delivery B and optional
+  Delivery C rather than returning to stage-per-thread micro-slicing
 
 ## Core operating model
 

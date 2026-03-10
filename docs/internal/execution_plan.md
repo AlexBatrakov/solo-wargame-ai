@@ -39,16 +39,17 @@ recovering chat history:
   - `phase1-complete`
   - `phase2-complete`
 - `phase3-complete`
-- Repository state checked on March 10, 2026 after Phase 3 closeout:
+- Repository state checked on March 10, 2026 before opening this Phase 4
+  master-thread:
   - `git status --short` was empty
-  - `git log --oneline --decorate -10` showed `HEAD` on
-    `98519c7 docs: close phase3 baselines`
-  - `.venv/bin/pytest -q` passed with `153 passed in 1.70s`
+  - `git log --oneline --decorate -12` showed `HEAD` on
+    `5bd9a08 docs: refresh phase4+ roadmap after phase3`
+  - `.venv/bin/pytest -q` passed with `153 passed in 1.62s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
-    succeeded
-  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`
-    succeeded
+    succeeded with the accepted `random` 2/16 wins vs `heuristic` 11/16 wins
+  - `git show --no-patch --decorate phase1-complete`,
+    `phase2-complete`, and `phase3-complete` resolved successfully
 
 Accepted runtime surface after Phase 3 closeout:
 
@@ -65,10 +66,12 @@ Accepted runtime surface after Phase 3 closeout:
   benchmark protocol.
 - `cli/phase3_baselines.py` provides the accepted thin manual rerun surface for
   smoke and benchmark comparisons.
+- no `src/solo_wargame_ai/env/` package exists yet, and `pyproject.toml`
+  currently declares no runtime RL/environment dependency
 - Mission 1 remains playable, deterministic, regression-covered, and now
   benchmarkable through fixed-seed baseline comparisons.
 
-## Strategic update after Phase 3 closeout
+## Strategic update after opening the Phase 4 master-thread
 
 Current planning assumptions for later phases:
 
@@ -79,13 +82,12 @@ Current planning assumptions for later phases:
 - The first RL wrapper should continue to delegate legality and transitions to
   the accepted domain resolver facade rather than creating a parallel rules
   path.
-- The default planning assumption for Phase 4 should be:
-  - observation is player-visible and conditioned on the current staged
-    decision context unless a planning thread documents a different choice
-  - action exposure stays close to staged domain decisions unless a later
-    adapter is justified explicitly
-  - reward starts from terminal mission outcome, with any shaping documented as
-    an environment-level choice rather than inferred from baseline metrics
+- The first accepted Phase 4 contract should:
+  - use an explicit player-visible observation boundary, not a raw
+    `GameState` leak
+  - expose the existing staged `GameAction` family through an RL adapter rather
+    than silently introducing macro-actions
+  - keep reward terminal-outcome-anchored and environment-level
 - Phase 5 should answer whether the chosen Mission 1 wrapper/action design is
   learnable enough, not just whether training can run mechanically.
 - After the first RL pass, the project should make an explicit decision between:
@@ -96,181 +98,176 @@ Current planning assumptions for later phases:
 Phases 1 and 2 should be treated as archived implementation history, not as the
 active dispatch target.
 
-## Phase 3 objective
+## Phase 4 objective
 
-Phase 3 is now defined as:
+Phase 4 is now defined as:
 
-> Add the first non-learning baselines on top of the accepted Mission 1 engine,
-> pressure-test repeated episode execution, and freeze a minimal agent-facing
-> integration surface before any RL wrapper work.
+> Open the first Mission 1 RL-friendly environment wrapper on top of the
+> accepted resolver and baseline surfaces, while keeping the domain engine
+> responsible for rules and legality, keeping observation/action/reward
+> boundaries explicit, and preserving the accepted Phase 3 benchmark as the
+> pre-RL comparison reference.
 
 Desired outcome:
 
-- Random and heuristic baselines exist.
-- Repeated episodes can be run over fixed seed sets.
-- Baseline comparisons use explicit metrics and a stable benchmark protocol.
-- The agent-facing engine surface is named clearly enough that Delivery Threads
-  do not invent ad hoc integration seams.
-- Mission 1 remains the only required content slice for the phase.
+- first observation, action, legality, and reward contracts are explicit
+- a Mission 1 wrapper can run complete seeded episodes through `reset` / `step`
+- the accepted Phase 3 benchmark surface remains intact and discoverable
+- Phase 5 can start first learning experiments without reopening core wrapper
+  boundary questions
 
-## Phase 3 planning audit findings
+## Phase 4 planning audit findings
 
-- Baseline work should use `domain/resolver.py` as the public engine facade, not
-  `domain/legal_actions.py` internals.
-- External audit follow-up `P3-R1` is active: Phase 3 needs an explicit
-  agent-facing API note early so agents and harnesses do not bind themselves to
-  helper-level seams accidentally.
-- External audit follow-up `P3-R2` is already materially addressed by repo
-  fact: `tests/test_replay_contracts.py` includes a deterministic full-game
-  defeat replay path, so Phase 3 should retain that path as an acceptance
-  contract rather than reopen it as a missing blocker.
-- Repeated episode execution is more likely to stress package boundaries and
-  harness interfaces than the Mission 1 rule surface itself.
-- `legal_actions.py` growth and replay draw-prediction coupling remain real
-  future risks, but they are preserved watchpoints for Mission 3/4-era growth,
-  not default Phase 3 scope.
-- Synthetic fixtures, `mypy`, Python 3.12 CI, broader Ruff, and similar tooling
-  improvements remain backlog items unless a delivery package is blocked without
-  them.
+- `src/solo_wargame_ai/env/` does not exist yet, so Phase 4 must add a true
+  adapter layer rather than quietly repurposing `agents/`, `eval/`, or `cli/`
+  as RL surfaces.
+- The accepted engine seam is already good enough for a first wrapper:
+  `create_initial_game_state(...)`, `resolver.get_legal_actions(state)`,
+  `resolver.apply_action(state, action)`, and `state.terminal_outcome`.
+- Mission 1 already exposes explicit staged `DecisionContextKind` values and a
+  concrete `GameAction` union, so the first RL wrapper does not need to invent
+  macro-actions just to become usable.
+- Turn-limit defeat is already a domain terminal outcome, so Gymnasium
+  `truncated` should be reserved for external wrapper caps rather than mapped
+  from mission defeat.
+- The external audit items that are truly active now are `P4-R1` through
+  `P4-R4`; `C1` through `C5` remain later content-extension watchpoints, and
+  `C6` is a caution not to copy `HeuristicAgent` coupling into the RL contract.
+- Because `pyproject.toml` currently has no runtime dependencies, any
+  `gymnasium` addition belongs inside a bounded wrapper-package decision rather
+  than inside generic experiment-platform scaffolding.
+- The accepted Phase 3 smoke/benchmark surfaces already provide the pre-RL
+  reference and should remain separate from reward design.
 
-## Accepted Phase 3 scope
+## Active external audit follow-ups for Phase 4
+
+- `P4-R1` active: lock the observation boundary explicitly and document any
+  simulator-truth leakage if chosen.
+- `P4-R2` active: choose the first RL action exposure and legality interface
+  without silently flattening staged decisions.
+- `P4-R3` active: freeze a first reward contract anchored to mission outcome.
+- `P4-R4` active: preserve the accepted Phase 3 smoke and benchmark reference
+  for later comparison.
+- `C6` active as a caution only: `HeuristicAgent` is an accepted Mission-1
+  baseline, not the stable RL/env interface to copy.
+- `C1` through `C5` are not active Phase 4 scope unless wrapper work uncovers a
+  concrete blocker that cannot be solved inside the env layer.
+
+## Accepted Phase 4 scope
 
 In scope:
 
-- explicit Phase 3 agent-facing API contract
-- thin agent and evaluation package surfaces for Mission 1 only
-- `RandomAgent`
-- first heuristic baseline
-- repeated-episode harness over fixed seed sets
-- comparison metrics and a reproducible benchmark protocol
-- thin benchmark invocation surface if needed to make reruns practical
+- Mission 1 only
+- an explicit env-layer adapter on top of the resolver path
+- first observation/view construction for RL use
+- first RL-facing action catalog/encoding over the accepted staged action flow
+- legal-action masking or an equivalent constrained-action interface derived
+  from the domain engine
+- `reset` / `step` episode semantics, deterministic seeded resets, and
+  environment-level reward handling
+- focused wrapper tests and verification for full Mission 1 episodes
+- internal planning/status docs and any narrow contract notes needed to support
+  Delivery Threads
 
 Out of scope:
 
-- Gymnasium-style env wrappers, `reset` / `step`, reward design, observation
-  encoding, action encoding, legal-action masks, or any other RL-facing
-  adapter surface
-- Mission 3/4 or broader rule/content expansion unless baseline work exposes a
-  real blocking engine bug in the current Mission 1 slice
-- refactors motivated only by anticipated `legal_actions.py` growth or replay
-  draw-prediction discomfort
-- synthetic fixture programs, `mypy` / `pyright`, Python 3.12 CI expansion,
-  broader Ruff, or coverage campaigns as default Phase 3 work
-- vectorized simulation, performance engineering, or experiment-platform
-  generalization beyond what fixed-seed baseline runs directly require
-- implementation commits or closeout work from this Phase Master Thread
+- Phase 3 closeout work, baseline rewrites, or benchmark metric redesign
+- treating Phase 3 metrics as default reward terms
+- training loops, policy code, hyperparameter search, experiment dashboards, or
+  generic RL platform buildout
+- Mission 3/4 or broader content/rule expansion
+- broad domain cleanup motivated by anticipated future growth rather than a
+  concrete wrapper blocker
+- public-doc expansion beyond narrow contract promotion that becomes stable
+  after implementation
+- implementation commits from this Phase Master Thread
 
-## Phase 3 agent-facing API contract
+## Phase 4 contract decisions
 
-Stable Phase 3 contract:
+- First observation boundary:
+  - use a structured player-visible observation derived from `GameState`
+  - include the current staged decision context plus public mission/map/unit
+    data needed to act
+  - do not expose raw `GameState`, RNG state, or simulator-only debugging
+    fields
+  - unresolved marker positions remain visible because they are player-visible
+    map facts, not hidden simulator truth
+- First RL-facing action exposure:
+  - use a fixed Mission 1 action catalog that encodes the accepted staged
+    `GameAction` family as RL action ids
+  - the wrapper may flatten ids for library compatibility, but it must not
+    auto-resolve doubles, activation-die choice, order sequencing, or German
+    activation order into hidden macro-policy
+- Legality interface policy:
+  - `resolver.get_legal_actions(state)` remains the source of truth
+  - the wrapper maps current legal `GameAction` objects to legal ids/masks and
+    surfaces those to RL code
+  - invalid action ids are deterministic contract errors, not a new
+    reward/transition mechanic
+- `terminated` vs `truncated` semantics:
+  - mission victory and mission defeat, including turn-limit defeat, map to
+    `terminated=True` and `truncated=False`
+  - `truncated=True` is reserved for external step caps or debug guards and
+    should be absent from the default Phase 4 wrapper
+- First reward contract boundary:
+  - default Phase 4 reward is environment-level terminal-only reward:
+    `+1` victory, `-1` defeat, `0` otherwise
+  - any shaping stays explicitly deferred to named Phase 5 experiments unless a
+    later accepted phase packet updates this policy
+- Benchmark/reference preservation:
+  - keep `agents/base.py`, `eval/episode_runner.py`, `eval/benchmark.py`, and
+    `cli/phase3_baselines.py` unchanged as the accepted pre-RL comparison
+    surface unless a later thread gets explicit approval to revise them
+  - keep the 16-seed smoke set and the accepted 200-seed snapshot (`random`
+    11/200 wins, `heuristic` 157/200 wins) as the comparison anchor
+  - continue using the existing baseline CLI as a regression/comparison surface
+    rather than translating its metrics into reward terms
 
-- the harness owns mission loading and episode initialization via
-  `load_mission(...)` and `create_initial_game_state(...)`
-- the player-facing step loop uses
-  `solo_wargame_ai.domain.resolver.get_legal_actions(state)` and
-  `solo_wargame_ai.domain.resolver.apply_action(state, action)`
-- agents choose one `GameAction` from the current legal set; they do not mutate
-  `GameState` directly and do not call `domain/legal_actions.py` helpers
-- terminal handling is based on `state.terminal_outcome` and the resolver
-  facade returning no legal actions for terminal states
-- `IllegalActionError` is a contract error, not normal control flow for agent
-  play
-- replay helpers are optional evaluation/debugging adapters; agents should not
-  need `ReplayTrace` or replay-event internals in order to act
+## Boundary: wrapper work vs Phase 5 vs Mission 3/4
 
-Recommended external agent shape:
+RL wrapper work includes:
 
-- input: current `GameState` plus current legal `tuple[GameAction, ...]`
-- output: one selected `GameAction`
-- optional per-agent RNG or seed, but any randomness must remain explicit and
-  reproducible
+- env package/module creation
+- observation building
+- action-id/catalog adaptation
+- legal-action masks or equivalent constrained-action support
+- reward computation at the environment boundary
+- deterministic `reset` / `step` behavior and wrapper-focused verification
 
-## Defeat trace decision
+Phase 5 experiment work begins only when:
 
-Decision:
+- a specific training library or algorithm is chosen
+- experiment configs and seed policy for learning runs are being defined
+- reward shaping is being tuned beyond the default terminal-only contract
+- learned-policy evaluation is being compared against the accepted Phase 3
+  baselines
+- the project is answering whether the current Mission 1 wrapper is learnable
 
-- full-game defeat coverage stays inside Phase 3 acceptance scope, but it does
-  not need its own delivery package
-- it belongs in Delivery A because the first agent/harness package is where the
-  episode-loop contract is frozen
-- repo fact already provides a deterministic defeat replay round trip, so
-  Delivery A should preserve that path as a named acceptance check and add more
-  direct harness coverage only if the new runner surface bypasses the existing
-  replay contract
+Later Mission 3/4 content extension begins only when:
 
-## Phase 3 metrics and benchmark protocol
+- new terrain/unit/objective families are being added to the domain engine
+- multiple-start-hex handling or objective dispatch needs to be generalized
+- `legal_actions.py` structure or replay draw-prediction coupling is being
+  revisited for broader content growth
 
-Required comparison metrics:
+## Operational rules for Phase 4
 
-- episode count
-- terminal outcome counts plus win rate / defeat rate
-- mean terminal turn
-- mean resolved-marker count
-- mean removed-German count
-- mean player-decision count per episode
-
-Why this set:
-
-- it keeps the first comparison grounded in mission success plus simple mission
-  progress diagnostics
-- it avoids coupling core baseline metrics to replay-event internals or future
-  RL reward design
-
-Benchmark protocol:
-
-- Mission 1 only
-- same fixed seed list for all agents
-- two tiers:
-  - smoke: 16 seeds for package-local verification
-  - benchmark: 200 fixed seeds for accepted comparison
-- agent tie-breaking or randomness must be seeded explicitly and reported
-- comparison output should be a small stable table/report, not a general
-  experiment platform
-- benchmark runs are local/manual Phase 3 verification, not CI gates
-
-Acceptance expectation:
-
-- both baselines complete the fixed benchmark without illegal actions or
-  crashes
-- heuristic behavior is measurably distinct from random on the recorded metrics
-- preferred outcome is heuristic better than random on win rate; if not, the
-  result must be explained explicitly before Phase 3 closeout
-
-## Boundary: baseline harness vs premature RL/env work
-
-Baseline harness work may include:
-
-- episode runner around existing resolver APIs
-- batch evaluation over fixed seeds
-- metrics/result dataclasses
-- thin CLI or script entrypoints
-- agent-local ranking and selection logic over concrete legal `GameAction`
-  objects
-
-Phase 3 must not include:
-
-- Gymnasium-style `reset` / `step`
-- reward definitions or shaping
-- observation encoders or tensor adapters
-- action masking or flattened action ids for RL libraries
-- vectorized env management
-- macro-action compression designed primarily for RL rather than the current
-  baseline agents
-
-## Operational rules for Phase 3
-
-- this master-thread owns the Phase 3 packet, status block, acceptance notes,
+- this master-thread owns the Phase 4 packet, status block, acceptance notes,
   and closeout docs
 - Delivery Threads own implementation for one package only and normally make
   implementation commits after acceptance
-- keep Phase 3 to two required Delivery Threads plus one optional package only
-  if needed
-- do not reopen stage-per-thread micro-slicing inside a delivery package
-- if repeated episodes expose a real Mission 1 engine bug, fix it narrowly in
-  the owning Delivery Thread and add protecting coverage; do not widen to
-  Mission 3/4
-- public docs can wait until Phase 3 deliverables are stable enough to describe
-  without churn
+- keep Phase 4 to Delivery A plus Delivery B, with optional Delivery C only if
+  operator-surface or closeout ergonomics remain awkward
+- do not reopen Phase 3 closeout, Mission 3/4 extension, or generic RL-platform
+  buildout inside Delivery A/B/C
+- if a package needs to revise the accepted observation/action/reward/legality
+  decisions below, return to the Phase Master Thread before editing
+- routine package verification should continue to include:
+  - `.venv/bin/pytest -q`
+  - `.venv/bin/ruff check src tests`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- rerun the 200-seed Phase 3 benchmark at Phase 4 closeout or earlier only if
+  wrapper work touches the accepted baseline comparison surface directly
 
 Allowed status values:
 
@@ -279,264 +276,277 @@ Allowed status values:
 - `completed`
 - `blocked`
 
-## Phase 3 status block
+## Phase 4 status block
 
 Update this block only from a planning / audit / master-thread after checking
 repo state against the package criteria.
 
-- Package A - Agent-facing API and episode harness foundation: completed
-- Package B - Heuristic baseline and comparison loop: completed
-- Package C - Benchmark packaging and operator surface: completed (optional)
-- Phase 3 overall: completed
-- Planning audit date: March 8, 2026
-- Closeout verification date: March 9, 2026
+- Package A - Observation/action/legality contract foundation: pending
+- Package B - Wrapper step/reset semantics and reward contract: pending
+- Package C - Operator surface and reference-preservation polish: pending
+  (optional)
+- Phase 4 overall: pending
+- Planning audit date: March 10, 2026
 - Blocking findings before Delivery A: none
 
-## Phase 3 closeout record
-
-- Accepted implementation commits:
-  - `7b8937e phase3: add random agent and mission1 episode runner`
-  - `b34d247 phase3: add heuristic baseline and fixed-seed comparison`
-  - `291a121 phase3: add manual baselines cli`
-- Final verification:
-  - `.venv/bin/pytest -q` -> `153 passed in 1.69s`
-  - `.venv/bin/ruff check src tests` -> `All checks passed!`
-  - smoke CLI rerun succeeded on the fixed 16-seed set
-  - benchmark CLI rerun succeeded on the fixed 200-seed set
-- Accepted benchmark snapshot:
-  - smoke: `random` 2/16 wins vs `heuristic` 11/16 wins
-  - benchmark: `random` 11/200 wins vs `heuristic` 157/200 wins
-- Residual Phase 3 boundaries preserved at closeout:
-  - no RL/env wrapper surface was added
-  - Mission 3/4 remains out of scope
-  - broader tooling backlog remains deferred
-
-## Package A - Agent-facing API and episode harness foundation
+## Package A - Observation/action/legality contract foundation
 
 Status:
 
-- completed
-- accepted in `7b8937e phase3: add random agent and mission1 episode runner`
+- pending
 
 Goal:
 
-- freeze the minimal agent-facing contract and land the first repeated-episode
-  baseline path without introducing RL-oriented abstractions
+- freeze the first wrapper-facing observation, action, and legality seams on top
+  of the accepted resolver path without mixing in reward or operator-surface
+  concerns
 
 Concrete deliverables:
 
-- one explicit note or code-level contract naming the stable Phase 3
-  agent-facing API surface
-- `src/solo_wargame_ai/agents/` skeleton with a minimal agent protocol/base and
-  `RandomAgent`
-- minimal episode runner that owns mission init, decision looping, and
-  per-episode result recording
-- fixed-seed repeated-episode smoke path for Mission 1 only
-- explicit acceptance check that the defeat terminal path remains covered after
-  the new runner surface lands
+- `src/solo_wargame_ai/env/` package entry surface for Phase 4 work
+- structured player-visible observation/view builder conditioned on current
+  decision context
+- fixed Mission 1 action catalog plus encode/decode helpers between RL action
+  ids and staged domain `GameAction` objects
+- legal-action mask or legal-id adapter sourced directly from the resolver legal
+  set
+- only the narrow doc note(s) needed to keep the contract explicit if code names
+  are not self-explanatory
 
 Likely files / subsystems touched:
 
-- `src/solo_wargame_ai/agents/__init__.py`
-- `src/solo_wargame_ai/agents/base.py`
-- `src/solo_wargame_ai/agents/random_agent.py`
-- `src/solo_wargame_ai/eval/__init__.py`
-- `src/solo_wargame_ai/eval/episode_runner.py`
-- optional thin entrypoint under `src/solo_wargame_ai/cli/` or `scripts/`
-- narrow doc note only if the API surface needs one tracked local home beyond
-  code
+- `src/solo_wargame_ai/env/__init__.py`
+- `src/solo_wargame_ai/env/observation.py`
+- `src/solo_wargame_ai/env/action_catalog.py` or equivalent
+- `src/solo_wargame_ai/env/legal_action_mask.py` or equivalent
+- focused tests under `tests/` for observation filtering and action/mask
+  round-trips
 
 Required tests / verification:
 
-- focused tests that agents return only legal actions and do not bypass the
-  resolver facade
-- fixed-seed episode-runner tests that reach terminal states through actual
-  gameplay flow
-- repeated-episode smoke verification on the 16-seed smoke set
+- focused tests that observation excludes RNG state and other simulator-only
+  fields
+- focused tests that action-id encode/decode stays aligned with the staged
+  `GameAction` contract
+- focused tests that the legal mask/legal-id surface matches
+  `resolver.get_legal_actions(state)` for representative decision contexts
 - `.venv/bin/pytest -q`
 - `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
 
 Risks / traps:
 
-- binding agents directly to `domain/legal_actions.py` or other helper-level
-  seams
-- using replay as the primary control path instead of the resolver facade
-- inventing a Gym-like interface before Phase 3 actually needs one
-- mixing API-boundary decisions with heuristic-policy design
+- leaking raw `GameState` instead of creating an explicit observation boundary
+- silently compressing staged decisions into macro-actions
+- inferring legality in the env layer instead of deriving it from the resolver
+- copying Mission-1-specific `HeuristicAgent` coupling into the general wrapper
+  contract
+- overengineering a multi-mission/generic RL platform before the first wrapper
+  exists
 
 Completion criteria:
 
-- `RandomAgent` can play full Mission 1 episodes through the resolver facade
-- the runner returns deterministic per-episode results for fixed seeds
-- the Phase 3 agent-facing contract is explicit enough that Delivery B can build
-  on it without re-planning the integration surface
-- defeat-path acceptance coverage remains present by repo fact
+- Mission 1 observation, action-id, and legality contracts are explicit and
+  testable
+- the env layer can map between RL-facing action ids and current legal staged
+  domain actions without redefining rules
+- Package B can build `reset` / `step` on top of this contract without reopening
+  boundary decisions
 
 Commit shape:
 
 - one commit preferred
-- split into two only if the API note/contract surface and the runner/agent code
-  become awkwardly mixed in review
+- split into two only if observation-boundary work and action/mask work are
+  cleaner to review separately
 
 Analysis-before-edit:
 
 - required
 
-## Package B - Heuristic baseline and comparison loop
+## Package B - Wrapper step/reset semantics and reward contract
 
 Status:
 
-- completed
-- accepted in `b34d247 phase3: add heuristic baseline and fixed-seed comparison`
+- pending
 
 Goal:
 
-- add the first non-random baseline and lock the first comparison-ready metrics
-  and benchmark loop
+- build the thin Mission 1 RL wrapper on top of Package A and freeze the first
+  `reset` / `step` / reward / termination semantics
 
 Concrete deliverables:
 
-- `HeuristicAgent` that acts only through legal `GameAction` choices
-- metrics aggregation over repeated episodes using the fixed seed sets
-- fixed benchmark seed/config surface for Phase 3 comparisons
-- thin comparison command or callable that evaluates random vs heuristic on the
-  same seeds and emits the required report table
+- Mission 1 environment class or wrapper around mission loading, initial-state
+  creation, resolver stepping, and Package A encoders
+- deterministic seeded `reset` contract
+- `step` contract returning observation, reward, `terminated`, `truncated`, and
+  `info`
+- environment-level terminal-only reward helper
+- invalid-action rejection behavior consistent with the legality policy
+- full-episode wrapper coverage for complete Mission 1 runs
 
 Likely files / subsystems touched:
 
-- `src/solo_wargame_ai/agents/heuristic_agent.py`
-- `src/solo_wargame_ai/eval/metrics.py`
-- `src/solo_wargame_ai/eval/benchmark.py` or adjacent comparison module
-- optional thin entrypoint under `src/solo_wargame_ai/cli/` or `scripts/`
-- `configs/experiments/` or another small committed seed/config surface if that
-  is the cleanest way to freeze the benchmark
+- `src/solo_wargame_ai/env/mission1_env.py` or equivalent wrapper module
+- `src/solo_wargame_ai/env/reward.py`
+- `src/solo_wargame_ai/env/__init__.py`
+- `pyproject.toml` if the package adds a runtime dependency such as
+  `gymnasium`
+- focused tests under `tests/` for wrapper semantics and determinism
 
 Required tests / verification:
 
-- focused tests for heuristic legality and targeted preference behavior
-- deterministic smoke comparison on the 16-seed smoke set
-- local rerun of the 200-seed benchmark comparison
+- focused tests for `reset` / `step` full-episode progression
+- focused tests for victory and turn-limit defeat mapping to
+  `terminated=True`, `truncated=False`
+- focused tests for deterministic invalid-action rejection
+- deterministic seeded wrapper tests that reproduce complete Mission 1 episodes
 - `.venv/bin/pytest -q`
 - `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
 
 Risks / traps:
 
-- heuristic logic quietly re-encoding rule legality instead of consuming the
-  engine output
-- metrics drifting into replay-event coupling or reward-like proxy design
-- benchmark seeds or agent randomness staying implicit and making comparisons
-  irreproducible
-- mixing heuristic iteration with broader operator-surface or public-doc work
+- turning the wrapper into a second rules path instead of a resolver adapter
+- sneaking benchmark metrics into reward
+- treating mission defeat as truncation
+- adding dependency/runtime scaffolding larger than the wrapper actually needs
+- overloading `info` with raw internal truth that bypasses the chosen
+  observation boundary
 
 Completion criteria:
 
-- random vs heuristic can be compared on one committed fixed seed set
-- the required metrics are emitted in one stable report/table shape
-- heuristic behavior is measurably distinct from random and preferably better on
-  win rate
-- no RL/env abstractions were added to make the comparison work
+- the wrapper can run complete Mission 1 episodes through `reset` / `step`
+- default reward and termination semantics are explicit and tested
+- Package A contracts remain intact
+- the accepted Phase 3 baseline surface still reruns unchanged
 
 Commit shape:
 
-- one commit is acceptable if the diff stays coherent
-- a two-commit series is also acceptable if heuristic policy logic and
-  evaluation/report plumbing are cleaner to review separately
+- one coherent commit preferred
+- two commits acceptable only if dependency/runtime-wrapper setup and
+  reward/verification work are cleaner to review separately
 
 Analysis-before-edit:
 
 - straight to implementation after Package A is accepted
-- return to analysis first only if Package B needs to change the Package A API
-  contract rather than merely use it
+- return to analysis first only if Package B needs to revise Package A
+  contracts or make a nontrivial dependency/API choice
 
-## Package C - Benchmark packaging and operator surface
+## Package C - Operator surface and reference-preservation polish
 
 Status:
 
-- completed (optional)
-- accepted in `291a121 phase3: add manual baselines cli`
+- pending (optional)
 
 Goal:
 
-- package benchmark invocation so accepted comparisons are easy to rerun without
-  turning Phase 3 into an experiment-platform buildout
+- make the accepted wrapper easy to verify and hand off to Phase 5 without
+  turning Phase 4 into an experiment-platform buildout
 
 Concrete deliverables:
 
-- one documented command or thin CLI entrypoint for smoke and benchmark runs
-- committed seed/config surface if it did not already land in Package B
-- only the narrow packaging/polish needed to make baseline comparisons
-  repeatable by operator command rather than ad hoc Python entry
+- one thin manual operator surface for Phase 4 env smoke reruns if Package B
+  leaves wrapper verification awkward
+- narrow docs updates freezing accepted Phase 4 verification commands and
+  explicitly pointing back to the preserved Phase 3 comparison reference
+- only the minimal packaging/polish needed so Phase 5 does not start from ad hoc
+  local commands
 
 Likely files / subsystems touched:
 
-- `src/solo_wargame_ai/cli/phase3_baselines.py` or
-  `scripts/run_phase3_baselines.py`
-- `configs/experiments/`
-- a small internal doc note only if invocation naming or location needs to be
-  frozen
+- `src/solo_wargame_ai/cli/phase4_env_smoke.py` or a similarly thin operator
+  entrypoint
+- narrow internal/public docs if the accepted wrapper command and contract need
+  promotion after Packages A/B
+- targeted tests only if Package C adds nontrivial logic beyond a thin wrapper
 
 Required tests / verification:
 
-- local invocation of the accepted command on the 16-seed smoke set
-- local rerun of the full benchmark if the package changes benchmark entry
-  semantics
+- local invocation of the accepted Phase 4 env smoke command if Package C adds
+  one
 - `.venv/bin/ruff check src tests`
-- targeted `pytest` if new logic lives outside existing coverage
+- targeted `pytest` only if Package C introduces new logic
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
 
 Risks / traps:
 
-- inventing a generic experiment-orchestration framework or RL config layer
-- mixing public-doc polish or Phase 3 closeout with operator-surface work
-- using Package C as a dumping ground for unresolved Package A/B design
+- inventing a generic experiment/config platform
+- mixing Phase 5 training concerns into a Phase 4 operator-surface package
+- rerouting or redefining the accepted Phase 3 benchmark surface instead of
+  preserving it
 
 Completion criteria:
 
-- the accepted comparison can be rerun from one stable operator surface
-- the package remains a thin wrapper over Package A/B code
-- no new env/RL abstractions were introduced
+- wrapper verification can be rerun from one stable operator surface if needed
+- the preserved Phase 3 comparison reference remains explicit in docs
+- Phase 5 can start from accepted wrapper commands without extra planning churn
 
 Commit shape:
 
-- one small commit only if the package actually exists
+- one small commit only if this optional package is actually needed
 
 Analysis-before-edit:
 
-- straight to implementation if the package stays a thin wrapper
-- analysis-before-edit is required if Package C starts adding generic config or
-  CLI architecture beyond a narrow benchmark entry surface
+- straight to implementation if the package stays a thin CLI/doc layer
+- analysis-before-edit is required if Package C starts adding config or command
+  architecture that looks like a general experiment platform
 
-## Recommended Delivery Thread sequence for Phase 3
+## Recommended Delivery Thread sequence for Phase 4
 
 Default queue:
 
-1. Delivery A only: agent-facing API and episode harness foundation
-2. Delivery B only: heuristic baseline and comparison loop
-3. Delivery C only if Package B would otherwise mix operator-surface work with
-   heuristic/comparison logic, or if rerun ergonomics remain weak after
-   Package B
+1. Delivery A only: observation/action/legality contract foundation
+2. Delivery B only: wrapper step/reset semantics and reward contract
+3. Delivery C only if Package B leaves operator-surface or closeout ergonomics
+   awkward, or if Phase 5 handoff would otherwise depend on ad hoc commands/docs
 
 Do not mix in one thread:
 
-- Package A API-boundary work with heuristic tuning or benchmark interpretation
-- Package B policy logic with public-doc polish or Phase 3 closeout
-- Package C packaging work with RL/env design or Mission 3/4 content extension
-- any Phase 3 package with backlog-only tooling expansions
+- Package A contract/boundary work with Package B reward or episode-semantics
+  work
+- any Phase 4 package with Phase 3 closeout or benchmark reinterpretation
+- any Phase 4 package with Mission 3/4 content extension or domain cleanup
+  aimed at later scale
+- Package C polish with training-loop or experiment-config architecture
 
 Straight to implementation is appropriate when the package scope is:
 
 - implementing Package B on top of an accepted Package A contract
-- implementing a thin Package C wrapper after Package B has settled the
-  benchmark shape
-- adding narrow benchmark/config plumbing that does not redefine interfaces
+- implementing a thin Package C operator layer after Packages A/B settle the
+  accepted wrapper surface
+- adding narrow verification packaging that does not redefine contracts
 
 Analysis-before-edit is required when a thread proposes to change:
 
-- the Package A contract boundary
-- the resolver facade or episode-loop ownership model
-- the benchmark/config surface in a way that implies general experiment
-  architecture
-- the role of replay helpers in core baseline metrics
-- scope boundaries toward RL/env or Mission 3/4 work
+- the first observation boundary
+- the staged action exposure / action-catalog semantics
+- legality ownership or invalid-action policy
+- reward semantics beyond the default terminal-only contract
+- dependency strategy for the wrapper surface
+- the relationship between Phase 4 verification and the preserved Phase 3
+  benchmark reference
+
+## Archived Phase 3 control record
+
+- Accepted implementation commits:
+  - `7b8937e phase3: add random agent and mission1 episode runner`
+  - `b34d247 phase3: add heuristic baseline and fixed-seed comparison`
+  - `291a121 phase3: add manual baselines cli`
+- Final accepted verification:
+  - `.venv/bin/pytest -q`
+  - `.venv/bin/ruff check src tests`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`
+- Accepted benchmark snapshot:
+  - smoke: `random` 2/16 wins vs `heuristic` 11/16 wins
+  - benchmark: `random` 11/200 wins vs `heuristic` 157/200 wins
+- Detailed Delivery A/B/C history remains in:
+  - `docs/internal/thread_reports/2026-03-08_phase3-master-thread.md`
+  - `docs/internal/thread_reports/2026-03-08_phase3-delivery-a.md`
+  - `docs/internal/thread_reports/2026-03-08_delivery-b_phase3_baselines.md`
+  - `docs/internal/thread_reports/2026-03-09_phase3-package-c-analysis.md`
+  - `docs/internal/thread_reports/2026-03-09_phase3-super-master-handoff.md`
 
 ## Archived Phase 1 / Phase 2 note
 
