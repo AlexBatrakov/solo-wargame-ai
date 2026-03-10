@@ -154,6 +154,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+!src/solo_wargame_ai/env/
+!src/solo_wargame_ai/env/**
 
 # Spyder project settings
 .spyderproject
