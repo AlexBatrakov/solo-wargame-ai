@@ -537,6 +537,18 @@ That next packet has now landed as well:
 - the next packet is no longer Mission 3 content landing itself, but Mission 3
   baselines/search re-establishment.
 
+### Completed packets since the original phase roadmap
+
+- [x] **Mission 3 vertical slice + minimal structural prep**
+  Closed as a bounded packet after Phase 6.
+  Outcome:
+  - Mission 3 config transcription landed;
+  - the domain engine now supports Building, Hill, bounded wooded-hill
+    semantics, and German Rifle Squad behavior;
+  - Mission 3 can be loaded, initialized, played, and replayed deterministically
+    through the accepted resolver path;
+  - the packet stayed out of env/RL/baseline/search follow-on work.
+
 ---
 
 ## Post-Phase-6 Planning Model

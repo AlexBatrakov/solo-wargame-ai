@@ -50,11 +50,11 @@ recovering chat history:
   - `phase4-complete`
   - `phase5-complete`
   - `phase6-complete`
-- Repository state rechecked on March 11, 2026 after Mission 3 packet
-  closeout:
+- Repository state rechecked on March 11, 2026 during Mission 3
+  baselines/search packet planning:
   - `git status --short` was empty
   - `git log --oneline --decorate -12` showed `HEAD` on
-    `a9f1acc docs: close mission3 packet`
+    `e00eae9 docs: add local project profile support`
   - `git show --no-patch --decorate phase1-complete` resolved to
     `d6445d9 docs: sync public handoff after phase1 completion`
   - `git show --no-patch --decorate phase2-complete` resolved to
@@ -67,7 +67,7 @@ recovering chat history:
     `9d8beb9 docs: close phase5 learning experiments`
   - `git show --no-patch --decorate phase6-complete` resolved to
     `f80fde5 docs: close phase6 strengthening`
-  - `.venv/bin/pytest -q` passed with `217 passed in 27.51s`
+  - `.venv/bin/pytest -q` passed with `217 passed in 27.10s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
     succeeded with the preserved `random` `2/16` wins vs `heuristic`
@@ -94,10 +94,15 @@ Accepted runtime surface after Phase 6 closeout:
 - `io/replay.py` remains a replay adapter over the resolver path, not a second
   engine.
 - `agents/base.py` records the accepted Phase 3 domain-action contract.
-- `RandomAgent` and `HeuristicAgent` remain the accepted non-learning Mission 1
-  baselines, with the 200-seed snapshot fixed at `11/200` and `157/200`.
-- `eval/episode_runner.py`, `eval/metrics.py`, and `eval/benchmark.py` remain
-  the accepted baseline harness and comparison-metrics surface.
+- `RandomAgent` remains the accepted reusable floor baseline on the domain-
+  action contract.
+- `HeuristicAgent` remains the accepted Mission-1-specific heuristic baseline,
+  with the preserved Mission 1 benchmark fixed at `157/200`.
+- `eval/episode_runner.py` and `eval/metrics.py` remain the accepted lower-
+  level episode runner and aggregate-metrics seams for non-learning
+  comparisons.
+- `eval/benchmark.py` remains the preserved Mission 1 random-vs-heuristic
+  comparison layer, not a generic cross-mission benchmark platform.
 - `env/normalize_env_state(...)` is the accepted env decision boundary over
   automatic resolver progression.
 - `env/observation.py` exposes a structured player-visible observation rather
@@ -117,10 +122,11 @@ Accepted runtime surface after Phase 6 closeout:
   `eval/learned_policy_reporting.py`, and `eval/learned_policy_summary.py`
   are now the accepted responsibility-named durable library paths that replaced
   earlier phase-history module names during Delivery A.
-- `agents/rollout_search_agent.py` is the accepted stronger Mission 1
+- `agents/rollout_search_agent.py` is the accepted stronger Mission-1-specific
   planner-like baseline surface from Delivery B.
-- `eval/rollout_baseline.py` is the accepted compact comparison layer for the
-  stronger baseline against preserved Phase 3/5 anchors.
+- `eval/rollout_baseline.py` is the accepted Mission 1 comparison layer for the
+  stronger baseline against preserved Phase 3/5 anchors, not yet a broader
+  multi-mission search/reporting platform.
 - `cli/phase3_baselines.py` and `cli/phase4_env_smoke.py` remain the accepted
   preserved operator references.
 - `cli/phase5_train.py`, `cli/phase5_learned_policy_eval.py`, and
@@ -129,8 +135,8 @@ Accepted runtime surface after Phase 6 closeout:
   rerunning the stronger Mission 1 rollout baseline on preserved smoke and
   benchmark seed sets.
 - `pyproject.toml` now carries the bounded `numpy` / `torch` learning
-  dependency pair, while `configs/` still contains only the Mission 1 mission
-  config and no broader experiment-platform surface.
+  dependency pair, while `configs/missions/` now contains the accepted Mission
+  1 and Mission 3 configs and no broader experiment-platform surface.
 - `outputs/phase5/` contains the accepted first-learner artifacts and aggregate
   summary files used as preserved comparison evidence.
 
@@ -192,36 +198,423 @@ Demoted for now:
 - generic search, experiment, or platform buildout
 - tooling campaigns that are not directly required by the next content slice
 
-## Startup brief for the next packet master-thread
+## Active packet - Mission 3 baselines/search re-establishment
 
-The next master-thread should not reopen whether the Mission 3 content slice
-should exist at all. That packet is already closed.
+Packet goal:
 
-Its planning job should instead be to turn the next recommended packet into a
-bounded executable plan around Mission 3 baselines/search.
+- re-establish a first accepted Mission 3 comparison stack before opening
+  Mission 3 env/wrapper work, Mission 3 learning, Mission 4 content, or a
+  generic multi-mission benchmark platform
 
-Questions that the next packet master-thread should answer explicitly:
+Planning audit findings:
 
-1. Which baseline/search family is the right next comparator on Mission 3:
-   random, heuristic port/adaptation, bounded search, or a staged rollout mix?
-2. How much adaptation of the accepted Mission 1 baseline/eval harness is
-   actually required for Mission 3, and how much should stay deferred?
-3. What should count as the first accepted Mission 3 comparison surface before
-   env/wrapper extension is allowed to start?
-4. Which Mission 1 anchors must remain fixed and discoverable during Mission 3
-   comparison work?
-5. Does Mission 3 evidence point next toward env extension, another richer
-   content slice, or one more bounded baseline/search pass?
+- Mission 3 is already a deterministic resolver-playable and replayable slice;
+  this packet is not a reason to reopen the content-landing work.
+- The reusable lower-level comparison seam already exists:
+  - `agents/base.py`
+  - `create_initial_game_state(...)`
+  - `resolver.get_legal_actions(...)`
+  - `resolver.apply_action(...)`
+  - `eval/episode_runner.py`
+  - `eval/metrics.py`
+- `RandomAgent` is reusable as-is for Mission 3.
+- The current higher-level comparison/operator surface is still Mission-1-
+  specific:
+  - `HeuristicAgent` is explicitly Mission-1-specific and fabricates synthetic
+    order-choice states for scoring.
+  - `RolloutSearchAgent` inherits Mission 1 coupling through its heuristic
+    rollout policy.
+  - `eval/benchmark.py` and `eval/rollout_baseline.py` hardcode Mission 1
+    agent sets, seed surfaces, and/or preserved anchor handling.
+  - `cli/phase3_baselines.py` and `cli/phase6_stronger_baseline.py` hardcode
+    Mission 1 paths and are preserved historical operator surfaces.
+- Mission 3 shares the accepted clear-all-hostiles objective family and the
+  current single-start-hex setup assumption with Mission 1, so this packet does
+  not need objective-dispatch generalization or multi-start-hex work.
+- `C6` remains an active caution:
+  Mission-1-specific heuristic coupling is acceptable as a local baseline
+  implementation detail, but it must not silently become the future general
+  agent contract.
+- A generic multi-mission benchmark/reporting platform is still unjustified:
+  one bounded Mission-3-local comparison surface is enough for this packet.
 
-Default recommendation from current repo evidence:
+Packet planning decisions:
 
-- preserve all accepted Mission 1 references while Mission 3 comparison work
-  lands
-- start with bounded Mission 3 baselines/search only, not env/RL
-- treat Mission 3 env/wrapper extension and Mission 3 learning as follow-on
-  packets rather than mixing them into the next one
-- keep Mission 4 content and broader multi-mission platform work deferred until
-  Mission 3 comparison evidence exists
+- Minimal accepted Mission 3 comparison stack:
+  - `random` floor baseline
+  - one bounded Mission 3 heuristic baseline
+  - one bounded Mission 3 rollout/search baseline with an explicit fixed budget
+- What can be deferred:
+  - generic search frameworks or pluggable planner backends
+  - additional heuristic families beyond one bounded Mission 3 baseline
+  - Mission 3 env/wrapper extension
+  - Mission 3 learning experiments
+  - Mission 4 content landing
+  - cross-mission reporting/platform work
+  - reward/env/action redesign absent a direct blocker found during this packet
+- Reuse as-is:
+  - `agents/base.py`
+  - `RandomAgent`
+  - `create_initial_game_state(...)`
+  - `resolver.get_legal_actions(...)`
+  - `resolver.apply_action(...)`
+  - `eval/episode_runner.py` and `eval/metrics.py`, with only bounded wording
+    or helper cleanup if directly required by Mission 3 comparison work
+- Requires bounded adaptation:
+  - the Mission 3 comparison/eval/CLI surface, because preserved Mission 1
+    phase/operator files should stay as historical references rather than be
+    widened into a mixed-mission interface
+  - the heuristic baseline, because the accepted `HeuristicAgent` is
+    intentionally Mission-1-specific
+  - the rollout/search baseline, because its current leaf policy is coupled to
+    the Mission 1 heuristic
+- Cleanup/refactor decision:
+  - no pre-packet cleanup/refactor campaign
+  - keep changes maximally narrow and adaptational
+  - allow only small helper extraction or wording cleanup inside
+    `agents/`, `eval/`, or `cli/` when it directly separates preserved Mission
+    1 references from the new Mission 3 surface
+- Mission 1 anchors that remain preserved reference history during this packet:
+  - `RandomAgent` `11/200`
+  - learned policy best `144/200`
+  - `HeuristicAgent` `157/200`
+  - `RolloutSearchAgent` `195/200`
+
+## Mission 3 comparison protocol
+
+Smoke protocol:
+
+- one thin Mission 3 comparison CLI on fixed seeds `0..15`
+- include `random`, Mission 3 heuristic, and Mission 3 rollout/search in one
+  Mission-3-only metrics table
+- preserve the existing Mission 1 smoke commands unchanged and separate
+
+Benchmark protocol:
+
+- rerun the same Mission 3 trio on fixed seeds `0..199`
+- keep the Mission 3 report separate from Mission 1 anchor reports
+- do not merge Mission 1 and Mission 3 benchmark tables into one generic
+  cross-mission result surface in this packet
+
+Seed policy:
+
+- Mission 3 should use its own named smoke and benchmark seed aliases even if
+  the numeric ranges match the preserved Mission 1 ranges
+- the fixed cardinalities should remain `16` smoke seeds and `200` benchmark
+  seeds for the first accepted Mission 3 reference surface
+- numeric seed overlap does not imply cross-mission comparability; report
+  Mission 3 outcomes only in Mission-3-local surfaces
+
+Required comparison metrics:
+
+- keep the accepted aggregate metric row unchanged:
+  - `wins`
+  - `defeats`
+  - `win_rate`
+  - `defeat_rate`
+  - `mean_terminal_turn`
+  - `mean_resolved_markers`
+  - `mean_removed_german`
+  - `mean_player_decisions`
+- report search budget separately from outcome metrics:
+  - root width
+  - rollout policy
+  - rollout depth / terminal policy
+
+First accepted Mission 3 reference surface:
+
+- one deterministic smoke result for the Mission 3 `random` / `heuristic` /
+  `rollout-search` trio
+- one deterministic 200-seed benchmark result for the same trio
+- one explicit Mission-3-only report/delta surface recorded in internal docs
+  without rewriting the preserved Mission 1 anchor sections
+- if search fails to beat heuristic, treat that as a decision input for the
+  next packet, not as an automatic packet failure, as long as the comparison
+  surface is deterministic, reviewable, and clearly separated from Mission 1
+
+Active follow-ups from `docs/internal/independent_audit_followups.md`:
+
+- `P4-R4` active as a preservation rule:
+  - keep the accepted Mission 1 smoke/benchmark/env references explicit and
+    unchanged while Mission 3 comparison work lands
+- `C6` active as a caution:
+  - Mission-1-specific heuristic coupling may be reused locally, but must not
+    become an implicit general agent contract
+
+Not active by default in this packet unless a direct blocker appears:
+
+- `C1` replay draw-prediction coupling
+- `C2` `legal_actions.py` growth / separation
+- `C3` multiple-start-hex support
+- `C4` objective-dispatch generalization
+- `C5` synthetic fixtures
+- `T1` through `T4` tooling backlog
+
+Boundary to later packets:
+
+- This packet includes:
+  - bounded Mission 3 baseline/search comparison work only
+  - the smallest Mission-3-local eval/CLI/operator surface that makes smoke and
+    benchmark reruns honest
+  - any minimal agent/eval/CLI adaptation directly required for the comparison
+    stack
+- This packet does not include:
+  - Mission 3 env/wrapper extension
+  - Mission 3 learning experiments
+  - Mission 4 content landing
+  - generic cross-mission benchmark/reporting infrastructure
+  - reward/env/action redesign unless a direct blocker is found
+  - a broad cleanup/refactor campaign in `agents/`, `eval/`, or `cli/`
+
+## Mission 3 baselines/search packet status block
+
+- Delivery A: pending
+- Delivery B: pending
+- Delivery C: conditional
+- Packet overall: planning complete, ready for dispatch
+- Planning audit date: March 11, 2026
+- Closeout audit date: not started
+- Blocking findings before dispatch: none
+- Required preserved Mission 1 anchors:
+  - `random 11/200`
+  - learned best `144/200`
+  - `heuristic 157/200`
+  - `rollout 195/200`
+- Executed package order: pending
+- Closeout gate: do not open Mission 3 env/wrapper, Mission 3 learning, Mission
+  4 content, or cross-mission platform follow-ons until the first Mission 3
+  reference surface is accepted
+
+## Delivery A - Mission 3 comparison surface + random floor
+
+Status:
+
+- pending
+
+Goal:
+
+- open the smallest Mission-3-local comparison surface that keeps preserved
+  Mission 1 benchmark/operator history untouched while establishing the Mission
+  3 random baseline floor
+
+Concrete deliverables:
+
+- one Mission-3-local benchmark/eval/CLI seam rather than widening preserved
+  `phase3_*` / `phase6_*` Mission 1 operator files in place
+- fixed Mission 3 smoke and benchmark seed aliases plus report formatting
+- Mission 3 random baseline smoke/benchmark execution over the accepted domain
+  action contract
+- only the minimal shared helper or wording cleanup required to reuse the
+  lower-level episode/metrics surface honestly
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/eval/episode_runner.py` only if small wording/helper
+  cleanup is directly justified
+- `src/solo_wargame_ai/eval/metrics.py` only if a tiny neutral rename/exposure
+  change is directly justified
+- new or narrowed Mission 3 comparison code under `src/solo_wargame_ai/eval/`
+- one thin Mission 3 operator entrypoint under `src/solo_wargame_ai/cli/`
+- focused tests under `tests/eval/` and `tests/cli/`
+
+Required tests / verification:
+
+- focused tests for:
+  - Mission 3 seed-surface determinism
+  - Mission 3 report formatting
+  - Mission 3 random baseline execution through the shared runner
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode smoke`
+- the new Mission 3 comparison smoke command
+
+Risks / traps:
+
+- turning Delivery A into a generic multi-mission benchmark platform
+- rewriting preserved Mission 1 phase/operator files instead of adding a new
+  Mission-3-local surface
+- mixing heuristic/search logic into the comparison-surface package
+- over-cleaning shared eval helpers before a real Mission 3 blocker exists
+
+Completion criteria:
+
+- a Mission-3-local comparison/operator surface exists and is reviewable
+- Mission 3 random smoke/benchmark runs can execute on fixed seed sets
+- preserved Mission 1 operator outputs remain unchanged and discoverable
+- Delivery B can focus on heuristic/search behavior rather than operator-surface
+  invention
+
+Commit shape:
+
+- one implementation commit preferred
+- one narrow follow-up `fix:` commit acceptable only if review finds a clear
+  separation/preservation issue
+
+Analysis-before-edit:
+
+- required
+
+## Delivery B - Mission 3 heuristic + bounded rollout/search
+
+Status:
+
+- pending
+
+Goal:
+
+- re-establish a useful Mission 3 non-learning comparison stack above the
+  random floor using one bounded heuristic and one bounded rollout/search
+  baseline
+
+Concrete deliverables:
+
+- one Mission-3-bounded heuristic baseline
+- one Mission-3-bounded rollout/search baseline with explicit fixed budget
+- Mission 3 smoke and benchmark comparison results for
+  `random` / `heuristic` / `rollout-search`
+- any minimal eval/report plumbing needed to show the deltas cleanly on the new
+  Mission 3 surface
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/agents/`
+- Mission 3 comparison code under `src/solo_wargame_ai/eval/`
+- the thin Mission 3 operator entrypoint under `src/solo_wargame_ai/cli/`
+- focused tests under `tests/agents/`, `tests/eval/`, and `tests/cli/`
+
+Required tests / verification:
+
+- focused tests for:
+  - Mission 3 heuristic action selection in building/hill/wooded-hill and
+    multi-marker situations
+  - legality preservation for the Mission 3 heuristic and rollout/search
+    policies
+  - Mission 3 smoke/benchmark determinism on the fixed seed sets
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+- the new Mission 3 comparison smoke command
+- the new Mission 3 comparison benchmark command
+
+Risks / traps:
+
+- turning Mission 3 heuristic adaptation into a hidden general-agent redesign
+- letting Mission 1 synthetic-state heuristic tricks become an implicit shared
+  contract
+- building a generic search framework, MCTS toolkit, or benchmark platform
+  instead of one bounded Mission 3 comparator
+- mixing in env/wrapper, reward, or learning work because the Mission 3 slice
+  is richer
+- weakening the preserved Mission 1 anchor surfaces while touching shared code
+
+Completion criteria:
+
+- Mission 3 `random`, `heuristic`, and `rollout-search` all run deterministically
+  on the accepted smoke and benchmark seed sets
+- the search budget is explicit and stable in the report surface
+- the packet returns a clear first Mission 3 reference surface, even if search
+  does not beat heuristic
+- preserved Mission 1 anchor commands remain unchanged
+
+Commit shape:
+
+- one implementation commit preferred
+- two commits acceptable only if the heuristic slice and the search slice are
+  materially cleaner to review separately
+
+Analysis-before-edit:
+
+- required
+
+## Delivery C - Optional Mission 3 report/separation finish
+
+Status:
+
+- conditional
+
+Goal:
+
+- only if Deliveries A and B do not already leave a clean closeout-ready
+  Mission 3 comparison surface, add the smallest follow-up needed to separate
+  preserved Mission 1 history from the new Mission 3 references clearly
+
+Concrete deliverables:
+
+- at most one narrow follow-up for:
+  - compact Mission 3 comparison/report formatting
+  - one small helper extraction or naming cleanup in `agents/`, `eval/`, or
+    `cli/` that A/B clearly made necessary
+  - one narrow preservation fix if shared changes blurred Mission 1 and Mission
+    3 operator surfaces
+- no new baseline families
+- no env/wrapper/learning/content scope
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/eval/`
+- `src/solo_wargame_ai/cli/`
+- `src/solo_wargame_ai/agents/` only if a tiny helper extraction is directly
+  justified
+- focused tests under `tests/eval/` and `tests/cli/`
+
+Required tests / verification:
+
+- focused tests for any new report/preservation helper
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- the new Mission 3 comparison smoke command
+- the new Mission 3 comparison benchmark command if Delivery C touches that
+  surface
+
+Risks / traps:
+
+- reopening Delivery A/B design questions instead of finishing a narrow blocker
+- turning a closeout-support package into a broad cleanup pass
+- quietly mixing Mission 1 and Mission 3 reports while trying to reduce code
+  duplication
+
+Completion criteria:
+
+- the Packet Master Thread can close the packet without another implementation
+  package
+- Mission 1 preserved anchors and the first Mission 3 reference surface are
+  clearly separated in code, operator output, and docs
+
+Commit shape:
+
+- one small implementation/docs follow-up commit only if the package is opened
+
+Analysis-before-edit:
+
+- required
+
+## Recommended Delivery Thread sequence for the Mission 3 baselines/search packet
+
+Preferred sequence:
+
+1. Delivery A
+2. Delivery B
+3. Delivery C only if Delivery B does not already leave a clean closeout-ready
+   Mission 3 comparison surface
+
+Do not mix in one thread:
+
+- Mission 3 comparison-surface work with Mission 3 heuristic/search behavior
+  changes
+- any Mission 3 baseline/search package with Mission 3 env/wrapper extension
+- any Mission 3 baseline/search package with Mission 3 learning experiments
+- any Mission 3 baseline/search package with Mission 4 content landing
+- bounded Mission 3 eval/CLI adaptation with a generic multi-mission
+  benchmark/reporting platform
+- bounded heuristic/search adaptation with a broad cleanup/refactor campaign
 
 ## Archived packet - Mission 3 vertical slice + minimal structural prep
 
