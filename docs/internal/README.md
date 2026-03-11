@@ -22,3 +22,7 @@ Recommended starting points:
 Local working reports can live under `docs/internal/thread_reports/`.
 That subdirectory is intended for gitignored per-thread markdown notes, with
 only its README/template tracked.
+
+Other local-only helper material, such as project/career positioning notes for
+resumes, cover letters, or interview prep, can live under
+`docs/internal/project_profiles/`.

@@ -9,6 +9,9 @@ docs/internal/thread_reports/*.md
 !docs/internal/thread_reports/README.md
 !docs/internal/thread_reports/TEMPLATE.md
 
+# Local internal project/career profiles
+docs/internal/project_profiles/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
