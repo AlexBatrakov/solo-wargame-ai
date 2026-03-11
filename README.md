@@ -153,32 +153,36 @@ Current repository state:
   separation, Phase 5 train/eval/summary CLIs, and an accepted Mission 1
   result with `144/200` best wins and `133/200` median wins on the preserved
   200-seed benchmark;
+- Phase 6 post-first-RL strengthening is complete: the repository now includes
+  accepted responsibility-based learned-policy helper module names, a bounded
+  stronger rollout baseline CLI, and an accepted Mission 1 stronger-baseline
+  result with `195/200` wins on the preserved 200-seed benchmark;
 - the repository verifies locally with `.venv/bin/pytest -q` and
   `.venv/bin/ruff check src tests`, and the same narrow gate is defined in
   GitHub Actions;
-- later milestones such as stronger baselines/search, repository hygiene /
-  naming cleanup, and broader mission coverage remain open.
+- later milestones such as additional Mission 1 strengthening, broader mission
+  coverage, and later tooling/platform decisions remain open.
 
 ## Not implemented yet
 
 At this stage, the repository does **not** yet include:
 - a `gymnasium` dependency or generic RL experiment platform;
 - broader mission and advanced-rule coverage;
-- stronger search-based baselines;
-- the Phase 6 repository cleanup and post-first-RL strengthening work beyond
-  the accepted initial learner path.
+- a generic search/planning platform;
+- post-Phase-6 strengthening work beyond the accepted rollout baseline and
+  first learner path.
 
 ## Next macro-step
 
-The first end-to-end Mission 1 learning pass is now complete on the accepted env
-surface.
-Phase 5 demonstrated terminal-only learnability with `144/200` best wins and
-`133/200` median wins on the preserved 200-seed benchmark, still below the
-accepted heuristic anchor of `157/200`.
-The next macro-step is stronger baselines/search planning on top of the
-preserved Phase 3 comparison reference and the accepted Phase 5 operator
-surface, together with a bounded repository hygiene / naming cleanup pass.
-Mission 3/4 extension remains later follow-on work.
+The first end-to-end Mission 1 learning pass and the first post-learning
+strengthening pass are now complete on the accepted env surface.
+Phase 6 added a bounded stronger rollout baseline that reached `195/200` wins
+on the preserved 200-seed benchmark, above both the accepted heuristic anchor
+`157/200` and the accepted learned best `144/200`.
+The next macro-step is another bounded Mission 1 strengthening/search planning
+pass on top of the preserved Phase 3 comparison reference, the accepted Phase 5
+operator surface, and the accepted Phase 6 stronger-baseline result.
+Mission 3/4 extension remains later follow-on work by default.
 
 ## Manual operator commands
 
@@ -198,3 +202,7 @@ Accepted local commands:
   `.venv/bin/python -m solo_wargame_ai.cli.phase5_learned_policy_eval --checkpoint outputs/phase5/train_seed_101_ep_2000/checkpoints/selected_checkpoint.pt --mode benchmark`
 - Phase 5 aggregate summary:
   `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+- Phase 6 stronger baseline smoke:
+  `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode smoke`
+- Phase 6 stronger baseline benchmark:
+  `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`

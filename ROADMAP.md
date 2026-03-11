@@ -451,42 +451,44 @@ result to answer the next high-value questions before widening content:
 2. which repository-structure and naming issues should be cleaned up now so the
    next research/content cycle is easier to work on.
 
-Status note: after accepted Phase 5 closeout, stronger baselines/search is the
-preferred primary track inside Phase 6. A bounded repository-hygiene pass is
-also justified early because some `src/` and `tests/` naming now reflects phase
-history more than durable responsibility.
+Status note: Phase 6 is complete in the repository. Accepted Delivery A cleaned
+up the most immediate durable naming/layout friction, and accepted Delivery B
+added a bounded stronger rollout baseline that reached `195/200` wins on the
+preserved benchmark. Package C was not opened. The next macro-step is another
+bounded Mission 1 strengthening/search planning pass rather than immediate
+Mission 3/4 content work or env/action redesign.
 
 ### 6.1 Repository hygiene and naming cleanup
 
-- [ ] Rename durable `src/` modules by responsibility rather than phase history
+- [x] Rename durable `src/` modules by responsibility rather than phase history
       where practical
-- [ ] Keep phase-based naming only where it is genuinely useful, such as thin
+- [x] Keep phase-based naming only where it is genuinely useful, such as thin
       operator commands, milestone docs, or archived artifacts
-- [ ] Reorganize `tests/` into clearer subsystem-oriented groups if that
+- [x] Reorganize `tests/` into clearer subsystem-oriented groups if that
       improves navigation and future maintenance
-- [ ] Reduce mixed or confusing naming in `agents/`, `eval/`, and `cli/`
+- [x] Reduce mixed or confusing naming in `agents/`, `eval/`, and `cli/`
       without changing accepted behavior
-- [ ] Update repository-layout docs if structural cleanup changes the intended
+- [x] Update repository-layout docs if structural cleanup changes the intended
       long-lived package organization
 
 ### 6.2 Stronger baselines and search track
 
-- [ ] Add at least one stronger non-learning baseline, search baseline, or
+- [x] Add at least one stronger non-learning baseline, search baseline, or
       planning-style baseline on Mission 1
-- [ ] Compare stronger baselines against the preserved `random`, `heuristic`,
+- [x] Compare stronger baselines against the preserved `random`, `heuristic`,
       and accepted Phase 5 learned-policy references
-- [ ] Determine how much Mission 1 headroom remains above the current best
+- [x] Determine how much Mission 1 headroom remains above the current best
       learned result
-- [ ] Record whether stronger baselines/search change the recommendation about
+- [x] Record whether stronger baselines/search change the recommendation about
       Mission 3/4 timing
 
 ### 6.3 Comparative evaluation and decision gate
 
-- [ ] Improve comparison reporting only as needed to answer the stronger-
+- [x] Improve comparison reporting only as needed to answer the stronger-
       baseline question cleanly
-- [ ] Record whether Mission 1 now looks strategically saturated or still
+- [x] Record whether Mission 1 now looks strategically saturated or still
       informative
-- [ ] Decide whether the next major investment after Phase 6 should be:
+- [x] Decide whether the next major investment after Phase 6 should be:
       stronger baselines/search iteration,
       Mission 3/4 content extension,
       or targeted environment/action iteration
@@ -502,17 +504,19 @@ history more than durable responsibility.
 
 ### 6.5 Exit criteria for Phase 6
 
-- [ ] at least one stronger post-Phase-5 baseline/search result exists
-- [ ] the repository structure is cleaner and easier to extend than it was at
+- [x] at least one stronger post-Phase-5 baseline/search result exists
+- [x] the repository structure is cleaner and easier to extend than it was at
       the start of the phase
-- [ ] the project has a documented recommendation for the next macro-step after
+- [x] the project has a documented recommendation for the next macro-step after
       the Mission 1 strengthening pass
 
-Closeout note template: Phase 6 should end by saying whether Mission 1 still
-has meaningful headroom for stronger baselines/search, whether repository
-cleanup reduced future extension friction, and whether the next best investment
-is Mission 3/4 content, more search/baselines, or a targeted env/action
-iteration.
+Closeout note: Phase 6 confirmed that Mission 1 still has substantial headroom.
+The accepted stronger rollout baseline reached `195/200` benchmark wins versus
+the preserved heuristic anchor `157/200` and accepted learned best `144/200`,
+while the bounded repository-hygiene slice removed the most immediate durable
+naming friction. The next best investment is another bounded Mission 1
+strengthening/search planning pass, not immediate Mission 3/4 content work or a
+targeted env/action iteration.
 
 ---
 
@@ -524,10 +528,10 @@ future tracks as an evidence-driven backlog to revisit after Phase 6.
 
 ### Higher-likelihood / higher-value tracks
 
-1. Bounded Mission 3/4 content extension with only the new rule support needed
+1. Stronger search/planning baselines or learning-strengthening work on top of
+   the accepted Mission 1 slice
+2. Bounded Mission 3/4 content extension with only the new rule support needed
    for that slice
-2. Stronger search/planning baselines on top of the accepted Mission 1 or
-   next-content slice
 3. Better evaluation, reporting, and replay-assisted debugging for comparing
    stronger agents across fixed seed sets
 

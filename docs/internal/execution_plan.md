@@ -5,14 +5,12 @@
 This file is the current master control surface for repository-level planning,
 dispatch, and closeout.
 
-As of March 10, 2026, Phases 1 through 5 are complete and archived by
-repository evidence.
-The active planning problem is no longer "how to finish Mission 1", "how to
-harden the accepted engine", "how to open Phase 3 baselines", "how to open
-Phase 4 RL-environment planning", or "whether the accepted Mission 1 wrapper is
-learnable", but "which post-first-RL macro-step is justified next, with
-stronger baselines/search as the default target unless new evidence says
-otherwise."
+As of March 11, 2026, Phases 1 through 6 are complete by repository evidence.
+The active planning problem is no longer "which bounded hygiene or stronger-
+baseline package should Phase 6 run," but "how should the project respond to
+the accepted Phase 6 result: with another bounded Mission 1
+strengthening/search packet, with Mission 3/4 content extension, or with a
+narrow corrective iteration only if later evidence forces it."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -30,9 +28,10 @@ recovering chat history:
 - preserve the accepted Phase 4 packet and closeout record,
 - preserve the accepted Phase 5 packet, closeout record, and external-audit
   outcome,
+- preserve the accepted Phase 6 packet, closeout record, and decision gate,
 - avoid reopening completed Delivery A / B / C work accidentally,
 - recover the accepted baseline, wrapper, and benchmark references quickly,
-- point the next planning thread toward the post-first-RL macro-step and later
+- point the next planning thread toward the post-Phase-6 macro-step and later
   decision gates.
 
 ## Current checkpoint
@@ -43,17 +42,17 @@ recovering chat history:
   - Phase 3 complete
   - Phase 4 complete
   - Phase 5 complete
+  - Phase 6 complete
 - Local tags:
   - `phase1-complete`
   - `phase2-complete`
   - `phase3-complete`
   - `phase4-complete`
   - `phase5-complete`
-- Repository state checked on March 10, 2026 before opening this Phase 6
-  master-thread:
+- Repository state rechecked on March 11, 2026 for Phase 6 closeout:
   - `git status --short` was empty
-  - `git log --oneline --decorate -12` showed `HEAD` on
-    `ab20cee docs: refine phase6 roadmap and docs sync`
+  - `git log --oneline --decorate -8` showed `HEAD` on
+    `033ddef phase6: add stronger rollout baseline for mission 1`
   - `git show --no-patch --decorate phase1-complete` resolved to
     `d6445d9 docs: sync public handoff after phase1 completion`
   - `git show --no-patch --decorate phase2-complete` resolved to
@@ -64,7 +63,7 @@ recovering chat history:
     `0e4a6a8 docs: close phase4 rl-environment`
   - `git show --no-patch --decorate phase5-complete` resolved to
     `9d8beb9 docs: close phase5 learning experiments`
-  - `.venv/bin/pytest -q` passed with `197 passed in 3.51s`
+  - `.venv/bin/pytest -q` passed with `207 passed in 28.10s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
     succeeded with the preserved `random` `2/16` wins vs `heuristic`
@@ -75,8 +74,15 @@ recovering chat history:
   - `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
     confirmed `best_benchmark_wins: 144`, `median_benchmark_wins: 133`,
     `heuristic_anchor_wins: 157`, and `package_c_recommendation: Package C not recommended; proceed toward end-of-phase evaluation`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode smoke`
+    confirmed `rollout 16/16`, preserving the accepted `random 2/16` and
+    `heuristic 11/16` smoke references alongside the new stronger baseline
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+    confirmed `rollout 195/200`, versus preserved anchors `random 11/200`,
+    `heuristic 157/200`, and accepted learned references `best 144/200`,
+    `median 133/200`
 
-Accepted runtime surface after Phase 5 closeout:
+Accepted runtime surface after Phase 6 closeout:
 
 - `Mission` remains static scenario data loaded from config.
 - `GameState` remains runtime truth with explicit staged decision contexts.
@@ -103,19 +109,30 @@ Accepted runtime surface after Phase 5 closeout:
   remain the accepted Phase 5 learning-side library surface.
 - `eval/learned_policy_eval.py` remains the accepted learned-policy evaluation
   seam over the frozen Mission 1 env boundary.
+- `agents/masked_actor_critic_training.py`, `eval/learned_policy_seeds.py`,
+  `eval/learned_policy_reporting.py`, and `eval/learned_policy_summary.py`
+  are now the accepted responsibility-named durable library paths that replaced
+  earlier phase-history module names during Delivery A.
+- `agents/rollout_search_agent.py` is the accepted stronger Mission 1
+  planner-like baseline surface from Delivery B.
+- `eval/rollout_baseline.py` is the accepted compact comparison layer for the
+  stronger baseline against preserved Phase 3/5 anchors.
 - `cli/phase3_baselines.py` and `cli/phase4_env_smoke.py` remain the accepted
   preserved operator references.
 - `cli/phase5_train.py`, `cli/phase5_learned_policy_eval.py`, and
   `cli/phase5_summary.py` remain the accepted Phase 5 operator surfaces.
+- `cli/phase6_stronger_baseline.py` is the accepted thin operator surface for
+  rerunning the stronger Mission 1 rollout baseline on preserved smoke and
+  benchmark seed sets.
 - `pyproject.toml` now carries the bounded `numpy` / `torch` learning
   dependency pair, while `configs/` still contains only the Mission 1 mission
   config and no broader experiment-platform surface.
 - `outputs/phase5/` contains the accepted first-learner artifacts and aggregate
   summary files used as preserved comparison evidence.
 
-## Strategic update after opening the Phase 6 master-thread
+## Archived strategic basis for the Phase 6 master-thread
 
-Current planning assumptions for the active phase:
+Current planning assumptions used when Phase 6 was active:
 
 - Phase 6 is not a continuation of Phase 5 learning implementation and not a
   default Mission 3/4 extension track.
@@ -168,7 +185,7 @@ Desired outcome:
 - The domain and env packages are mostly responsibility-named already and are
   acceptable as-is for Phase 6; they are not the main current naming problem.
 - The most immediate repo-friction at Phase 6 open came from durable library
-  modules that carried phase-history names. Delivery A is expected to retire
+  modules that carried phase-history names. Delivery A retired
   those names in favor of responsibility-based paths:
   - `src/solo_wargame_ai/agents/masked_actor_critic_training.py`
   - `src/solo_wargame_ai/eval/learned_policy_seeds.py`
@@ -390,20 +407,21 @@ Allowed status values:
 Update this block only from a planning / audit / master-thread after checking
 repo state against the package criteria.
 
-- Package A: pending
-- Package B: pending
-- Package C: conditional
-- Phase 6 overall: pending
+- Package A: complete (`9c73623`)
+- Package B: complete (`033ddef`)
+- Package C: not opened
+- Phase 6 overall: complete
 - Planning audit date: March 10, 2026
-- Blocking findings before Delivery A: none
-- Preferred package order: Delivery A -> Delivery B -> Delivery C only if needed
-- Closeout/tag gate: not ready
+- Closeout audit date: March 11, 2026
+- Blocking findings before closeout: none
+- Executed package order: Delivery A -> Delivery B
+- Closeout/tag gate: ready for docs closeout commit and later milestone tagging
 
 ## Package A - Bounded repo hygiene and naming cleanup
 
 Status:
 
-- pending
+- complete (`9c73623 phase6: rename learned-policy helpers and regroup tests`)
 
 Goal:
 
@@ -473,7 +491,7 @@ Analysis-before-edit:
 
 Status:
 
-- pending
+- complete (`033ddef phase6: add stronger rollout baseline for mission 1`)
 
 Goal:
 
@@ -544,7 +562,7 @@ Analysis-before-edit:
 
 Status:
 
-- conditional
+- not opened
 
 Goal:
 
@@ -618,6 +636,38 @@ Do not mix in one thread:
 - any Phase 6 package with broad domain refactors such as `legal_actions.py`
   decomposition unless a concrete blocker is proven first
 - any Phase 6 package with generic experiment/search platform buildout
+
+## Archived Phase 6 control record
+
+- Accepted implementation commits:
+  - `9c73623 phase6: rename learned-policy helpers and regroup tests`
+  - `033ddef phase6: add stronger rollout baseline for mission 1`
+- Final accepted verification:
+  - `.venv/bin/pytest -q`
+  - `.venv/bin/ruff check src tests`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode smoke`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+- Accepted Phase 6 result:
+  - Delivery A retired the most immediate phase-history durable module names and
+    partially regrouped `tests/` into clearer subsystem directories without
+    behavioral change
+  - Delivery B added a bounded root-rollout stronger baseline that reached
+    `16/16` wins on smoke and `195/200` wins on the preserved benchmark
+  - preserved comparison anchors remained explicit:
+    `random 11/200`, `heuristic 157/200`, learned `best 144/200`,
+    learned `median 133/200`
+  - Package C was not opened because Delivery B already produced a clean
+    closeout-ready comparison/report surface
+- Detailed Phase 6 planning and acceptance history lives in:
+  - `docs/internal/thread_reports/2026-03-10_phase6-master-thread.md`
+  - `docs/internal/thread_reports/2026-03-10_phase6-delivery-a-dispatch.md`
+  - `docs/internal/thread_reports/2026-03-10_phase6-delivery-a.md`
+  - `docs/internal/thread_reports/2026-03-10_phase6-delivery-b-dispatch.md`
+  - `docs/internal/thread_reports/2026-03-10_phase6-delivery-b.md`
+  - `docs/internal/thread_reports/2026-03-11_phase6-closeout.md`
 
 ## Archived Phase 5 control record
 
@@ -874,3 +924,50 @@ During closeout, public docs were synced to reflect that:
   operator commands
 - the next macro-step is stronger baselines/search planning rather than more
   Phase 5 delivery work
+
+## Decision after Phase 6 closeout
+
+Recommended next macro-step:
+
+- a new bounded Mission 1 strengthening/search planning packet rather than
+  immediate Mission 3/4 content extension
+
+Rationale:
+
+- Delivery A removed the most immediate naming/layout friction that was already
+  impeding post-first-RL work without widening into a broad refactor campaign
+- Delivery B answered the central headroom question decisively: the accepted
+  rollout baseline reached `195/200` wins on the preserved benchmark, beating
+  the preserved heuristic anchor `157/200` by `+38` and the accepted learned
+  best `144/200` by `+51`
+- Mission 1 therefore is not strategically saturated at the heuristic or first-
+  learner level; substantial headroom remains on the accepted env/action
+  boundary
+- the accepted rollout result is intentionally compute-heavy and Mission-1-
+  specific, so it does not by itself justify generic search-platform work,
+  immediate public-contract redesign, or automatic Mission 3/4 widening
+- the next high-value planning problem is how to exploit or narrow that newly
+  measured gap with another bounded strengthening packet, not whether Phase 6
+  itself should continue implementation
+
+Closeout note:
+
+- Package A closed with accepted commit `9c73623`
+- Package B closed with accepted commit `033ddef`
+- Package C remained closed and was not needed for closeout
+- preserved accepted references at closeout are:
+  `random 11/200`, `heuristic 157/200`, learned `best 144/200`,
+  learned `median 133/200`, stronger rollout `195/200`
+
+## Public docs after Phase 6 closeout
+
+During closeout, public docs were synced to reflect that:
+
+- Phase 6 post-first-RL strengthening is complete
+- the repository now includes an accepted Phase 6 stronger-baseline rerun
+  command
+- the accepted stronger rollout baseline materially exceeds both the preserved
+  heuristic anchor and the accepted first learner on Mission 1
+- the next macro-step is another bounded Mission 1 strengthening/search
+  planning pass rather than immediate Mission 3/4 content work or env/action
+  redesign

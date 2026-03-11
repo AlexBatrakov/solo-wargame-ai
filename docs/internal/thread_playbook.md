@@ -14,41 +14,43 @@ Phase-specific planning belongs in `docs/internal/execution_plan.md`.
 - Phase 3 is complete and accepted.
 - Phase 4 is complete and accepted.
 - Phase 5 is complete and accepted.
+- Phase 6 is complete and accepted.
 - `phase1-complete`, `phase2-complete`, `phase3-complete`, and
   `phase4-complete`, `phase5-complete` are the current local milestone tags.
-- The next active phase packet should be Phase 6 post-first-RL strengthening
-  planning, with stronger baselines/search as the preferred next macro-step and
-  bounded repository cleanup as an early supporting track.
+- The next active planning packet should start from the accepted Phase 6 result:
+  another bounded Mission 1 strengthening/search planning pass is currently
+  preferred over immediate Mission 3/4 content extension.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 
 If a thread behaves as though Mission 1 still needs to be built from scratch, it
 is operating from stale context.
 
-## Current post-Phase-5 dispatch note
+## Current post-Phase-6 dispatch note
 
-After Phase 5 closeout:
+After Phase 6 closeout:
 
 - use `docs/internal/execution_plan.md` as the first dispatch surface for the
   next active packet
-- open Phase 6 as:
-  - Delivery A: bounded repo hygiene / naming cleanup
-  - Delivery B: stronger Mission 1 baseline/search work
-  - Delivery C only if Delivery B does not already leave a closeout-ready
-    comparison surface
-- treat Phase 4 Delivery A / B / C work as archived unless repeated use
-  exposes a narrow corrective bug
+- treat Phase 6 Delivery A / B work as archived accepted history unless
+  repeated use exposes a narrow corrective bug
+- treat Phase 6 Delivery C as closed; it was not needed for closeout
 - keep the preserved Phase 3 baseline CLI and accepted 200-seed snapshot
   discoverable as the pre-RL comparison reference during later work
 - keep the accepted Phase 5 learned-policy result and aggregate benchmark
-  numbers discoverable during post-first-RL planning
-- treat Package C as closed unless new evidence creates a real bounded reason to
-  reopen it
-- do not mix repo hygiene with stronger-baseline implementation in one delivery
-  thread
-- do not open Mission 3/4 extension, env-boundary redesign, or a generic
-  search / RL-platform buildout casually; start from the accepted Phase 5
-  decision that stronger baselines/search is the preferred next macro-step
+  numbers discoverable during later Mission 1 strengthening planning
+- keep the accepted Phase 6 rollout baseline result discoverable:
+  `195/200` wins on the preserved benchmark against `heuristic 157/200` and
+  learned `best 144/200`
+- do not reopen repo hygiene, env-boundary redesign, or generic search/RL-
+  platform buildout casually as a follow-up to Phase 6
+- start the next packet from the accepted Phase 6 decision:
+  another bounded Mission 1 strengthening/search planning pass is preferred by
+  current repo evidence
+- Mission 3/4 extension remains a later candidate track unless new planning
+  explicitly chooses it
+- treat Phase 4 Delivery A / B / C work as archived unless repeated use
+  exposes a narrow corrective bug
 
 ## Core operating model
 
