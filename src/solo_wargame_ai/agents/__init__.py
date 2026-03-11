@@ -20,6 +20,7 @@ from .masked_action_selection import (
     select_masked_action,
 )
 from .random_agent import RandomAgent
+from .rollout_search_agent import RolloutEvaluation, RolloutSearchAgent
 
 _LAZY_MASKED_EXPORTS = {
     "ActorCriticActionRecord",
@@ -54,6 +55,8 @@ __all__ = [
     "ObservationFeatureAdapter",
     "PolicyActionRecord",
     "RandomAgent",
+    "RolloutEvaluation",
+    "RolloutSearchAgent",
     "legal_action_ids_from_info",
     "legal_action_mask_from_info",
     "policy_name",
