@@ -15,44 +15,46 @@ Phase- or packet-specific planning belongs in `docs/internal/execution_plan.md`.
 - Phase 4 is complete and accepted.
 - Phase 5 is complete and accepted.
 - Phase 6 is complete and accepted.
+- The Mission 3 vertical-slice packet is complete and accepted.
 - `phase1-complete`, `phase2-complete`, `phase3-complete`, and
   `phase4-complete`, `phase5-complete`, `phase6-complete` are the current
   local milestone tags.
 - The original numbered phase roadmap is exhausted.
-- The next active planning packet should start from the accepted Phase 6 result
-  and the later strategic review:
-  a Mission 3 vertical slice plus minimal structural prep is now preferred over
-  another default Mission 1 strengthening/search pass.
+- The next active planning packet should start from the accepted Mission 3
+  domain slice:
+  Mission 3 baselines/search re-establishment is now preferred over reopening
+  either the Mission 3 content-landing packet or another default Mission 1
+  strengthening/search pass.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 
 If a thread behaves as though Mission 1 still needs to be built from scratch, it
 is operating from stale context.
 
-## Current post-Phase-6 dispatch note
+## Current post-Mission-3 dispatch note
 
-After Phase 6 closeout:
+After Mission 3 packet closeout:
 
 - use `docs/internal/execution_plan.md` as the first dispatch surface for the
   next active packet
-- treat Phase 6 Delivery A / B work as archived accepted history unless
-  repeated use exposes a narrow corrective bug
-- treat Phase 6 Delivery C as closed; it was not needed for closeout
+- treat the Mission 3 content-landing packet as archived accepted history
+  unless repeated use exposes a narrow corrective bug
 - keep the preserved Phase 3 baseline CLI and accepted 200-seed snapshot
   discoverable as the pre-RL comparison reference during later work
 - keep the accepted Phase 5 learned-policy result and aggregate benchmark
-  numbers discoverable during later Mission 1 strengthening planning
+  numbers discoverable during later comparison work
 - keep the accepted Phase 6 rollout baseline result discoverable:
   `195/200` wins on the preserved benchmark against `heuristic 157/200` and
   learned `best 144/200`
+- keep the accepted Mission 3 content slice discoverable as the richer
+  deterministic domain target that now needs baselines/search rather than
+  another content-landing pass
 - do not reopen repo hygiene, env-boundary redesign, or generic search/RL-
-  platform buildout casually as a follow-up to Phase 6
-- start the next packet from the newer strategic synthesis, not from the
-  historical Phase 6 closeout recommendation
+  platform buildout casually as a follow-up to the Mission 3 landing
 - the current default next packet is:
-  Mission 3 vertical slice plus only the structural prep it directly requires
-- do not reopen another Mission 1 strengthening/search packet by default unless
-  a new bounded question appears that is more valuable than richer content
+  Mission 3 baselines/search re-establishment
+- do not reopen the Mission 3 content packet or another Mission 1
+  strengthening/search packet by default unless new repo evidence justifies it
 - treat Phase 4 Delivery A / B / C work as archived unless repeated use
   exposes a narrow corrective bug
 

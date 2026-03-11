@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "solo-wargame-ai"
 version = "0.1.0"
-description = "Rule-faithful simulator planning baseline for a solitaire Normandy wargame."
+description = "Rule-faithful simulator, search baselines, and learning experiments for a stochastic solo hex-based wargame."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-  { name = "abatrakov" }
+  { name = "Alexander Batrakov" }
 ]
 dependencies = [
   "numpy>=1.26",

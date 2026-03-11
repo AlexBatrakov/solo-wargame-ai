@@ -24,7 +24,9 @@ RL integration is important, but only after the simulator is sufficiently trustw
 
 ## Phase 0 — Planning and formalization
 
-Goal: establish a strong source of truth before implementation begins, so that Codex-assisted coding is guided by explicit architecture, scope boundaries, and formalized concepts rather than improvised code generation.
+Goal: establish a strong source of truth before implementation begins, so that
+later implementation is guided by explicit architecture, scope boundaries, and
+formalized concepts rather than improvised code generation.
 
 ### 0.1 Repository and documentation setup
 
@@ -52,13 +54,13 @@ Goal: establish a strong source of truth before implementation begins, so that C
 - [x] Add `docs/reference/README.md`
 - [x] Ensure public docs are mutually consistent and do not contradict each other
 
-### 0.3 Internal working documents for AI-assisted development
+### 0.3 Internal working documents for development workflow and execution
 
 - [x] Create `docs/internal/repo_layout.md`
 - [x] Create `docs/internal/codex_workflow.md`
 - [x] Add `docs/internal/README.md`
 - [x] Record the target repository layout and dependency boundaries
-- [x] Record Codex prompting strategy and workflow rules
+- [x] Record internal execution workflow rules
 - [x] Record what belongs in public docs vs internal docs
 - [x] Record how assumptions discovered during implementation should be promoted into public documentation
 - [x] Record what kinds of changes require architecture review before coding
@@ -119,13 +121,13 @@ Goal: establish a strong source of truth before implementation begins, so that C
 - [x] Define what types of config loading need validation tests
 - [x] Record that stochastic features must remain testable under fixed seeds
 
-### 0.8 Codex operating rules before implementation begins
+### 0.8 Execution operating rules before implementation begins
 
-- [x] Define the preferred prompt granularity for Codex tasks
-- [x] Define the rule that Codex should work in narrow, testable slices
-- [x] Define when to ask Codex for analysis before code changes
-- [x] Define when Codex is allowed to change architecture and when it is not
-- [x] Define how Codex should handle ambiguity in the rule source
+- [x] Define the preferred task granularity for implementation work
+- [x] Define the rule that work should proceed in narrow, testable slices
+- [x] Define when analysis should happen before code changes
+- [x] Define when architecture may be changed and when it may not
+- [x] Define how ambiguity in the rule source should be handled
 - [x] Define the expectation that nontrivial rule changes require tests
 - [x] Define the expectation that stable implementation decisions should update docs
 - [x] Define the expectation that unrelated refactors should be avoided
@@ -142,7 +144,7 @@ Phase 0 should be considered complete only when:
 - [x] the repository structure strategy is documented
 - [x] Phase 0/1 handoff metadata exists (`pyproject.toml`, `Makefile`)
 - [x] the testing philosophy is documented
-- [x] the Codex workflow is documented
+- [x] the implementation workflow is documented
 - [x] the next implementation slice is obvious and small enough to execute safely
 
 Status note: the planning and formalization work is complete enough to hand off
@@ -524,9 +526,16 @@ the preserved heuristic anchor `157/200` and accepted learned best `144/200`,
 while the bounded repository-hygiene slice removed the most immediate durable
 naming friction. A subsequent post-Phase-6 strategic review concluded that this
 new result actually lowers the value of another Mission 1 strengthening cycle:
-the better next investment is a bounded Mission 3 vertical slice plus minimal
-structural prep, so the architecture is tested against richer content rather
+the better next investment was a bounded Mission 3 vertical slice plus minimal
+structural prep, so the architecture was tested against richer content rather
 than optimized further on the near-solved Mission 1 slice.
+
+That next packet has now landed as well:
+- Mission 3 is now a deterministic resolver-playable and replayable slice;
+- bounded support for Building, Hill, wooded-hill semantics, and German Rifle
+  Squad behavior is in place;
+- the next packet is no longer Mission 3 content landing itself, but Mission 3
+  baselines/search re-establishment.
 
 ---
 
@@ -549,38 +558,39 @@ questions instead of spending more cycles on Mission 1 alone.
 
 ### Recommended next packet
 
-**Mission 3 vertical slice + minimal structural prep**
+**Mission 3 baselines/search re-establishment**
 
 Goal:
-- test whether the accepted architecture generalizes beyond the near-solved
-  Mission 1 slice.
+- rebuild the comparison stack on the richer Mission 3 slice before extending
+  the env or learning path beyond Mission 1.
 
 Scope:
-- add only the new terrain/unit/objective support required to play Mission 3
-  deterministically and through the accepted resolver path;
-- perform only the bounded structural prep that Mission 3 directly forces,
-  such as `legal_actions.py` separation, objective dispatch cleanup, or
-  Mission-1-only guards that would otherwise block the slice.
+- add random/heuristic/search comparisons for Mission 3 only;
+- preserve the accepted Mission 1 anchors while establishing a new Mission 3
+  comparison reference;
+- keep the packet bounded to baseline/search evaluation rather than env/RL
+  extension.
 
 Non-goals:
-- no Mission 3 RL wrapper yet;
-- no new learning experiments yet;
-- no generic multi-mission platform;
-- no broad cleanup campaign beyond what the slice directly needs.
+- no Mission 3 wrapper redesign yet;
+- no Mission 3 learning experiments yet;
+- no Mission 4 content landing yet;
+- no generic cross-mission platform buildout.
 
 Completion criteria:
-- Mission 3 can be loaded, initialized, played, and replayed deterministically;
-- Mission 1 behavior and preserved references remain intact;
-- any new rule interpretations are documented.
+- Mission 3 has at least one accepted baseline/search comparison surface;
+- Mission 1 preserved references remain intact;
+- the project has a documented recommendation for whether the next packet
+  should be Mission 3 env extension, Mission 4 content, or something narrower.
 
 ### Likely follow-on packets after that
 
-1. **Mission 3 baselines/search**
-   Re-establish random/heuristic/search comparisons on the richer slice.
-2. **Mission 3 env/wrapper extension**
+1. **Mission 3 env/wrapper extension**
    Extend the accepted env boundary only as far as the new slice requires.
-3. **Mission 3 learning experiments**
+2. **Mission 3 learning experiments**
    Re-test learnability on content that is materially richer than Mission 1.
+3. **Mission 4 or another bounded richer content slice**
+   Continue content growth only after the Mission 3 stack is healthier.
 4. **Cross-mission comparison and reporting**
    Add only the evaluation/reporting support needed once more than one mission
    is active.
@@ -589,10 +599,9 @@ Completion criteria:
 
 #### Highest-value backlog
 
-1. Bounded Mission 3 content extension with only the structural prep it
-   directly requires
-2. Mission 3 baselines/search re-establishment
-3. Mission 3 env/wrapper extension and later Mission 3 learning experiments
+1. Mission 3 baselines/search re-establishment
+2. Mission 3 env/wrapper extension
+3. Mission 3 learning experiments
 
 #### Medium-value backlog
 
@@ -628,4 +637,4 @@ These constraints apply throughout the roadmap:
 - [ ] keep assumptions documented
 - [ ] keep tests growing with rule complexity
 - [ ] prefer deterministic and reproducible workflows
-- [ ] prefer small Codex tasks over broad autogenerated rewrites
+- [ ] prefer small, bounded tasks over broad autogenerated rewrites

@@ -5,7 +5,7 @@
 This file is a software-oriented digest of `docs/reference/rules.pdf`.
 
 It is not a replacement for the PDF.
-It exists so future Codex threads can recover the core mechanics quickly without
+It exists so future implementation work can recover the core mechanics quickly without
 re-reading the whole booklet every time.
 
 Primary source:

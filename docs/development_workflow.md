@@ -54,4 +54,5 @@ Refactoring should not silently change game behavior without corresponding docum
 
 ## Notes
 
-Private working notes, prompt templates, and local AI workflow artifacts may live outside the public documentation set.
+Private working notes, prompt templates, and local workflow artifacts may live
+outside the public documentation set.

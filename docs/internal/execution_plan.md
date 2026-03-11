@@ -7,10 +7,9 @@ dispatch, and closeout.
 
 As of March 11, 2026, the original six-phase roadmap is complete by repository
 evidence.
-The active planning problem is no longer "which bounded hygiene or stronger-
-baseline package should Phase 6 run," but "which post-Phase-6 packet should
-the project open next, now that Mission 1 has already produced a near-solved
-search result and the next high-value question is architecture generalization."
+The active planning problem is no longer "which post-Phase-6 packet should the
+project open next," but "how should the project follow the now-accepted Mission
+3 domain slice without widening too fast into env/RL/content sprawl."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -43,6 +42,7 @@ recovering chat history:
   - Phase 4 complete
   - Phase 5 complete
   - Phase 6 complete
+  - Mission 3 vertical-slice packet complete
 - Local tags:
   - `phase1-complete`
   - `phase2-complete`
@@ -50,12 +50,11 @@ recovering chat history:
   - `phase4-complete`
   - `phase5-complete`
   - `phase6-complete`
-- Repository state rechecked on March 11, 2026 during Mission 3 packet
-  planning audit:
-  - `git status --short` showed local docs-only changes in
-    `docs/internal/execution_plan.md` and `docs/internal/thread_playbook.md`
+- Repository state rechecked on March 11, 2026 after Mission 3 packet
+  closeout:
+  - `git status --short` was empty
   - `git log --oneline --decorate -12` showed `HEAD` on
-    `b1b7fe3 docs: pivot roadmap to packet-based planning`
+    `a9f1acc docs: close mission3 packet`
   - `git show --no-patch --decorate phase1-complete` resolved to
     `d6445d9 docs: sync public handoff after phase1 completion`
   - `git show --no-patch --decorate phase2-complete` resolved to
@@ -68,7 +67,7 @@ recovering chat history:
     `9d8beb9 docs: close phase5 learning experiments`
   - `git show --no-patch --decorate phase6-complete` resolved to
     `f80fde5 docs: close phase6 strengthening`
-  - `.venv/bin/pytest -q` passed with `207 passed in 26.64s`
+  - `.venv/bin/pytest -q` passed with `217 passed in 27.51s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
     succeeded with the preserved `random` `2/16` wins vs `heuristic`
@@ -135,42 +134,39 @@ Accepted runtime surface after Phase 6 closeout:
 - `outputs/phase5/` contains the accepted first-learner artifacts and aggregate
   summary files used as preserved comparison evidence.
 
-## Current post-Phase-6 planning decision
+## Current post-Mission-3 planning decision
 
-The original six-phase build sequence is finished.
-Future planning should therefore use a rolling packet backlog rather than
-automatically opening a numbered Phase 7.
+The original six-phase build sequence is finished, and the first richer-content
+packet has now landed as well.
+Future planning should therefore continue from the accepted Mission 3 slice,
+not reopen the content-landing packet that already closed.
 
 Current recommended next packet:
 
-- Mission 3 vertical slice plus only the minimal structural prep required to
-  land it cleanly
+- Mission 3 baselines/search re-establishment
 
 Why this is now preferred:
 
-- Mission 1 has already answered the core engine/env/learner/search questions
-  well enough for the current slice
-- the accepted stronger rollout baseline at `195/200` materially lowers the
-  expected value of spending another default cycle on Mission 1 strengthening
-- the next high-value unknown is whether the accepted architecture generalizes
-  to richer content, not whether Mission 1 can be pushed a little further
-- richer content is the natural forcing function for the currently deferred
-  seams:
-  `legal_actions.py`, objective dispatch, Mission-1-specific guards, and
-  possibly synthetic fixtures
+- Mission 3 now exists as a deterministic resolver-playable and replayable
+  slice, but it does not yet have accepted baseline/search references
+- re-establishing the comparison stack on Mission 3 is the smallest next step
+  that turns the richer content landing into actionable evidence
+- this keeps env/RL work sequenced behind fresh baseline evidence instead of
+  widening the stack all at once
+- preserved Mission 1 anchors remain valuable, but should now act as reference
+  context rather than as the only active comparison surface
 
 Likely follow-on packets after that:
 
-1. Mission 3 baselines/search re-establishment
-2. Mission 3 env/wrapper extension
-3. Mission 3 learning experiments
+1. Mission 3 env/wrapper extension
+2. Mission 3 learning experiments
+3. Mission 4 or another bounded richer content slice
 4. Cross-mission evaluation/reporting only when more than one active mission
    makes it worthwhile
 
 Ranked backlog beyond the active next packet:
 
 - High value:
-  - Mission 3 vertical slice plus minimal structural prep
   - Mission 3 baselines/search
   - Mission 3 env/wrapper extension
   - Mission 3 learning experiments
@@ -190,6 +186,7 @@ Ranked backlog beyond the active next packet:
 
 Demoted for now:
 
+- another Mission 3 content-landing packet
 - another default Mission 1 strengthening/search packet
 - broad reward/env redesign before richer content creates evidence for it
 - generic search, experiment, or platform buildout
@@ -197,36 +194,36 @@ Demoted for now:
 
 ## Startup brief for the next packet master-thread
 
-The next master-thread should not reopen "whether Mission 1 still works."
-That is already settled well enough for the current project stage.
+The next master-thread should not reopen whether the Mission 3 content slice
+should exist at all. That packet is already closed.
 
-Its planning job should instead be to turn the recommended next packet into a
-bounded executable plan.
+Its planning job should instead be to turn the next recommended packet into a
+bounded executable plan around Mission 3 baselines/search.
 
 Questions that the next packet master-thread should answer explicitly:
 
-1. Should the first richer content packet target Mission 3 only, or Mission 3
-   plus Mission 4 in one bounded slice?
-2. Which structural-prep items are actually required before or during that
-   packet, and which should stay deferred?
-3. What is the smallest acceptable implementation order that gets one richer
-   mission playable and deterministic without opening env/RL work too early?
-4. Which existing Mission-1-shaped guards, tests, and assumptions will need to
-   be widened for the new slice, and which should stay Mission-1-specific for
-   now?
-5. What should count as the packet completion gate before opening baselines on
-   the richer mission?
+1. Which baseline/search family is the right next comparator on Mission 3:
+   random, heuristic port/adaptation, bounded search, or a staged rollout mix?
+2. How much adaptation of the accepted Mission 1 baseline/eval harness is
+   actually required for Mission 3, and how much should stay deferred?
+3. What should count as the first accepted Mission 3 comparison surface before
+   env/wrapper extension is allowed to start?
+4. Which Mission 1 anchors must remain fixed and discoverable during Mission 3
+   comparison work?
+5. Does Mission 3 evidence point next toward env extension, another richer
+   content slice, or one more bounded baseline/search pass?
 
 Default recommendation from current repo evidence:
 
-- start with Mission 3 only unless new rule coupling makes Mission 3 + Mission 4
-  materially cleaner than Mission 3 alone
-- keep structural prep bounded to what Mission 3 directly forces
-- do not mix the content-extension packet with env/wrapper extension, new
-  learning work, or generic multi-mission infrastructure
-- preserve all accepted Mission 1 references while the richer slice lands
+- preserve all accepted Mission 1 references while Mission 3 comparison work
+  lands
+- start with bounded Mission 3 baselines/search only, not env/RL
+- treat Mission 3 env/wrapper extension and Mission 3 learning as follow-on
+  packets rather than mixing them into the next one
+- keep Mission 4 content and broader multi-mission platform work deferred until
+  Mission 3 comparison evidence exists
 
-## Active packet - Mission 3 vertical slice + minimal structural prep
+## Archived packet - Mission 3 vertical slice + minimal structural prep
 
 Packet goal:
 

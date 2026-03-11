@@ -5,7 +5,8 @@ This directory contains external source materials used to guide implementation.
 ## Contents
 
 - `rules.pdf` — source rule document / booklet used as the reference for the simulator.
-- `rules_digest.md` — software-oriented digest of the rulebook for faster Codex handoff.
+- `rules_digest.md` — software-oriented digest of the rulebook for faster
+  implementation handoff.
 
 ## Notes
 

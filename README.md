@@ -1,219 +1,157 @@
 # Solo Wargame AI
 
-A Python project for building a rule-faithful simulator of a small stochastic solo hex-based wargame and, later, training agents to play it.
+[![CI](https://github.com/AlexBatrakov/solo-wargame-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexBatrakov/solo-wargame-ai/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/AlexBatrakov/solo-wargame-ai)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](pyproject.toml)
 
-## Project goals
+Rule-faithful Python simulator, search baselines, and learning experiments for
+a stochastic solo hex-based tactical wargame.
 
-This repository has two main goals:
+This repository focuses on:
+- deterministic stateful simulation for a stochastic game;
+- explicit legal-action generation over staged player decisions;
+- reproducible baseline, search, and learning comparisons on fixed seed sets;
+- a clean separation between domain rules, environment interfaces, agents, and
+  evaluation tooling.
 
-1. Build a clean, testable simulation engine for a compact solo tactical wargame.
-2. Use the simulator as an environment for baseline agents and, later, machine learning / reinforcement learning agents.
+## Why this project is interesting
 
-The project is intentionally developed in stages. The first milestone is **not** RL.  
-The first milestone is a reliable game engine for a minimal scenario.
+The game mixes several engineering and modeling challenges:
+- stochastic outcomes with fixed-seed reproducibility requirements;
+- partial and delayed information through hidden enemy markers;
+- constrained, staged decisions instead of a simple flat action list;
+- tactical movement and fire resolution on a hex grid;
+- mission-specific objectives and content ladders.
 
-## Why this project exists
+That makes it a useful sandbox for:
+- simulation and engine design;
+- testing deterministic behavior in stochastic systems;
+- search/planning baselines;
+- RL-style environment design and first learning experiments.
 
-This is both:
-- a software engineering project focused on stateful simulation, testing, and clean architecture;
-- a machine learning project focused on sequential decision-making under uncertainty.
+## Current highlights
 
-The game contains several ingredients that make it interesting for AI:
-- stochastic outcomes;
-- constrained legal actions;
-- spatial tactics on a hex grid;
-- partial / delayed information;
-- mission-based victory conditions.
+- **Mission 1 full stack is complete**
+  Domain engine, replay path, baseline agents, `Mission1Env`, first learner,
+  and a stronger rollout baseline all exist and are regression-checked.
+- **Mission 3 domain slice has landed**
+  The repository now supports deterministic load/init/play/replay for a richer
+  content slice with Buildings, Hills, bounded wooded-hill semantics, and the
+  German Rifle Squad.
+- **The simulator keeps the written staged turn flow**
+  The engine models explicit decision contexts rather than hiding gameplay
+  structure behind undocumented macro-actions.
+- **Reproducibility is a first-class concern**
+  Fixed-seed evaluation, deterministic replay, and CI-backed verification are
+  part of the normal workflow.
 
-## Current scope
+## Benchmark snapshot
 
-Current development focuses on:
-- maintaining and extending the completed Mission 1 engine slice;
-- keeping the domain model aligned with the written staged turn structure rather
-  than a simplified macro-action abstraction;
-- preserving deterministic tests and replayable traces as the engine grows;
-- using the accepted baseline, env, and first-learning stack as the foundation
-  for stronger baselines/search and later content-extension decisions;
-- keeping repository structure and naming understandable as the implementation
-  grows beyond the first RL pass.
+Mission 1 fixed 200-seed benchmark:
 
-## Current engine slice
+| Agent | Wins | Notes |
+| --- | ---: | --- |
+| `RandomAgent` | 11 / 200 | baseline floor |
+| learned policy (best seed) | 144 / 200 | terminal-only reward, masked actor-critic |
+| `HeuristicAgent` | 157 / 200 | strong hand-coded baseline |
+| `RolloutSearchAgent` | 195 / 200 | bounded stronger search/planning reference |
 
-The current implemented slice supports:
-- Mission 1 as a playable scenario;
-- mission loading and deterministic initial state creation;
-- explicit decision-context / activation-step state;
-- legal action generation and state-driven resolution for British and German
-  phases;
-- reveal, combat, morale, turn rollover, and terminal outcome handling;
-- deterministic seeded simulation and structured text replay;
-- a minimal Phase 3 agent contract over the resolver facade;
-- a dependency-free Phase 4 `Mission1Env` wrapper with structured
-  player-visible observation, fixed Mission 1 action ids, resolver-derived
-  legal-action ids / masks, deterministic `reset(seed=...)`, and terminal-only
-  default reward;
-- `RandomAgent`, `HeuristicAgent`, fixed-seed batch evaluation, and a manual
-  benchmark CLI that remains the accepted pre-RL comparison reference.
+These numbers are intentionally preserved as comparison anchors while richer
+content slices land.
 
-## Non-goals for MVP
+## Current implemented scope
 
-The following are explicitly out of scope for the first version:
-- graphical UI;
-- full campaign support;
-- full fidelity implementation of every advanced rule;
-- polished RL training pipeline;
-- performance optimization beyond what is needed for correctness and repeatability.
+### Mission 1
 
-## Repository structure
+- deterministic mission loading and initialization;
+- explicit staged decision contexts and legal-action generation;
+- reveal, combat, morale, German Fire Zones, turn rollover, and terminal
+  conditions;
+- structured replay / text trace support;
+- random, heuristic, learned, and stronger rollout baselines;
+- dependency-free `Mission1Env` wrapper with fixed 32-id action catalog,
+  legality masks, and terminal-only default reward.
 
-- `docs/` — public project documentation and formal specifications
-- `docs/reference/` — source rule materials and reference booklet(s)
-- `configs/` — scenario, agent, and experiment configs
-- `src/` — Python implementation code
-- `tests/` — unit and integration tests
-- `outputs/` — logs, replays, checkpoints, and reports
+### Mission 3
+
+- deterministic config loading and validation;
+- deterministic resolver-playable domain slice;
+- support for Building, Hill, bounded wooded-hill semantics, and German Rifle
+  Squad behavior;
+- replay/integration coverage through the accepted resolver path.
+
+What is deliberately **not** implemented yet:
+- Mission 3 baselines/search;
+- Mission 3 env/wrapper extension;
+- Mission 3 learning experiments;
+- broader multi-mission infrastructure;
+- generic experiment/search platform work.
+
+## Architecture at a glance
+
+- `src/solo_wargame_ai/domain/`
+  Core game rules, state transitions, legality, combat, terrain, missions, RNG.
+- `src/solo_wargame_ai/io/`
+  Mission loading, validation, and replay/serialization helpers.
+- `src/solo_wargame_ai/env/`
+  RL-friendly Mission 1 wrapper and observation/action/mask boundary.
+- `src/solo_wargame_ai/agents/`
+  Random, heuristic, rollout-search, and learned-policy code.
+- `src/solo_wargame_ai/eval/`
+  Episode runner, benchmark harness, metrics, and reporting helpers.
+- `tests/`
+  Unit, integration, replay, env, agent, and CLI regression coverage.
+
+## Documentation map
+
+- [Roadmap](ROADMAP.md)
+- [Architecture](docs/architecture.md)
+- [Game specification](docs/game_spec.md)
+- [State model](docs/state_model.md)
+- [Action model](docs/action_model.md)
+- [Testing strategy](docs/testing_strategy.md)
+- [Mission config conventions](docs/mission_config.md)
+- [Rules digest](docs/reference/rules_digest.md)
+
+## Current next step
+
+The next recommended packet is:
+
+**Mission 3 baselines/search re-establishment**
+
+The goal is to rebuild the comparison stack on the richer Mission 3 slice
+before extending the environment and learning path beyond Mission 1.
+
+Likely follow-on packets after that:
+- Mission 3 env/wrapper extension;
+- Mission 3 learning experiments;
+- later Mission 4 or another bounded richer content slice;
+- cross-mission evaluation/reporting once more than one active mission needs to
+  be compared.
 
 ## Development setup
 
 The project keeps development tooling in a local `.venv` created from
 `pyproject.toml`.
 
-- `make bootstrap` creates or refreshes `.venv` and installs `.[dev]`
-- `make test`, `make lint`, and `make fmt` automatically use `.venv`
-- editors that auto-detect a repository-local `.venv` should pick it up without
-  extra per-project setup
+```bash
+make bootstrap
+make test
+make lint
+```
 
-## Development philosophy
+Accepted local verification commands also include:
 
-The project is built in layers:
+```bash
+.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke
+.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0
+.venv/bin/python -m solo_wargame_ai.cli.phase5_summary \
+  --artifact-dir outputs/phase5/train_seed_101_ep_2000 \
+  --artifact-dir outputs/phase5/train_seed_202_ep_2000 \
+  --artifact-dir outputs/phase5/train_seed_303_ep_2000
+.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark
+```
 
-1. **Domain layer**  
-   Pure game logic and state transitions.
+## License
 
-2. **Environment layer**  
-   RL-friendly wrapper around the domain logic.
-
-3. **Agents layer**  
-   Random, heuristic, search-based, and later learned agents.
-
-4. **Evaluation layer**  
-   Benchmarking, metrics, and experiment reports.
-
-## Design constraints
-
-The repository should preserve a few core engineering constraints from the start:
-
-- engine-first development;
-- model in-scope rules exactly as written, including intermediate decision steps;
-- deterministic seeded simulations;
-- explicit legal-action generation;
-- clean separation between domain logic and RL-specific code.
-
-The rule PDF in `docs/reference/` is a reference source.  
-Over time, the implementation source of truth should become the public documentation under `docs/` together with the tested code under `src/`.
-Mission data conventions are documented in `docs/mission_config.md`.
-
-## Planned implementation order
-
-1. Write formal specs and assumptions.
-2. Build the minimal domain engine.
-3. Add deterministic tests and reproducibility support.
-4. Add baseline agents.
-5. Add an RL-friendly environment wrapper.
-6. Run training and evaluation experiments.
-
-## Planned milestones
-
-1. Write formal specs and assumptions.
-2. Implement minimal domain model.
-3. Implement one playable mission with deterministic seeding.
-4. Add baseline agents.
-5. Add a first RL-friendly environment wrapper.
-6. Experiment with RL and compare against baselines.
-
-## Status
-
-Current repository state:
-- Phase 1 implementation is complete and captured by the local
-  `phase1-complete` milestone tag;
-- Mission 1 can be loaded, initialized, and played through the accepted
-  resolver path under `src/solo_wargame_ai/domain/`;
-- deterministic replay / trace support exists under `src/solo_wargame_ai/io/`;
-- Phase 2 hardening is complete: engine contracts, replay/reproducibility
-  contracts, and the minimal CI gate are in place;
-- Phase 3 baselines are complete: the repository now includes an explicit
-  agent-facing contract, random and heuristic baselines, fixed-seed comparison
-  metrics, and a manual baseline rerun command;
-- Phase 4 Mission 1 wrapper foundations are accepted: `src/solo_wargame_ai/env/`
-  now exposes the dependency-free `Mission1Env` surface together with the
-  accepted observation, action-id, legality, reward, and termination
-  contracts;
-- Phase 5 learning experiments are complete: the repository now includes a
-  bounded masked actor-critic training/evaluation path, explicit seed-policy
-  separation, Phase 5 train/eval/summary CLIs, and an accepted Mission 1
-  result with `144/200` best wins and `133/200` median wins on the preserved
-  200-seed benchmark;
-- Phase 6 post-first-RL strengthening is complete: the repository now includes
-  accepted responsibility-based learned-policy helper module names, a bounded
-  stronger rollout baseline CLI, and an accepted Mission 1 stronger-baseline
-  result with `195/200` wins on the preserved 200-seed benchmark;
-- the repository verifies locally with `.venv/bin/pytest -q` and
-  `.venv/bin/ruff check src tests`, and the same narrow gate is defined in
-  GitHub Actions;
-- the original numbered phase roadmap is complete; future work now shifts to
-  bounded planning packets, with broader mission coverage and later
-  tooling/platform decisions still open.
-
-## Not implemented yet
-
-At this stage, the repository does **not** yet include:
-- a `gymnasium` dependency or generic RL experiment platform;
-- broader mission and advanced-rule coverage beyond Mission 1;
-- a richer multi-mission env/eval stack;
-- post-Mission-1 learning experiments on a harder mission slice;
-- a generic search/planning platform;
-- content-extension work beyond the accepted Mission 1 rollout baseline and
-  first learner path.
-
-## Next macro-step
-
-The original six-phase build sequence is now complete.
-Mission 1 has already produced a working engine, accepted baselines, a clean
-wrapper, a learnable terminal-only setup, and a stronger rollout baseline at
-`195/200` on the preserved 200-seed benchmark.
-
-Future planning now uses bounded packets rather than automatically extending the
-phase numbering. The recommended next packet is a **Mission 3 vertical slice
-plus only the minimal structural prep needed to land it cleanly**. The point of
-that packet is to test whether the accepted architecture, baseline/eval stack,
-and wrapper assumptions generalize beyond the near-solved Mission 1 slice.
-
-Likely follow-on packets after that are:
-- Mission 3 baselines/search re-establishment;
-- Mission 3 env/wrapper extension;
-- Mission 3 learning experiments;
-- later multi-mission evaluation and additional content only if the richer
-  slice stays healthy.
-
-## Manual operator commands
-
-Accepted local commands:
-
-- Phase 4 env smoke:
-  `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
-- Phase 3 comparison reference:
-  `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
-- Phase 3 benchmark reference:
-  `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode benchmark`
-- Phase 5 train smoke:
-  `.venv/bin/python -m solo_wargame_ai.cli.phase5_train --training-seed 101 --episodes 8 --checkpoint-interval 4 --output-dir outputs/phase5/train_smoke_seed_101_ep_8`
-- Phase 5 learned-policy smoke eval:
-  `.venv/bin/python -m solo_wargame_ai.cli.phase5_learned_policy_eval --checkpoint outputs/phase5/train_seed_101_ep_2000/checkpoints/selected_checkpoint.pt --mode smoke`
-- Phase 5 learned-policy benchmark eval:
-  `.venv/bin/python -m solo_wargame_ai.cli.phase5_learned_policy_eval --checkpoint outputs/phase5/train_seed_101_ep_2000/checkpoints/selected_checkpoint.pt --mode benchmark`
-- Phase 5 aggregate summary:
-  `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
-- Phase 6 stronger baseline smoke:
-  `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode smoke`
-- Phase 6 stronger baseline benchmark:
-  `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+This project is released under the [MIT License](LICENSE).
