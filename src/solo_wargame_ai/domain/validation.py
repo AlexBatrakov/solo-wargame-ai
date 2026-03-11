@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from .mission import Mission
+from .terrain import TerrainType
 
 MISSION_D6_MIN = 1
 MISSION_D6_MAX = 6
@@ -71,6 +72,7 @@ def _validate_map(mission: Mission, collector: ValidationCollector) -> None:
     hex_id_to_coords: dict[str, list[str]] = {}
     coord_to_hex_ids: dict[tuple[int, int], list[str]] = {}
     for hex_definition in mission.map.hexes:
+        _validate_map_hex_terrain(hex_definition.terrain_features, hex_definition.hex_id, collector)
         hex_id_to_coords.setdefault(hex_definition.hex_id, []).append(
             f"({hex_definition.coord.q}, {hex_definition.coord.r})",
         )
@@ -113,6 +115,32 @@ def _validate_map(mission: Mission, collector: ValidationCollector) -> None:
 
     if len(mission.map.forward_directions) != len(set(mission.map.forward_directions)):
         collector.add("map.forward_directions", "forward directions must be unique")
+
+
+def _validate_map_hex_terrain(
+    terrain_features: tuple[TerrainType, ...],
+    hex_id: str,
+    collector: ValidationCollector,
+) -> None:
+    if len(terrain_features) != len(set(terrain_features)):
+        collector.add("map.hexes", f"hex {hex_id!r} repeats terrain features")
+
+    if TerrainType.CLEAR in terrain_features and len(terrain_features) > 1:
+        collector.add(
+            "map.hexes",
+            f"hex {hex_id!r} may not combine clear terrain with other features",
+        )
+
+    if len(terrain_features) <= 1:
+        return
+
+    supported_combo = frozenset({TerrainType.WOODS, TerrainType.HILL})
+    if frozenset(terrain_features) != supported_combo:
+        collector.add(
+            "map.hexes",
+            "unsupported multi-terrain combination "
+            f"{tuple(feature.value for feature in terrain_features)!r} on hex {hex_id!r}",
+        )
 
 
 def _validate_british_data(mission: Mission, collector: ValidationCollector) -> None:

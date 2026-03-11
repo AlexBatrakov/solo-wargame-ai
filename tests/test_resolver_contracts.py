@@ -112,10 +112,10 @@ def test_resolver_normalizes_terminal_like_states_to_no_actions_and_rejects_appl
     assert terminal_state.current_activation is None
     assert get_legal_actions(state) == ()
 
-    with pytest.raises(IllegalActionError, match="terminal Mission 1 state"):
+    with pytest.raises(IllegalActionError, match="terminal mission state"):
         apply_action(state, SelectBritishUnitAction(unit_id="rifle_squad_a"))
 
-    with pytest.raises(IllegalActionError, match="terminal Mission 1 state"):
+    with pytest.raises(IllegalActionError, match="terminal mission state"):
         apply_action(terminal_state, SelectBritishUnitAction(unit_id="rifle_squad_a"))
 
 

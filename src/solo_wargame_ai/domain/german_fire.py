@@ -1,15 +1,19 @@
-"""Stage 6B German fire helpers for Mission 1."""
+"""German fire helpers for the current mission slice."""
 
 from __future__ import annotations
 
 from dataclasses import replace
 
-from .combat import degrade_british_morale, german_fire_zone_hexes
+from .combat import (
+    calculate_defender_terrain_modifier,
+    calculate_hill_attack_modifier,
+    degrade_british_morale,
+    german_fire_zone_hexes,
+)
 from .decision_context import ChooseGermanUnitContext
 from .hexgrid import are_adjacent
 from .rng import DeterministicRNG
 from .state import GameState, validate_game_state
-from .terrain import TerrainType
 from .units import BritishMorale, GermanUnitStatus
 
 
@@ -55,11 +59,14 @@ def calculate_german_fire_threshold(
     target = state.british_units[target_unit_id]
     german_class = state.mission.german.unit_classes_by_name[attacker.unit_class]
     threshold = german_class.attack_to_hit
-    target_hex = state.mission.map.hex_at(target.position)
-
-    if target_hex is not None and target_hex.terrain is TerrainType.WOODS:
-        threshold += state.mission.combat_modifiers.defender_in_woods
-
+    threshold += calculate_defender_terrain_modifier(
+        state.mission,
+        defender_position=target.position,
+    )
+    threshold += calculate_hill_attack_modifier(
+        state.mission,
+        attacker_position=attacker.position,
+    )
     threshold += target.cover
     return threshold
 

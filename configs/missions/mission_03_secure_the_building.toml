@@ -1,91 +1,131 @@
 schema_version = 1
-mission_id = "mission_01_secure_the_woods_1"
-name = "Mission 1 - Secure the Woods (1)"
+mission_id = "mission_03_secure_the_building"
+name = "Mission 3 - Secure the Building"
 
 [source]
 rulebook_path = "docs/reference/rules.pdf"
-briefing_page = 16
-map_page = 17
+briefing_page = 20
+map_page = 21
 
 [turns]
-turn_limit = 4
+turn_limit = 6
 first_turn_already_marked = true
 
 [objective]
 kind = "clear_all_hostiles"
-description = "Reveal and clear the German unit before time runs out."
+description = "Reveal and clear all German units before time runs out."
 
 [map]
 coordinate_system = "axial_flat_top"
 forward_directions = ["up_left", "up", "up_right"]
 
 [[map.hexes]]
-hex_id = "top_center"
+hex_id = "top_woods"
 q = 0
 r = 0
 terrain = "woods"
 
 [[map.hexes]]
-hex_id = "upper_left"
+hex_id = "upper_left_clear"
 q = -1
 r = 1
-terrain = "woods"
+terrain = "clear"
 
 [[map.hexes]]
-hex_id = "upper_right"
+hex_id = "upper_right_wooded_hill"
 q = 1
 r = 0
-terrain = "woods"
+terrain = ["woods", "hill"]
 
 [[map.hexes]]
-hex_id = "hidden_woods"
-q = 0
-r = 1
-terrain = "woods"
-
-[[map.hexes]]
-hex_id = "middle_left"
-q = -1
+hex_id = "far_left_upper_woods"
+q = -2
 r = 2
 terrain = "woods"
 
 [[map.hexes]]
-hex_id = "middle_right"
+hex_id = "center_left_wooded_hill"
+q = -1
+r = 2
+terrain = ["woods", "hill"]
+
+[[map.hexes]]
+hex_id = "building_hex"
+q = 0
+r = 1
+terrain = "building"
+
+[[map.hexes]]
+hex_id = "right_marker_clear"
 q = 1
 r = 1
 terrain = "clear"
 
 [[map.hexes]]
-hex_id = "lower_center"
-q = 0
-r = 2
-terrain = "clear"
+hex_id = "far_left_middle_woods"
+q = -2
+r = 3
+terrain = "woods"
 
 [[map.hexes]]
-hex_id = "lower_left"
+hex_id = "center_left_clear"
 q = -1
 r = 3
 terrain = "clear"
 
 [[map.hexes]]
-hex_id = "lower_right"
+hex_id = "center_hill"
+q = 0
+r = 2
+terrain = "hill"
+
+[[map.hexes]]
+hex_id = "right_lower_clear"
 q = 1
 r = 2
-terrain = "woods"
+terrain = "clear"
+
+[[map.hexes]]
+hex_id = "far_left_lower_clear"
+q = -2
+r = 4
+terrain = "clear"
+
+[[map.hexes]]
+hex_id = "lower_middle_clear"
+q = -1
+r = 4
+terrain = "clear"
+
+[[map.hexes]]
+hex_id = "lower_right_clear"
+q = 0
+r = 3
+terrain = "clear"
 
 [[map.hexes]]
 hex_id = "start_hex"
 q = 0
-r = 3
+r = 4
 terrain = "clear"
 
 [[map.start_hexes]]
 q = 0
-r = 3
+r = 4
 
 [[map.hidden_markers]]
 marker_id = "qm_1"
+q = -1
+r = 2
+
+[[map.hidden_markers]]
+marker_id = "qm_2"
 q = 0
+r = 1
+
+[[map.hidden_markers]]
+marker_id = "qm_3"
+q = 1
 r = 1
 
 [[british_units]]
@@ -94,6 +134,10 @@ unit_class = "rifle_squad"
 
 [[british_units]]
 unit_id = "rifle_squad_b"
+unit_class = "rifle_squad"
+
+[[british_units]]
+unit_id = "rifle_squad_c"
 unit_class = "rifle_squad"
 
 [british_unit_classes.rifle_squad]
@@ -129,6 +173,11 @@ display_name = "Light machine gun"
 attack_to_hit = 6
 uses_fire_zone = true
 
+[german_unit_classes.german_rifle_squad]
+display_name = "German Rifle Squad"
+attack_to_hit = 8
+uses_fire_zone = true
+
 [[enemy_reveal_table]]
 roll_min = 1
 roll_max = 2
@@ -136,8 +185,13 @@ result_unit_class = "heavy_machine_gun"
 
 [[enemy_reveal_table]]
 roll_min = 3
-roll_max = 6
+roll_max = 4
 result_unit_class = "light_machine_gun"
+
+[[enemy_reveal_table]]
+roll_min = 5
+roll_max = 6
+result_unit_class = "german_rifle_squad"
 
 [combat_modifiers]
 defender_in_woods = 1

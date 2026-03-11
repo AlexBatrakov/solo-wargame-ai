@@ -57,6 +57,12 @@ Mission configs should **not** contain general rule logic such as:
 
 Those rules belong in the domain engine.
 
+Current bounded terrain encoding:
+- a hex `terrain` value may be either a single terrain string or a non-empty
+  list of terrain strings;
+- the only accepted multi-terrain combination today is `["woods", "hill"]` for
+  Mission 3 wooded-hill hexes.
+
 ## Coordinate convention
 
 Printed maps should be transcribed using **flat-top axial coordinates** with
@@ -139,7 +145,7 @@ The first mission config should contain these sections:
 
 - coordinate system id
 - forward directions
-- playable hex list with terrain
+- playable hex list with terrain feature data
 - start hex list
 - hidden marker list
 

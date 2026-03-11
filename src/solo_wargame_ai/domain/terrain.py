@@ -1,4 +1,4 @@
-"""Minimal terrain primitives for board transcription and loader validation."""
+"""Minimal terrain primitives for board transcription and mission validation."""
 
 from __future__ import annotations
 

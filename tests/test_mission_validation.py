@@ -34,6 +34,20 @@ def test_loader_rejects_unknown_terrain_name() -> None:
     _assert_issue_present(exc_info.value, "map.hexes[0].terrain", "Unknown terrain type: bog")
 
 
+def test_loader_rejects_unsupported_multi_terrain_combinations() -> None:
+    mission_data = _load_raw_mission_data()
+    mission_data["map"]["hexes"][0]["terrain"] = ["woods", "building"]
+
+    with pytest.raises(MissionValidationError) as exc_info:
+        load_mission_from_data(mission_data)
+
+    _assert_issue_present(
+        exc_info.value,
+        "map.hexes",
+        "unsupported multi-terrain combination",
+    )
+
+
 def test_loader_rejects_unknown_forward_direction_name() -> None:
     mission_data = _load_raw_mission_data()
     mission_data["map"]["forward_directions"][1] = "north"

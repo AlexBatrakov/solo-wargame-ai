@@ -12,6 +12,12 @@ MISSION_PATH = (
     / "missions"
     / "mission_01_secure_the_woods_1.toml"
 )
+MISSION_03_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "configs"
+    / "missions"
+    / "mission_03_secure_the_building.toml"
+)
 
 
 def test_load_mission_01_builds_valid_static_mission_model() -> None:
@@ -87,5 +93,62 @@ def test_load_mission_01_builds_valid_static_mission_model() -> None:
     assert mission.german.reveal_table[1].result_unit_class == "light_machine_gun"
 
     assert mission.combat_modifiers.defender_in_woods == 1
+    assert mission.combat_modifiers.defender_in_building == 2
+    assert mission.combat_modifiers.attacker_from_hill == -1
     assert mission.combat_modifiers.attacker_outside_target_fire_zone == -1
     assert mission.combat_modifiers.per_other_british_unit_adjacent_to_target == -1
+
+
+def test_load_mission_03_builds_valid_static_mission_model() -> None:
+    mission = load_mission(MISSION_03_PATH)
+
+    assert mission.schema_version == 1
+    assert mission.mission_id == "mission_03_secure_the_building"
+    assert mission.name == "Mission 3 - Secure the Building"
+    assert mission.source.briefing_page == 20
+    assert mission.source.map_page == 21
+    assert mission.turns.turn_limit == 6
+    assert mission.objective.kind is MissionObjectiveKind.CLEAR_ALL_HOSTILES
+    assert mission.objective.description == (
+        "Reveal and clear all German units before time runs out."
+    )
+
+    assert mission.map.start_hexes == (HexCoord(0, 4),)
+    assert tuple(marker.coord for marker in mission.map.hidden_markers) == (
+        HexCoord(-1, 2),
+        HexCoord(0, 1),
+        HexCoord(1, 1),
+    )
+
+    upper_right_wooded_hill = mission.map.hex_at(HexCoord(1, 0))
+    assert upper_right_wooded_hill is not None
+    assert upper_right_wooded_hill.terrain is TerrainType.WOODS
+    assert upper_right_wooded_hill.terrain_features == (
+        TerrainType.WOODS,
+        TerrainType.HILL,
+    )
+    assert upper_right_wooded_hill.has_terrain(TerrainType.WOODS)
+    assert upper_right_wooded_hill.has_terrain(TerrainType.HILL)
+
+    building_hex = mission.map.hex_at(HexCoord(0, 1))
+    assert building_hex is not None
+    assert building_hex.terrain_features == (TerrainType.BUILDING,)
+
+    center_hill = mission.map.hex_at(HexCoord(0, 2))
+    assert center_hill is not None
+    assert center_hill.terrain_features == (TerrainType.HILL,)
+
+    assert tuple(unit.unit_id for unit in mission.british.roster) == (
+        "rifle_squad_a",
+        "rifle_squad_b",
+        "rifle_squad_c",
+    )
+
+    assert mission.german.unit_classes_by_name["heavy_machine_gun"].attack_to_hit == 5
+    assert mission.german.unit_classes_by_name["light_machine_gun"].attack_to_hit == 6
+    assert mission.german.unit_classes_by_name["german_rifle_squad"].attack_to_hit == 8
+    assert mission.german.reveal_table[2].result_unit_class == "german_rifle_squad"
+
+    assert mission.combat_modifiers.defender_in_woods == 1
+    assert mission.combat_modifiers.defender_in_building == 2
+    assert mission.combat_modifiers.attacker_from_hill == -1

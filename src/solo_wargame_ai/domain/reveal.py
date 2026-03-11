@@ -1,4 +1,4 @@
-"""Stage 5 reveal helpers for Mission 1 hidden-marker mechanics."""
+"""Reveal helpers for the current hidden-marker mechanics."""
 
 from __future__ import annotations
 

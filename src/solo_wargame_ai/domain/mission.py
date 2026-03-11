@@ -28,7 +28,7 @@ def mission_objective_kind_from_name(name: str) -> MissionObjectiveKind:
 
 
 class OrderName(StrEnum):
-    """British order identifiers needed for Mission 1."""
+    """British order identifiers supported by the current mission slice."""
 
     ADVANCE = "advance"
     FIRE = "fire"
@@ -48,7 +48,7 @@ def order_name_from_name(name: str) -> OrderName:
 
 
 class AttackRange(StrEnum):
-    """Attack-range identifiers needed for Mission 1 attack data."""
+    """Attack-range identifiers supported by the current mission slice."""
 
     ADJACENT = "adjacent"
 
@@ -93,7 +93,23 @@ class MapHex:
 
     hex_id: str
     coord: HexCoord
-    terrain: TerrainType
+    terrain_features: tuple[TerrainType, ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "terrain_features", tuple(self.terrain_features))
+        if not self.terrain_features:
+            raise ValueError("MapHex requires at least one terrain feature")
+
+    @property
+    def terrain(self) -> TerrainType:
+        """Return the first terrain feature for backward-compatible callers."""
+
+        return self.terrain_features[0]
+
+    def has_terrain(self, terrain: TerrainType) -> bool:
+        """Return whether the hex grants the supplied terrain effect."""
+
+        return terrain in self.terrain_features
 
 
 @dataclass(frozen=True, slots=True)
@@ -292,6 +308,8 @@ class CombatModifiers:
     """Mission-local combat modifier values."""
 
     defender_in_woods: int
+    defender_in_building: int
+    attacker_from_hill: int
     attacker_outside_target_fire_zone: int
     per_other_british_unit_adjacent_to_target: int
 

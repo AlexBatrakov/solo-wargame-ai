@@ -151,6 +151,15 @@ interoperate safely.
 This is an engineering representation choice, not a claim that the printed
 rulebook itself uses axial notation.
 
+Current implementation fact:
+- a playable hex may carry one or more terrain features in mission data
+- the only accepted multi-terrain combination today is the bounded `woods +
+  hill` case needed for Mission 3 wooded-hill hexes
+
+Rationale:
+This keeps Mission 3 rule semantics faithful without widening immediately into a
+generic terrain-platform redesign.
+
 ### A11. Hidden markers are unresolved until reveal
 Hidden enemy markers are represented as unresolved runtime markers and are
 sampled from the mission reveal table only when a reveal event actually occurs.

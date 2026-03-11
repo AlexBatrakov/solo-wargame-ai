@@ -1,4 +1,4 @@
-"""Pending-decision contract for the staged Mission 1 runtime flow."""
+"""Pending-decision contract for the staged runtime flow."""
 
 from __future__ import annotations
 

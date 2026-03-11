@@ -1,4 +1,4 @@
-"""Runtime unit and marker state for the staged Mission 1 engine."""
+"""Runtime unit and marker state for the staged mission engine."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from .hexgrid import HexCoord
 
 
 class BritishMorale(StrEnum):
-    """British morale ladder supported by the Mission 1 runtime model."""
+    """British morale ladder supported by the current runtime model."""
 
     NORMAL = "normal"
     LOW = "low"

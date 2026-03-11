@@ -1,4 +1,4 @@
-"""Mission loader for static Mission 1 data."""
+"""Mission loader for static mission data."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ from solo_wargame_ai.domain.mission import (
     mission_objective_kind_from_name,
     order_name_from_name,
 )
-from solo_wargame_ai.domain.terrain import terrain_from_name
+from solo_wargame_ai.domain.terrain import TerrainType, terrain_from_name
 from solo_wargame_ai.domain.validation import ValidationCollector, validate_mission
 
 from .mission_schema import MissionSchema, parse_mission_schema
@@ -85,20 +85,19 @@ def build_mission(schema: MissionSchema) -> Mission:
 
     playable_hexes: list[MapHex] = []
     for index, hex_schema in enumerate(schema.map.hexes):
-        terrain = _parse_name(
+        terrain_features = _parse_terrain_features(
             hex_schema.terrain,
-            f"map.hexes[{index}].terrain",
-            terrain_from_name,
-            collector,
+            path=f"map.hexes[{index}].terrain",
+            collector=collector,
         )
-        if terrain is None:
+        if terrain_features is None:
             continue
 
         playable_hexes.append(
             MapHex(
                 hex_id=hex_schema.hex_id,
                 coord=HexCoord(q=hex_schema.q, r=hex_schema.r),
-                terrain=terrain,
+                terrain_features=terrain_features,
             ),
         )
 
@@ -236,6 +235,8 @@ def build_mission(schema: MissionSchema) -> Mission:
         ),
         combat_modifiers=CombatModifiers(
             defender_in_woods=schema.combat_modifiers.defender_in_woods,
+            defender_in_building=schema.combat_modifiers.defender_in_building,
+            attacker_from_hill=schema.combat_modifiers.attacker_from_hill,
             attacker_outside_target_fire_zone=(
                 schema.combat_modifiers.attacker_outside_target_fire_zone
             ),
@@ -259,6 +260,27 @@ def _parse_name(
     except ValueError as exc:
         collector.add(path, str(exc))
         return None
+
+
+def _parse_terrain_features(
+    raw_names: tuple[str, ...],
+    *,
+    path: str,
+    collector: ValidationCollector,
+) -> tuple[TerrainType, ...] | None:
+    parsed_features: list[TerrainType] = []
+    for index, raw_name in enumerate(raw_names):
+        terrain_path = path if len(raw_names) == 1 else f"{path}[{index}]"
+        terrain = _parse_name(
+            raw_name,
+            terrain_path,
+            terrain_from_name,
+            collector,
+        )
+        if terrain is None:
+            return None
+        parsed_features.append(terrain)
+    return tuple(parsed_features)
 
 
 __all__ = ["build_mission", "load_mission", "load_mission_from_data"]

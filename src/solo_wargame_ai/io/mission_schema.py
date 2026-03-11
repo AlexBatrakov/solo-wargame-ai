@@ -30,7 +30,7 @@ class MapHexSchema:
     hex_id: str
     q: int
     r: int
-    terrain: str
+    terrain: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,6 +107,8 @@ class EnemyRevealTableRowSchema:
 @dataclass(frozen=True, slots=True)
 class CombatModifiersSchema:
     defender_in_woods: int
+    defender_in_building: int
+    attacker_from_hill: int
     attacker_outside_target_fire_zone: int
     per_other_british_unit_adjacent_to_target: int
 
@@ -195,6 +197,8 @@ def parse_mission_schema(data: Mapping[str, Any]) -> MissionSchema:
         ),
         combat_modifiers=CombatModifiersSchema(
             defender_in_woods=_require_int(combat_modifiers_data, "defender_in_woods"),
+            defender_in_building=_require_int(combat_modifiers_data, "defender_in_building"),
+            attacker_from_hill=_require_int(combat_modifiers_data, "attacker_from_hill"),
             attacker_outside_target_fire_zone=_require_int(
                 combat_modifiers_data,
                 "attacker_outside_target_fire_zone",
@@ -212,7 +216,7 @@ def _parse_map_hex_schema(data: Mapping[str, Any]) -> MapHexSchema:
         hex_id=_require_str(data, "hex_id"),
         q=_require_int(data, "q"),
         r=_require_int(data, "r"),
-        terrain=_require_str(data, "terrain"),
+        terrain=_require_terrain_tuple(data, "terrain"),
     )
 
 
@@ -361,6 +365,22 @@ def _require_str_tuple(parent: Mapping[str, Any], key: str) -> tuple[str, ...]:
     value = parent[key]
     if not isinstance(value, list):
         raise TypeError(f"Expected {key} to be a list of strings")
+
+    result: list[str] = []
+    for item in value:
+        if not isinstance(item, str):
+            raise TypeError(f"Expected every entry in {key} to be a string")
+        result.append(item)
+    return tuple(result)
+
+
+def _require_terrain_tuple(parent: Mapping[str, Any], key: str) -> tuple[str, ...]:
+    value = parent[key]
+    if isinstance(value, str):
+        return (value,)
+
+    if not isinstance(value, list) or not value:
+        raise TypeError(f"Expected {key} to be a string or non-empty list of strings")
 
     result: list[str] = []
     for item in value:

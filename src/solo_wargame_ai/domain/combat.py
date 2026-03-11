@@ -1,4 +1,4 @@
-"""Stage 6A British combat helpers for Mission 1."""
+"""British combat helpers for the current mission slice."""
 
 from __future__ import annotations
 
@@ -105,6 +105,38 @@ def count_other_adjacent_british_units(
     )
 
 
+def calculate_defender_terrain_modifier(
+    mission: Mission,
+    *,
+    defender_position: HexCoord,
+) -> int:
+    """Return terrain-based defense modifiers for the defender's current hex."""
+
+    target_hex = mission.map.hex_at(defender_position)
+    if target_hex is None:
+        return 0
+
+    modifier = 0
+    if target_hex.has_terrain(TerrainType.WOODS):
+        modifier += mission.combat_modifiers.defender_in_woods
+    if target_hex.has_terrain(TerrainType.BUILDING):
+        modifier += mission.combat_modifiers.defender_in_building
+    return modifier
+
+
+def calculate_hill_attack_modifier(
+    mission: Mission,
+    *,
+    attacker_position: HexCoord,
+) -> int:
+    """Return the hill-based attack modifier for the attacker's current hex."""
+
+    attacker_hex = mission.map.hex_at(attacker_position)
+    if attacker_hex is None or not attacker_hex.has_terrain(TerrainType.HILL):
+        return 0
+    return mission.combat_modifiers.attacker_from_hill
+
+
 def calculate_fire_threshold(
     mission: Mission,
     *,
@@ -120,10 +152,14 @@ def calculate_fire_threshold(
         attack_id=OrderName.FIRE.value,
     )
     threshold = attack_profile.base_to_hit
-    target_hex = mission.map.hex_at(defender.position)
-
-    if target_hex is not None and target_hex.terrain is TerrainType.WOODS:
-        threshold += mission.combat_modifiers.defender_in_woods
+    threshold += calculate_defender_terrain_modifier(
+        mission,
+        defender_position=defender.position,
+    )
+    threshold += calculate_hill_attack_modifier(
+        mission,
+        attacker_position=attacker.position,
+    )
 
     if is_outside_german_fire_zone(
         mission,
@@ -217,7 +253,7 @@ def resolve_british_attack(
 
 
 def degrade_british_morale(morale: BritishMorale) -> BritishMorale:
-    """Advance one British morale step down the Stage 6A ladder."""
+    """Advance one British morale step down the current ladder."""
 
     if morale is BritishMorale.NORMAL:
         return BritishMorale.LOW
@@ -238,8 +274,10 @@ def _fire_zone_directions(facing: HexDirection) -> tuple[HexDirection, ...]:
 
 __all__ = [
     "BritishAttackOutcome",
+    "calculate_defender_terrain_modifier",
     "calculate_fire_threshold",
     "calculate_grenade_attack_threshold",
+    "calculate_hill_attack_modifier",
     "count_other_adjacent_british_units",
     "degrade_british_morale",
     "german_fire_zone_hexes",

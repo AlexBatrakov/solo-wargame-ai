@@ -1,4 +1,4 @@
-"""Thin public resolver path for Stage 6B automatic Mission 1 progression."""
+"""Thin public resolver path for automatic mission progression."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from .german_fire import selectable_german_unit_ids
 from .legal_actions import IllegalActionError
 from .legal_actions import apply_action as apply_legal_action
 from .legal_actions import get_legal_actions as get_staged_legal_actions
+from .mission import MissionObjectiveKind
 from .state import GamePhase, GameState, TerminalOutcome, validate_game_state
 from .units import GermanUnitStatus
 
@@ -28,7 +29,7 @@ def apply_action(state: GameState, action: GameAction) -> GameState:
 
     progressed_state = resolve_automatic_progression(state)
     if progressed_state.terminal_outcome is not None:
-        raise IllegalActionError("Cannot apply actions to a terminal Mission 1 state")
+        raise IllegalActionError("Cannot apply actions to a terminal mission state")
 
     next_state = apply_legal_action(progressed_state, action)
     return resolve_automatic_progression(next_state)
@@ -64,15 +65,18 @@ def resolve_automatic_progression(state: GameState) -> GameState:
 
 
 def evaluate_terminal_outcome(state: GameState) -> TerminalOutcome | None:
-    """Evaluate Mission 1 terminal conditions against the current runtime truth."""
+    """Evaluate terminal conditions for the currently supported objective family."""
 
     if state.terminal_outcome is not None:
         return state.terminal_outcome
 
-    victory = not state.unresolved_markers and not any(
-        unit.status is GermanUnitStatus.ACTIVE for unit in state.german_units.values()
-    )
-    if victory:
+    if state.mission.objective.kind is not MissionObjectiveKind.CLEAR_ALL_HOSTILES:
+        raise ValueError(
+            "Automatic terminal evaluation currently supports only "
+            "MissionObjectiveKind.CLEAR_ALL_HOSTILES",
+        )
+
+    if _is_clear_all_hostiles_victory(state):
         return TerminalOutcome.VICTORY
 
     if (
@@ -83,6 +87,12 @@ def evaluate_terminal_outcome(state: GameState) -> TerminalOutcome | None:
         return TerminalOutcome.DEFEAT
 
     return None
+
+
+def _is_clear_all_hostiles_victory(state: GameState) -> bool:
+    return not state.unresolved_markers and not any(
+        unit.status is GermanUnitStatus.ACTIVE for unit in state.german_units.values()
+    )
 
 
 def _mark_terminal_outcome(

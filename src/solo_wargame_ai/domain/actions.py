@@ -1,4 +1,4 @@
-"""Stage 3B action contract objects without legality or resolution logic."""
+"""Staged action contract objects without legality or resolution logic."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from .hexgrid import HexCoord
 
 
 class ActionKind(StrEnum):
-    """Tagged action kinds used by the staged Mission 1 action contract."""
+    """Tagged action kinds used by the staged mission action contract."""
 
     SELECT_BRITISH_UNIT = "select_british_unit"
     RESOLVE_DOUBLE_CHOICE = "resolve_double_choice"

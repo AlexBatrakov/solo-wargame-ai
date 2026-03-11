@@ -36,7 +36,7 @@ class GamePhase(StrEnum):
 
 
 class TerminalOutcome(StrEnum):
-    """Explicit terminal outcomes for Mission 1 runtime states."""
+    """Explicit terminal outcomes for current runtime states."""
 
     VICTORY = "victory"
     DEFEAT = "defeat"
@@ -145,10 +145,10 @@ def create_initial_game_state(
     *,
     seed: int | None = DEFAULT_INITIAL_RNG_SEED,
 ) -> GameState:
-    """Build the deterministic initial Mission 1 runtime state from a loaded mission."""
+    """Build the deterministic initial runtime state from a loaded mission."""
 
     if len(mission.map.start_hexes) != 1:
-        raise ValueError("Stage 3B initial state construction expects exactly one start hex")
+        raise ValueError("Current initial state construction expects exactly one start hex")
 
     start_hex = mission.map.start_hexes[0]
     state = GameState(
