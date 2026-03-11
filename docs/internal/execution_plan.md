@@ -344,12 +344,18 @@ Boundary to later packets:
 
 ## Mission 3 packet status block
 
-- Delivery A: pending
-- Delivery B: conditional
-- Packet overall: planned
+- Delivery A: completed
+- Delivery B: not opened
+- Post-acceptance hardening tail: completed
+- Packet overall: closed
 - Planning audit date: March 11, 2026
+- Closeout audit date: March 11, 2026
 - Blocking findings before dispatch: none
-- Recommended execution order: Delivery A -> Delivery B only if needed
+- Closeout audit findings: none acceptance-blocking
+- Executed package order: Delivery A -> tests-only hardening tail
+- Landed commits:
+  - `ecda1f4` Implement Mission 3 vertical slice support
+  - `c2f9b4c` test: add Mission 3 terminal replay regression
 - Closeout gate: packet should not open baselines/env/learning follow-ons until
   deterministic Mission 3 resolver/replay acceptance is in hand
 
@@ -357,7 +363,7 @@ Boundary to later packets:
 
 Status:
 
-- pending
+- completed
 
 Goal:
 
@@ -441,6 +447,13 @@ Commit shape:
 - one narrow follow-up `fix:` commit acceptable only if a review-requested
   correction lands after the main slice
 
+Execution outcome:
+
+- landed cleanly in `ecda1f4`
+- Mission 3 deterministic load/init/play/replay coverage is in place
+- required bounded terrain/combat/shared-path widening landed without opening
+  env, Mission 4, or generic objective-platform work
+
 Analysis-before-edit:
 
 - required
@@ -449,7 +462,7 @@ Analysis-before-edit:
 
 Status:
 
-- conditional
+- not opened
 
 Goal:
 
@@ -500,9 +513,61 @@ Commit shape:
 
 - one small implementation/docs follow-up commit only if the package is opened
 
+Execution outcome:
+
+- not opened
+- Delivery A did not leave a concrete replay/shared-seam blocker that justified
+  the original Delivery B package
+- the only additional hardening that proved worthwhile was a narrower
+  post-acceptance tests-only tail, outside the original Delivery B scope
+
 Analysis-before-edit:
 
 - required
+
+## Mission 3 packet closeout
+
+Closeout audit result:
+
+- no acceptance-blocking findings
+- Mission 3 packet scope stayed bounded to content-extension plus required
+  structural prep
+- no Mission 4 content, env/wrapper work, baseline/search reopening, learning
+  work, fixture program, or generic multi-mission platform work was opened
+
+Verified on March 11, 2026:
+
+- `.venv/bin/pytest -q` -> `217 passed`
+- `.venv/bin/ruff check src tests` -> passed
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke` ->
+  preserved `random 2/16`, `heuristic 11/16`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0` ->
+  preserved `32` action ids, `35` decision steps, defeat
+- `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+  -> preserved best `144`, median `133`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode smoke`
+  -> preserved `16/16`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+  -> preserved `195/200`
+
+Packet outcome:
+
+- Mission 3 now lands as a deterministic resolver-playable and replayable
+  content slice
+- bounded wooded-hill, building, hill, and German Rifle Squad support is in
+  the shared domain/io surface
+- the original conditional Delivery B package was not needed
+- one extra tests-only hardening tail was accepted after Delivery A because it
+  added a terminal end-to-end replay regression without reopening
+  implementation scope
+
+Deferred beyond this closed packet:
+
+- Mission 3 baselines/search
+- Mission 3 env/wrapper extension
+- Mission 3 learning experiments
+- Mission 4 content landing
+- generic terrain/objective/replay/platform expansion
 
 ## Recommended Delivery Thread sequence for the Mission 3 packet
 
