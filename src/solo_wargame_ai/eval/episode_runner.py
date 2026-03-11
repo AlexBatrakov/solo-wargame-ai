@@ -1,12 +1,15 @@
-"""Mission 1 episode runner over the accepted resolver facade.
+"""Fixed-seed episode runner over the accepted resolver facade.
 
-This module keeps the Phase 3 baseline harness on the stable integration seam:
+This module keeps the accepted baseline harness on the stable integration seam:
 
 - mission loading happens outside the runner
 - episode initialization uses ``create_initial_game_state``
 - each decision step uses ``resolver.get_legal_actions`` then ``resolver.apply_action``
 - agents only choose from the supplied legal action tuple
 - replay helpers remain optional debugging adapters, not required dependencies
+- preserved Phase 3 seed aliases stay local historical Mission 1 operator
+  surfaces; later mission-local seed aliases should live beside their own
+  comparison code
 """
 
 from __future__ import annotations
@@ -29,7 +32,7 @@ PHASE3_SMOKE_SEEDS: tuple[int, ...] = tuple(range(16))
 
 @dataclass(frozen=True, slots=True)
 class EpisodeResult:
-    """Per-episode data recorded by the minimal Phase 3 harness."""
+    """Per-episode data recorded by the accepted fixed-seed runner."""
 
     agent_name: str
     seed: int | None
@@ -54,7 +57,7 @@ def run_episode(
     *,
     seed: int | None,
 ) -> EpisodeRun:
-    """Run one Mission 1 episode until a terminal outcome is reached."""
+    """Run one fixed-seed episode until a terminal outcome is reached."""
 
     state = create_initial_game_state(mission, seed=seed)
     initial_marker_count = len(state.unresolved_markers)
@@ -116,7 +119,7 @@ def run_smoke_episodes(
     *,
     agent_factory: AgentFactory,
 ) -> tuple[EpisodeRun, ...]:
-    """Run the fixed 16-seed Phase 3 smoke set."""
+    """Run the preserved 16-seed Phase 3 smoke set."""
 
     return run_episodes(mission, agent_factory=agent_factory, seeds=PHASE3_SMOKE_SEEDS)
 

@@ -1,4 +1,4 @@
-"""Phase 3 aggregation helpers over the accepted EpisodeResult surface."""
+"""Fixed-seed aggregation helpers over the accepted EpisodeResult surface."""
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ class EpisodeMetricsDelta:
 
 
 def aggregate_episode_results(results: Iterable[EpisodeResult]) -> EpisodeMetrics:
-    """Aggregate the required Phase 3 metrics from episode-level runner results."""
+    """Aggregate the accepted fixed-seed metrics from episode-level results."""
 
     result_tuple = tuple(results)
     if not result_tuple:
@@ -108,7 +108,7 @@ def diff_episode_metrics(
 
 
 def format_metrics_table(metrics: Iterable[EpisodeMetrics]) -> str:
-    """Render a small stable comparison table for Phase 3 baseline reports."""
+    """Render a small stable comparison table for fixed-seed reports."""
 
     metric_tuple = tuple(metrics)
     if not metric_tuple:
