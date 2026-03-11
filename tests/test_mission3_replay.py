@@ -15,7 +15,7 @@ from solo_wargame_ai.domain.actions import (
     TakeCoverAction,
 )
 from solo_wargame_ai.domain.hexgrid import HexCoord
-from solo_wargame_ai.domain.state import GamePhase
+from solo_wargame_ai.domain.state import GamePhase, TerminalOutcome
 from solo_wargame_ai.io.mission_loader import load_mission
 from solo_wargame_ai.io.replay import (
     ReplayEventKind,
@@ -93,6 +93,54 @@ def test_mission_3_replay_trace_is_stable_and_replayable() -> None:
     assert "removed side=british unit_id=rifle_squad_c cause=german_fire" in rendered
 
 
+def test_mission_3_terminal_defeat_replay_regression_is_stable_and_replayable() -> None:
+    mission = load_mission(MISSION_03_PATH)
+    actions = _mission_3_terminal_defeat_actions()
+
+    run = run_action_replay(mission, seed=0, actions=actions)
+    replayed = replay_trace(mission, run.trace)
+
+    terminal_events = [
+        event
+        for step in run.trace.steps
+        for event in step.events
+        if event.kind is ReplayEventKind.TERMINAL_OUTCOME_SET
+    ]
+    turn_events = [
+        event.details
+        for step in run.trace.steps
+        for event in step.events
+        if event.kind is ReplayEventKind.TURN_ADVANCED
+    ]
+
+    assert replayed.trace == run.trace
+    assert replayed.final_state == run.final_state
+    assert run.trace.final_state == summarize_state(run.final_state)
+    assert run.final_state.terminal_outcome is TerminalOutcome.DEFEAT
+    assert run.final_state.turn == 6
+    assert run.final_state.phase is GamePhase.GERMAN
+    assert run.final_state.unresolved_markers == {}
+    assert run.final_state.british_units["rifle_squad_a"].morale.value == "normal"
+    assert run.final_state.british_units["rifle_squad_b"].morale.value == "normal"
+    assert run.final_state.british_units["rifle_squad_c"].morale.value == "removed"
+    assert run.final_state.german_units["qm_1"].status.value == "active"
+    assert run.final_state.german_units["qm_2"].status.value == "active"
+    assert run.final_state.german_units["qm_3"].status.value == "active"
+    assert turn_events == [
+        {"from_turn": 1, "to_turn": 2},
+        {"from_turn": 2, "to_turn": 3},
+        {"from_turn": 3, "to_turn": 4},
+        {"from_turn": 4, "to_turn": 5},
+        {"from_turn": 5, "to_turn": 6},
+    ]
+    assert [event.details for event in terminal_events] == [{"outcome": "defeat"}]
+
+    rendered = render_replay_trace(run.trace)
+    assert "Mission mission_03_secure_the_building seed=0 steps=50" in rendered
+    assert "terminal outcome=defeat" in rendered
+    assert "End turn=6 phase=german pending=choose_german_unit terminal=defeat" in rendered
+
+
 def _mission_3_reveal_trace_actions() -> tuple[object, ...]:
     return (
         SelectBritishUnitAction(unit_id="rifle_squad_c"),
@@ -110,6 +158,39 @@ def _mission_3_reveal_trace_actions() -> tuple[object, ...]:
         ChooseOrderExecutionAction(choice=OrderExecutionChoice.BOTH_ORDERS),
         AdvanceAction(destination=HexCoord(0, 2)),
         TakeCoverAction(),
+        SelectBritishUnitAction(unit_id="rifle_squad_a"),
+        DiscardActivationRollAction(),
+        SelectBritishUnitAction(unit_id="rifle_squad_b"),
+        DiscardActivationRollAction(),
+        SelectGermanUnitAction(unit_id="qm_1"),
+        SelectGermanUnitAction(unit_id="qm_2"),
+        SelectGermanUnitAction(unit_id="qm_3"),
+    )
+
+
+def _mission_3_terminal_defeat_actions() -> tuple[object, ...]:
+    return _mission_3_reveal_trace_actions() + (
+        SelectBritishUnitAction(unit_id="rifle_squad_a"),
+        DiscardActivationRollAction(),
+        SelectBritishUnitAction(unit_id="rifle_squad_b"),
+        DiscardActivationRollAction(),
+        SelectGermanUnitAction(unit_id="qm_1"),
+        SelectGermanUnitAction(unit_id="qm_2"),
+        SelectGermanUnitAction(unit_id="qm_3"),
+        SelectBritishUnitAction(unit_id="rifle_squad_a"),
+        DiscardActivationRollAction(),
+        SelectBritishUnitAction(unit_id="rifle_squad_b"),
+        DiscardActivationRollAction(),
+        SelectGermanUnitAction(unit_id="qm_1"),
+        SelectGermanUnitAction(unit_id="qm_2"),
+        SelectGermanUnitAction(unit_id="qm_3"),
+        SelectBritishUnitAction(unit_id="rifle_squad_a"),
+        DiscardActivationRollAction(),
+        SelectBritishUnitAction(unit_id="rifle_squad_b"),
+        DiscardActivationRollAction(),
+        SelectGermanUnitAction(unit_id="qm_1"),
+        SelectGermanUnitAction(unit_id="qm_2"),
+        SelectGermanUnitAction(unit_id="qm_3"),
         SelectBritishUnitAction(unit_id="rifle_squad_a"),
         DiscardActivationRollAction(),
         SelectBritishUnitAction(unit_id="rifle_squad_b"),
