@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from solo_wargame_ai.agents.mission3_rollout_search_agent import Mission3SearchBudget
 from solo_wargame_ai.cli import mission3_comparison
 from solo_wargame_ai.eval.metrics import EpisodeMetrics, format_metrics_table
 from solo_wargame_ai.eval.mission3_comparison import (
@@ -23,6 +24,30 @@ def _comparison(seeds: tuple[int, ...]) -> Mission3Comparison:
         mean_removed_german_count=0.5,
         mean_player_decision_count=24.0,
     )
+    heuristic_metrics = EpisodeMetrics(
+        agent_name="heuristic",
+        episode_count=len(seeds),
+        victory_count=6,
+        defeat_count=len(seeds) - 6,
+        win_rate=6 / len(seeds),
+        defeat_rate=(len(seeds) - 6) / len(seeds),
+        mean_terminal_turn=5.0,
+        mean_resolved_marker_count=2.0,
+        mean_removed_german_count=1.25,
+        mean_player_decision_count=52.0,
+    )
+    rollout_metrics = EpisodeMetrics(
+        agent_name="rollout-search",
+        episode_count=len(seeds),
+        victory_count=8,
+        defeat_count=len(seeds) - 8,
+        win_rate=8 / len(seeds),
+        defeat_rate=(len(seeds) - 8) / len(seeds),
+        mean_terminal_turn=4.5,
+        mean_resolved_marker_count=2.4,
+        mean_removed_german_count=1.5,
+        mean_player_decision_count=48.0,
+    )
     return Mission3Comparison(
         seeds=seeds,
         baseline_runs=(
@@ -32,8 +57,23 @@ def _comparison(seeds: tuple[int, ...]) -> Mission3Comparison:
                 episode_results=(),
                 metrics=random_metrics,
             ),
+            Mission3BaselineRun(
+                agent_name="heuristic",
+                seeds=seeds,
+                episode_results=(),
+                metrics=heuristic_metrics,
+            ),
+            Mission3BaselineRun(
+                agent_name="rollout-search",
+                seeds=seeds,
+                episode_results=(),
+                metrics=rollout_metrics,
+            ),
         ),
-        report_table=format_metrics_table((random_metrics,)),
+        report_table=format_metrics_table(
+            (random_metrics, heuristic_metrics, rollout_metrics),
+        ),
+        search_budget=Mission3SearchBudget(),
     )
 
 
@@ -67,8 +107,11 @@ def test_smoke_mode_prints_the_required_mission3_report_fields(
     assert "comparison_scope: mission3_only" in output
     assert "seed_alias: mission3_smoke" in output
     assert "seed_set: 0..15 (16 seeds)" in output
-    assert "random_floor_ready: yes" in output
-    assert "pending_agents: heuristic, rollout-search" in output
+    assert "Search budget policy:" in output
+    assert "rollout_policy        mission3_heuristic(depth=0)" in output
+    assert "Signed metric deltas (heuristic - random):" in output
+    assert "Signed metric deltas (rollout-search - heuristic):" in output
+    assert "mission3_agents_ready: random, heuristic, rollout-search" in output
     assert "mission1_anchor_surface: preserved separately" in output
 
 
@@ -96,7 +139,7 @@ def test_benchmark_mode_writes_the_same_plain_text_report(
     monkeypatch.setattr(mission3_comparison, "load_mission", fake_load_mission)
     monkeypatch.setattr(
         mission3_comparison,
-        "run_mission3_random_floor_comparison",
+        "run_mission3_comparison",
         fake_run_benchmark,
     )
 

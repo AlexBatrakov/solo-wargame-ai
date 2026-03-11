@@ -5,6 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from solo_wargame_ai.agents.base import AgentFactory
+from solo_wargame_ai.agents.mission3_heuristic_agent import Mission3HeuristicAgent
+from solo_wargame_ai.agents.mission3_rollout_search_agent import (
+    DEFAULT_MISSION3_SEARCH_BUDGET,
+    Mission3RolloutSearchAgent,
+    Mission3SearchBudget,
+)
 from solo_wargame_ai.agents.random_agent import RandomAgent
 from solo_wargame_ai.domain.mission import Mission
 from solo_wargame_ai.eval.episode_runner import EpisodeResult, run_episodes
@@ -35,6 +41,7 @@ class Mission3Comparison:
     seeds: tuple[int, ...]
     baseline_runs: tuple[Mission3BaselineRun, ...]
     report_table: str
+    search_budget: Mission3SearchBudget | None = None
 
 
 def run_mission3_baseline(
@@ -62,6 +69,8 @@ def run_mission3_baseline(
 
 def build_mission3_comparison(
     baseline_runs: tuple[Mission3BaselineRun, ...],
+    *,
+    search_budget: Mission3SearchBudget | None = None,
 ) -> Mission3Comparison:
     """Assemble a Mission-3-only comparison table from fixed-seed baseline runs."""
 
@@ -78,6 +87,7 @@ def build_mission3_comparison(
         report_table=format_metrics_table(
             tuple(run.metrics for run in baseline_runs),
         ),
+        search_budget=search_budget,
     )
 
 
@@ -100,11 +110,43 @@ def run_mission3_random_floor_comparison(
 
 
 def run_mission3_smoke_comparison(mission: Mission) -> Mission3Comparison:
-    """Run the deterministic Mission 3 random floor on the 16-seed smoke alias."""
+    """Run the deterministic Mission 3 local trio on the 16-seed smoke alias."""
 
-    return run_mission3_random_floor_comparison(
+    return run_mission3_comparison(
         mission,
         seeds=MISSION3_SMOKE_SEEDS,
+    )
+
+
+def run_mission3_comparison(
+    mission: Mission,
+    *,
+    seeds: tuple[int, ...] = MISSION3_BENCHMARK_SEEDS,
+    search_budget: Mission3SearchBudget = DEFAULT_MISSION3_SEARCH_BUDGET,
+) -> Mission3Comparison:
+    """Run the bounded Mission 3 random/heuristic/search comparison trio."""
+
+    return build_mission3_comparison(
+        (
+            run_mission3_baseline(
+                mission,
+                agent_factory=lambda seed: RandomAgent(seed=seed),
+                seeds=seeds,
+            ),
+            run_mission3_baseline(
+                mission,
+                agent_factory=lambda seed: Mission3HeuristicAgent(),
+                seeds=seeds,
+            ),
+            run_mission3_baseline(
+                mission,
+                agent_factory=lambda seed: Mission3RolloutSearchAgent(
+                    budget=search_budget,
+                ),
+                seeds=seeds,
+            ),
+        ),
+        search_budget=search_budget,
     )
 
 
@@ -114,6 +156,7 @@ __all__ = [
     "Mission3BaselineRun",
     "Mission3Comparison",
     "build_mission3_comparison",
+    "run_mission3_comparison",
     "run_mission3_baseline",
     "run_mission3_random_floor_comparison",
     "run_mission3_smoke_comparison",
