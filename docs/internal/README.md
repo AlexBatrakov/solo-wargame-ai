@@ -10,7 +10,8 @@ reflected in public documentation under `docs/`.
 
 Recommended starting points:
 
-- `docs/internal/execution_plan.md` - the concrete build order and task queue
+- `docs/internal/execution_plan.md` - the active planning control surface and
+  packet backlog
 - `docs/internal/thread_playbook.md` - how Codex threads should work on this repo
 - `docs/internal/orchestration_policy.md` - thread roles, delivery packages, and cross-thread handoff rules
 - `docs/internal/codex_workflow.md` - broader workflow guidance

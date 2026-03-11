@@ -160,29 +160,40 @@ Current repository state:
 - the repository verifies locally with `.venv/bin/pytest -q` and
   `.venv/bin/ruff check src tests`, and the same narrow gate is defined in
   GitHub Actions;
-- later milestones such as additional Mission 1 strengthening, broader mission
-  coverage, and later tooling/platform decisions remain open.
+- the original numbered phase roadmap is complete; future work now shifts to
+  bounded planning packets, with broader mission coverage and later
+  tooling/platform decisions still open.
 
 ## Not implemented yet
 
 At this stage, the repository does **not** yet include:
 - a `gymnasium` dependency or generic RL experiment platform;
-- broader mission and advanced-rule coverage;
+- broader mission and advanced-rule coverage beyond Mission 1;
+- a richer multi-mission env/eval stack;
+- post-Mission-1 learning experiments on a harder mission slice;
 - a generic search/planning platform;
-- post-Phase-6 strengthening work beyond the accepted rollout baseline and
+- content-extension work beyond the accepted Mission 1 rollout baseline and
   first learner path.
 
 ## Next macro-step
 
-The first end-to-end Mission 1 learning pass and the first post-learning
-strengthening pass are now complete on the accepted env surface.
-Phase 6 added a bounded stronger rollout baseline that reached `195/200` wins
-on the preserved 200-seed benchmark, above both the accepted heuristic anchor
-`157/200` and the accepted learned best `144/200`.
-The next macro-step is another bounded Mission 1 strengthening/search planning
-pass on top of the preserved Phase 3 comparison reference, the accepted Phase 5
-operator surface, and the accepted Phase 6 stronger-baseline result.
-Mission 3/4 extension remains later follow-on work by default.
+The original six-phase build sequence is now complete.
+Mission 1 has already produced a working engine, accepted baselines, a clean
+wrapper, a learnable terminal-only setup, and a stronger rollout baseline at
+`195/200` on the preserved 200-seed benchmark.
+
+Future planning now uses bounded packets rather than automatically extending the
+phase numbering. The recommended next packet is a **Mission 3 vertical slice
+plus only the minimal structural prep needed to land it cleanly**. The point of
+that packet is to test whether the accepted architecture, baseline/eval stack,
+and wrapper assumptions generalize beyond the near-solved Mission 1 slice.
+
+Likely follow-on packets after that are:
+- Mission 3 baselines/search re-establishment;
+- Mission 3 env/wrapper extension;
+- Mission 3 learning experiments;
+- later multi-mission evaluation and additional content only if the richer
+  slice stays healthy.
 
 ## Manual operator commands
 

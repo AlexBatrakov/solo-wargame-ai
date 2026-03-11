@@ -3,6 +3,12 @@
 This roadmap is intentionally detailed.
 Its purpose is not only to track implementation, but also to preserve scope discipline, architectural intent, and the correct build order of the project.
 
+Phases 0 through 6 are now complete by repository evidence.
+They remain here as the historical build record.
+Future work after Phase 6 is intentionally described later in this document as
+a packet-based backlog rather than as a precommitted Phase 7 / Phase 8 / Phase
+9 sequence.
+
 The repository is expected to evolve in the following order:
 1. planning and formalization,
 2. domain engine,
@@ -454,9 +460,11 @@ result to answer the next high-value questions before widening content:
 Status note: Phase 6 is complete in the repository. Accepted Delivery A cleaned
 up the most immediate durable naming/layout friction, and accepted Delivery B
 added a bounded stronger rollout baseline that reached `195/200` wins on the
-preserved benchmark. Package C was not opened. The next macro-step is another
-bounded Mission 1 strengthening/search planning pass rather than immediate
-Mission 3/4 content work or env/action redesign.
+preserved benchmark. Package C was not opened. A later strategic review
+concluded that Mission 1 is now close enough to saturated for default planning
+purposes, so the next recommended packet is no longer another Mission 1
+strengthening cycle but a bounded Mission 3 content-extension slice with only
+the structural prep it directly needs.
 
 ### 6.1 Repository hygiene and naming cleanup
 
@@ -514,45 +522,97 @@ Closeout note: Phase 6 confirmed that Mission 1 still has substantial headroom.
 The accepted stronger rollout baseline reached `195/200` benchmark wins versus
 the preserved heuristic anchor `157/200` and accepted learned best `144/200`,
 while the bounded repository-hygiene slice removed the most immediate durable
-naming friction. The next best investment is another bounded Mission 1
-strengthening/search planning pass, not immediate Mission 3/4 content work or a
-targeted env/action iteration.
+naming friction. A subsequent post-Phase-6 strategic review concluded that this
+new result actually lowers the value of another Mission 1 strengthening cycle:
+the better next investment is a bounded Mission 3 vertical slice plus minimal
+structural prep, so the architecture is tested against richer content rather
+than optimized further on the near-solved Mission 1 slice.
 
 ---
 
-## Optional Future Tracks After Phase 6
+## Post-Phase-6 Planning Model
 
-The project is now in a more research-like regime.
-Instead of freezing Phase 7 / Phase 8 up front, keep the following ranked
-future tracks as an evidence-driven backlog to revisit after Phase 6.
+The original six-phase roadmap is now complete.
 
-### Higher-likelihood / higher-value tracks
+From this point onward, the project should prefer a **rolling packet-based
+roadmap** rather than precommitting to Phase 7 / Phase 8 / Phase 9.
+Each new packet should define:
 
-1. Stronger search/planning baselines or learning-strengthening work on top of
-   the accepted Mission 1 slice
-2. Bounded Mission 3/4 content extension with only the new rule support needed
-   for that slice
-3. Better evaluation, reporting, and replay-assisted debugging for comparing
-   stronger agents across fixed seed sets
+- a bounded goal;
+- explicit scope and non-goals;
+- concrete deliverables;
+- completion criteria;
+- the decision gate it is expected to clarify.
 
-### Medium-likelihood tracks
+The current default should be to let richer content drive the next design
+questions instead of spending more cycles on Mission 1 alone.
 
-1. Observation/action redesign only if later evidence shows the accepted
-   wrapper is constraining learning or search unfairly
-2. Explicit reward-variant experiments only if later learning work justifies
-   them
+### Recommended next packet
+
+**Mission 3 vertical slice + minimal structural prep**
+
+Goal:
+- test whether the accepted architecture generalizes beyond the near-solved
+  Mission 1 slice.
+
+Scope:
+- add only the new terrain/unit/objective support required to play Mission 3
+  deterministically and through the accepted resolver path;
+- perform only the bounded structural prep that Mission 3 directly forces,
+  such as `legal_actions.py` separation, objective dispatch cleanup, or
+  Mission-1-only guards that would otherwise block the slice.
+
+Non-goals:
+- no Mission 3 RL wrapper yet;
+- no new learning experiments yet;
+- no generic multi-mission platform;
+- no broad cleanup campaign beyond what the slice directly needs.
+
+Completion criteria:
+- Mission 3 can be loaded, initialized, played, and replayed deterministically;
+- Mission 1 behavior and preserved references remain intact;
+- any new rule interpretations are documented.
+
+### Likely follow-on packets after that
+
+1. **Mission 3 baselines/search**
+   Re-establish random/heuristic/search comparisons on the richer slice.
+2. **Mission 3 env/wrapper extension**
+   Extend the accepted env boundary only as far as the new slice requires.
+3. **Mission 3 learning experiments**
+   Re-test learnability on content that is materially richer than Mission 1.
+4. **Cross-mission comparison and reporting**
+   Add only the evaluation/reporting support needed once more than one mission
+   is active.
+
+### Ranked future backlog
+
+#### Highest-value backlog
+
+1. Bounded Mission 3 content extension with only the structural prep it
+   directly requires
+2. Mission 3 baselines/search re-establishment
+3. Mission 3 env/wrapper extension and later Mission 3 learning experiments
+
+#### Medium-value backlog
+
+1. Additional content slices such as Mission 4 once Mission 3 is stable
+2. Observation/action redesign only if richer content shows the accepted
+   wrapper is too Mission-1-shaped
 3. Synthetic fixtures and bounded maintainability refactors ahead of broader
-   multi-mission content growth
-4. Broader benchmarking across more than one mission once additional content is
-   accepted
+   multi-mission growth
+4. Better evaluation, reporting, and replay-assisted debugging once more than
+   one mission is active
 
-### Lower-priority / opportunistic tracks
+#### Lower-priority / opportunistic backlog
 
-1. Wider tooling upgrades such as `mypy`, Python 3.12 CI, broader Ruff, or
+1. Additional Mission 1 strengthening only if a very specific research question
+   remains after the Mission 3 pivot
+2. Wider tooling upgrades such as `mypy`, Python 3.12 CI, broader Ruff, or
    coverage-driven cleanup
-2. Generic config / artifact / experiment-platform buildout if repeated manual
+3. Generic config / artifact / experiment-platform buildout if repeated manual
    work starts to dominate progress
-3. Additional framework compatibility layers, richer operator UX, or optional
+4. Additional framework compatibility layers, richer operator UX, or optional
    visualization/debug views
 
 ---

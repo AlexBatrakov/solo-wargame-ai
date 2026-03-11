@@ -62,6 +62,14 @@ evidence changes them:
    wrapper/action design as learnable without reward shaping.
 8. The correct post-Phase-5 default is stronger baselines/search planning, not
    reopening the env boundary or widening immediately into Mission 3/4 content.
+9. After the accepted Phase 6 rollout result (`195/200` on the preserved
+   benchmark), another default Mission 1 strengthening cycle has sharply
+   diminishing strategic value.
+10. The next high-value packet should pivot toward richer content, starting with
+    a bounded Mission 3 vertical slice plus only the structural prep that slice
+    directly requires.
+11. Future planning should move to a rolling packet backlog rather than
+    precommitting to Phase 7 / Phase 8 / Phase 9.
 
 ## Resolved follow-ups since the Phase 2 audit
 

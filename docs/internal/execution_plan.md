@@ -5,12 +5,12 @@
 This file is the current master control surface for repository-level planning,
 dispatch, and closeout.
 
-As of March 11, 2026, Phases 1 through 6 are complete by repository evidence.
+As of March 11, 2026, the original six-phase roadmap is complete by repository
+evidence.
 The active planning problem is no longer "which bounded hygiene or stronger-
-baseline package should Phase 6 run," but "how should the project respond to
-the accepted Phase 6 result: with another bounded Mission 1
-strengthening/search packet, with Mission 3/4 content extension, or with a
-narrow corrective iteration only if later evidence forces it."
+baseline package should Phase 6 run," but "which post-Phase-6 packet should
+the project open next, now that Mission 1 has already produced a near-solved
+search result and the next high-value question is architecture generalization."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -31,7 +31,7 @@ recovering chat history:
 - preserve the accepted Phase 6 packet, closeout record, and decision gate,
 - avoid reopening completed Delivery A / B / C work accidentally,
 - recover the accepted baseline, wrapper, and benchmark references quickly,
-- point the next planning thread toward the post-Phase-6 macro-step and later
+- point the next planning thread toward the active packet backlog and later
   decision gates.
 
 ## Current checkpoint
@@ -49,10 +49,11 @@ recovering chat history:
   - `phase3-complete`
   - `phase4-complete`
   - `phase5-complete`
-- Repository state rechecked on March 11, 2026 for Phase 6 closeout:
+  - `phase6-complete`
+- Repository state rechecked on March 11, 2026 after Phase 6 closeout:
   - `git status --short` was empty
   - `git log --oneline --decorate -8` showed `HEAD` on
-    `033ddef phase6: add stronger rollout baseline for mission 1`
+    `f80fde5 docs: close phase6 strengthening`
   - `git show --no-patch --decorate phase1-complete` resolved to
     `d6445d9 docs: sync public handoff after phase1 completion`
   - `git show --no-patch --decorate phase2-complete` resolved to
@@ -63,6 +64,8 @@ recovering chat history:
     `0e4a6a8 docs: close phase4 rl-environment`
   - `git show --no-patch --decorate phase5-complete` resolved to
     `9d8beb9 docs: close phase5 learning experiments`
+  - `git show --no-patch --decorate phase6-complete` resolved to
+    `f80fde5 docs: close phase6 strengthening`
   - `.venv/bin/pytest -q` passed with `207 passed in 28.10s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
@@ -129,6 +132,66 @@ Accepted runtime surface after Phase 6 closeout:
   config and no broader experiment-platform surface.
 - `outputs/phase5/` contains the accepted first-learner artifacts and aggregate
   summary files used as preserved comparison evidence.
+
+## Current post-Phase-6 planning decision
+
+The original six-phase build sequence is finished.
+Future planning should therefore use a rolling packet backlog rather than
+automatically opening a numbered Phase 7.
+
+Current recommended next packet:
+
+- Mission 3 vertical slice plus only the minimal structural prep required to
+  land it cleanly
+
+Why this is now preferred:
+
+- Mission 1 has already answered the core engine/env/learner/search questions
+  well enough for the current slice
+- the accepted stronger rollout baseline at `195/200` materially lowers the
+  expected value of spending another default cycle on Mission 1 strengthening
+- the next high-value unknown is whether the accepted architecture generalizes
+  to richer content, not whether Mission 1 can be pushed a little further
+- richer content is the natural forcing function for the currently deferred
+  seams:
+  `legal_actions.py`, objective dispatch, Mission-1-specific guards, and
+  possibly synthetic fixtures
+
+Likely follow-on packets after that:
+
+1. Mission 3 baselines/search re-establishment
+2. Mission 3 env/wrapper extension
+3. Mission 3 learning experiments
+4. Cross-mission evaluation/reporting only when more than one active mission
+   makes it worthwhile
+
+Ranked backlog beyond the active next packet:
+
+- High value:
+  - Mission 3 vertical slice plus minimal structural prep
+  - Mission 3 baselines/search
+  - Mission 3 env/wrapper extension
+  - Mission 3 learning experiments
+- Medium value:
+  - Mission 4 or another bounded richer content slice once Mission 3 is stable
+  - observation/action redesign only if richer content shows the current
+    wrapper is too Mission-1-shaped
+  - synthetic fixtures and bounded maintainability work when broader content
+    makes them pay back
+  - cross-mission evaluation/reporting once more than one mission is active
+- Lower priority:
+  - another Mission 1 strengthening packet without a specific new research
+    question
+  - generic experiment/search platform work
+  - tooling campaigns not directly required by the next content slice
+  - visualization/operator UX beyond thin debugging needs
+
+Demoted for now:
+
+- another default Mission 1 strengthening/search packet
+- broad reward/env redesign before richer content creates evidence for it
+- generic search, experiment, or platform buildout
+- tooling campaigns that are not directly required by the next content slice
 
 ## Archived strategic basis for the Phase 6 master-thread
 
@@ -925,30 +988,17 @@ During closeout, public docs were synced to reflect that:
 - the next macro-step is stronger baselines/search planning rather than more
   Phase 5 delivery work
 
-## Decision after Phase 6 closeout
+## Historical decision after Phase 6 closeout
 
-Recommended next macro-step:
+Historical closeout recommendation at the moment Phase 6 ended:
 
 - a new bounded Mission 1 strengthening/search planning packet rather than
   immediate Mission 3/4 content extension
 
-Rationale:
-
-- Delivery A removed the most immediate naming/layout friction that was already
-  impeding post-first-RL work without widening into a broad refactor campaign
-- Delivery B answered the central headroom question decisively: the accepted
-  rollout baseline reached `195/200` wins on the preserved benchmark, beating
-  the preserved heuristic anchor `157/200` by `+38` and the accepted learned
-  best `144/200` by `+51`
-- Mission 1 therefore is not strategically saturated at the heuristic or first-
-  learner level; substantial headroom remains on the accepted env/action
-  boundary
-- the accepted rollout result is intentionally compute-heavy and Mission-1-
-  specific, so it does not by itself justify generic search-platform work,
-  immediate public-contract redesign, or automatic Mission 3/4 widening
-- the next high-value planning problem is how to exploit or narrow that newly
-  measured gap with another bounded strengthening packet, not whether Phase 6
-  itself should continue implementation
+This recommendation is preserved here as historical context only.
+It was later superseded by the post-Phase-6 strategic review now summarized in
+`README.md`, `ROADMAP.md`, and the current planning section near the top of
+this file.
 
 Closeout note:
 
@@ -968,6 +1018,5 @@ During closeout, public docs were synced to reflect that:
   command
 - the accepted stronger rollout baseline materially exceeds both the preserved
   heuristic anchor and the accepted first learner on Mission 1
-- the next macro-step is another bounded Mission 1 strengthening/search
-  planning pass rather than immediate Mission 3/4 content work or env/action
-  redesign
+- a later strategic review may still revise the next macro-step if the stronger
+  baseline meaningfully changes the value of remaining Mission 1 work

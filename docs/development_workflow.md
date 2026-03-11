@@ -27,6 +27,9 @@ It is public and should contain stable workflow principles, not private prompt d
 6. RL wrapper
 7. training experiments
 
+After that initial build sequence is complete, prefer evidence-driven bounded
+packets rather than automatically extending the numbered-phase model forever.
+
 ## Change policy
 
 When adding a new feature:

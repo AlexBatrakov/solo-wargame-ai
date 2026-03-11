@@ -4,8 +4,8 @@
 
 This file defines the default cross-thread working rules for the repository.
 
-It should remain valid across phases.
-Phase-specific planning belongs in `docs/internal/execution_plan.md`.
+It should remain valid across phases and later bounded packets.
+Phase- or packet-specific planning belongs in `docs/internal/execution_plan.md`.
 
 ## Current project context
 
@@ -16,10 +16,13 @@ Phase-specific planning belongs in `docs/internal/execution_plan.md`.
 - Phase 5 is complete and accepted.
 - Phase 6 is complete and accepted.
 - `phase1-complete`, `phase2-complete`, `phase3-complete`, and
-  `phase4-complete`, `phase5-complete` are the current local milestone tags.
-- The next active planning packet should start from the accepted Phase 6 result:
-  another bounded Mission 1 strengthening/search planning pass is currently
-  preferred over immediate Mission 3/4 content extension.
+  `phase4-complete`, `phase5-complete`, `phase6-complete` are the current
+  local milestone tags.
+- The original numbered phase roadmap is exhausted.
+- The next active planning packet should start from the accepted Phase 6 result
+  and the later strategic review:
+  a Mission 3 vertical slice plus minimal structural prep is now preferred over
+  another default Mission 1 strengthening/search pass.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 
@@ -44,11 +47,12 @@ After Phase 6 closeout:
   learned `best 144/200`
 - do not reopen repo hygiene, env-boundary redesign, or generic search/RL-
   platform buildout casually as a follow-up to Phase 6
-- start the next packet from the accepted Phase 6 decision:
-  another bounded Mission 1 strengthening/search planning pass is preferred by
-  current repo evidence
-- Mission 3/4 extension remains a later candidate track unless new planning
-  explicitly chooses it
+- start the next packet from the newer strategic synthesis, not from the
+  historical Phase 6 closeout recommendation
+- the current default next packet is:
+  Mission 3 vertical slice plus only the structural prep it directly requires
+- do not reopen another Mission 1 strengthening/search packet by default unless
+  a new bounded question appears that is more valuable than richer content
 - treat Phase 4 Delivery A / B / C work as archived unless repeated use
   exposes a narrow corrective bug
 
@@ -61,8 +65,8 @@ The repository now uses the orchestration model defined in:
 That means:
 
 - one long-lived Super Master Thread for project-wide control,
-- one Phase Master Thread per active phase,
-- a small number of multi-turn Delivery Threads per phase,
+- one Phase/Packet Master Thread per active major packet,
+- a small number of multi-turn Delivery Threads per phase or packet,
 - optional external audit threads only when their cost is justified.
 
 Do not treat "one stage = one chat" as the default anymore.
