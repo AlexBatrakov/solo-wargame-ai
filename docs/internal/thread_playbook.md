@@ -96,7 +96,7 @@ Then add only the docs relevant to the package:
 - `docs/internal/independent_audit_followups.md` if the next phase or content
   extension is being planned
 
-For a Phase Master Thread or a closeout audit, also check repo state before
+For a Phase/Packet Master Thread or a closeout audit, also check repo state before
 planning:
 
 - `git status --short`
@@ -114,17 +114,17 @@ Use for:
 - workflow/process decisions,
 - milestone tagging,
 - external-audit assimilation,
-- deciding when a new Phase Master Thread is needed.
+- deciding when a new Phase/Packet Master Thread is needed.
 
-### Phase Master Thread
+### Phase/Packet Master Thread
 
 Use for:
 
-- refining one phase plan,
-- maintaining the active phase packet,
+- refining one active phase or packet plan,
+- maintaining the active phase/packet control surface,
 - dispatching Delivery Threads,
 - accepting/rejecting completed packages,
-- phase closeout and handoff.
+- packet/phase closeout and handoff.
 
 ### Delivery Thread
 
@@ -148,7 +148,7 @@ Every Delivery Thread should:
 - report checkpoint summaries in a copy/paste-friendly format,
 - state whether it recommends:
   - continue in the same thread,
-  - return to the Phase Master Thread for review,
+  - return to the Phase/Packet Master Thread for review,
   - stop due to a blocker.
 
 ## Multi-turn delivery rule
@@ -166,7 +166,7 @@ follow-up fix.
 
 ## Handoff checklist for Delivery Threads
 
-Before sending a package result back to the user for Phase Master review, make
+Before sending a package result back to the user for Phase/Packet Master review, make
 sure the response says:
 
 - package name or id,
@@ -175,11 +175,11 @@ sure the response says:
 - what verification ran,
 - what remains open, if anything,
 - whether the package is commit-ready,
-- what the Phase Master Thread should decide next.
+- what the Phase/Packet Master Thread should decide next.
 
-## Handoff checklist for Phase Master Threads
+## Handoff checklist for Phase/Packet Master Threads
 
-When reviewing a Delivery Thread report, the Phase Master Thread should respond
+When reviewing a Delivery Thread report, the Phase/Packet Master Thread should respond
 with one of these outcomes:
 
 1. continue in same Delivery Thread
@@ -187,7 +187,7 @@ with one of these outcomes:
 3. accepted and commit-ready
 4. escalate to Super Master Thread
 
-The Phase Master Thread should not require a new implementation chat unless
+The Phase/Packet Master Thread should not require a new implementation chat unless
 scope or subsystem genuinely changed.
 
 ## Thread boundaries vs commit boundaries
@@ -201,7 +201,7 @@ Important rule:
 Preferred pattern:
 
 - Delivery Threads own implementation commits for accepted delivery packages
-- Phase Master Threads own planning/status/docs-only commits
+- Phase/Packet Master Threads own planning/status/docs-only commits
 - Super Master Threads own cross-phase/workflow commits
 
 See `docs/internal/commit_policy.md` for the durable rule.

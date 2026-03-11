@@ -50,10 +50,12 @@ recovering chat history:
   - `phase4-complete`
   - `phase5-complete`
   - `phase6-complete`
-- Repository state rechecked on March 11, 2026 after Phase 6 closeout:
-  - `git status --short` was empty
-  - `git log --oneline --decorate -8` showed `HEAD` on
-    `f80fde5 docs: close phase6 strengthening`
+- Repository state rechecked on March 11, 2026 during Mission 3 packet
+  planning audit:
+  - `git status --short` showed local docs-only changes in
+    `docs/internal/execution_plan.md` and `docs/internal/thread_playbook.md`
+  - `git log --oneline --decorate -12` showed `HEAD` on
+    `b1b7fe3 docs: pivot roadmap to packet-based planning`
   - `git show --no-patch --decorate phase1-complete` resolved to
     `d6445d9 docs: sync public handoff after phase1 completion`
   - `git show --no-patch --decorate phase2-complete` resolved to
@@ -66,7 +68,7 @@ recovering chat history:
     `9d8beb9 docs: close phase5 learning experiments`
   - `git show --no-patch --decorate phase6-complete` resolved to
     `f80fde5 docs: close phase6 strengthening`
-  - `.venv/bin/pytest -q` passed with `207 passed in 28.10s`
+  - `.venv/bin/pytest -q` passed with `207 passed in 26.64s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
     succeeded with the preserved `random` `2/16` wins vs `heuristic`
@@ -192,6 +194,330 @@ Demoted for now:
 - broad reward/env redesign before richer content creates evidence for it
 - generic search, experiment, or platform buildout
 - tooling campaigns that are not directly required by the next content slice
+
+## Startup brief for the next packet master-thread
+
+The next master-thread should not reopen "whether Mission 1 still works."
+That is already settled well enough for the current project stage.
+
+Its planning job should instead be to turn the recommended next packet into a
+bounded executable plan.
+
+Questions that the next packet master-thread should answer explicitly:
+
+1. Should the first richer content packet target Mission 3 only, or Mission 3
+   plus Mission 4 in one bounded slice?
+2. Which structural-prep items are actually required before or during that
+   packet, and which should stay deferred?
+3. What is the smallest acceptable implementation order that gets one richer
+   mission playable and deterministic without opening env/RL work too early?
+4. Which existing Mission-1-shaped guards, tests, and assumptions will need to
+   be widened for the new slice, and which should stay Mission-1-specific for
+   now?
+5. What should count as the packet completion gate before opening baselines on
+   the richer mission?
+
+Default recommendation from current repo evidence:
+
+- start with Mission 3 only unless new rule coupling makes Mission 3 + Mission 4
+  materially cleaner than Mission 3 alone
+- keep structural prep bounded to what Mission 3 directly forces
+- do not mix the content-extension packet with env/wrapper extension, new
+  learning work, or generic multi-mission infrastructure
+- preserve all accepted Mission 1 references while the richer slice lands
+
+## Active packet - Mission 3 vertical slice + minimal structural prep
+
+Packet goal:
+
+- prove that the accepted Mission 1 architecture generalizes to one richer
+  content slice without opening env/RL work, generic multi-mission
+  infrastructure, or a large refactor campaign
+
+Planning audit findings:
+
+- `configs/` still contains only `mission_01_secure_the_woods_1.toml`; no
+  richer mission has been transcribed yet.
+- The shared domain/io path is partly generic already, but a few seams remain
+  materially Mission-1-shaped:
+  - `MissionMap` currently stores one terrain tag per hex, while Mission 3
+    explicitly includes a wooded hill that should grant both Woods and Hill
+    effects.
+  - `create_initial_game_state(...)` still requires exactly one start hex.
+    This is acceptable for Mission 3 and does not need widening yet.
+  - terminal evaluation still implements the clear-all-hostiles victory family
+    directly rather than dispatching by objective kind.
+  - env/baseline/learning surfaces remain intentionally Mission-1-specific and
+    should stay that way in this packet.
+- Local rulebook recheck of pages 20-23 confirmed:
+  - Mission 3 adds Buildings, Hills, German Rifle Squad, a third British Rifle
+    Squad, and a six-turn tracker;
+  - Mission 4 adds no new rule or objective family beyond Mission 3;
+  - both Mission 3 and Mission 4 keep the same objective text:
+    reveal and clear all German units before time runs out.
+
+Packet planning decisions:
+
+- Mission scope:
+  - Mission 3 only
+- Why not Mission 3 + Mission 4 now:
+  - Mission 4 adds no new terrain, unit, or objective family beyond Mission 3
+  - bundling Mission 4 would increase transcription and regression surface more
+    than it increases architectural evidence
+  - Mission 3 already answers the packet's real question: whether the accepted
+    engine handles richer terrain/content without reopening platform design
+- New content families in scope:
+  - terrain: Building defense, Hill attack bonus, and bounded wooded-hill
+    semantics where one hex may need to grant both Woods and Hill effects
+  - German units: German Rifle Squad
+  - British mission data: third Rifle Squad as scenario content only, not as a
+    new British unit family
+  - objectives: no new objective family; stay on
+    `MissionObjectiveKind.CLEAR_ALL_HOSTILES`
+- Structural prep required now:
+  - widen terrain representation just enough to express wooded-hill hexes
+    without building a generic terrain-platform project
+  - neutralize Mission-1-only wording/assertions across the shared domain/io
+    path that Mission 3 will now reuse
+  - allow one narrow clear-all-hostiles helper/guard cleanup in
+    `resolver.py` if it improves clarity, but do not build general objective
+    dispatch yet
+- Mission-1-only guards to widen now:
+  - shared domain/io docstrings, error text, and helper names that would become
+    misleading once Mission 3 uses the same loader/state/resolver path
+  - terrain/combat helpers that currently assume Woods is the only terrain
+    modifier family in play
+- Mission-1-only guards to keep for now:
+  - single-start-hex initial-state guard
+  - hidden-marker-id to revealed-German-unit-id coupling
+  - `Mission1Env`, Mission 1 action catalog, preserved Phase 3/4/5/6 operator
+    CLIs, Mission-1-specific heuristic/rollout baselines, and learned-policy
+    surfaces
+- Bounded `legal_actions.py` refactor:
+  - no dedicated pre-packet refactor package
+  - treat `C2` as an in-package watch item only; allow small helper extraction
+    inside Delivery A if Mission 3 changes would otherwise make the file less
+    reviewable, but do not open a cleanup campaign
+- Objective dispatch cleanup:
+  - no
+  - Mission 3 and Mission 4 still use the same clear-all-hostiles objective
+    family, so a full objective-dispatch seam is not required in this packet
+- Synthetic fixtures:
+  - no by default
+  - keep using real mission configs plus focused runtime-state tests unless
+    Mission 3 test friction proves that a small fixture helper clearly pays for
+    itself
+
+Active follow-ups from `docs/internal/independent_audit_followups.md`:
+
+- `P4-R4` active as a preservation rule:
+  - keep the accepted Mission 1 smoke/benchmark/env references explicit and
+    unchanged while the new content slice lands
+- `C2` active only as a bounded seam review inside Delivery A:
+  - no standalone legality/refactor package unless Mission 3 changes prove it
+    necessary
+
+Deferred follow-ups for this packet:
+
+- `C1` replay draw-prediction coupling
+- `C3` multiple-start-hex support
+- `C4` objective-dispatch generalization
+- `C5` synthetic fixtures
+- `C6` Mission-1-specific heuristic coupling
+- `T1` through `T4` tooling backlog
+
+Boundary to later packets:
+
+- This packet includes:
+  - Mission 3 config/data transcription
+  - the minimal shared domain/io/runtime widening that Mission 3 directly
+    forces
+  - deterministic Mission 3 load/init/play/replay/test coverage through the
+    accepted resolver path
+- This packet does not include:
+  - Mission 3 baselines/search re-establishment
+  - Mission 3 env/wrapper extension
+  - Mission 3 learning experiments
+  - a generic multi-mission env/eval platform
+  - multiple-start-hex work, Minefields, Mortars, PIATs, Half-Tracks,
+    Artillery, Rivers/bridges, or replay redesign
+
+## Mission 3 packet status block
+
+- Delivery A: pending
+- Delivery B: conditional
+- Packet overall: planned
+- Planning audit date: March 11, 2026
+- Blocking findings before dispatch: none
+- Recommended execution order: Delivery A -> Delivery B only if needed
+- Closeout gate: packet should not open baselines/env/learning follow-ons until
+  deterministic Mission 3 resolver/replay acceptance is in hand
+
+## Delivery A - Mission 3 domain vertical slice + required structural prep
+
+Status:
+
+- pending
+
+Goal:
+
+- land Mission 3 as a deterministic playable mission through the accepted
+  resolver path, together with only the structural prep that Mission 3 directly
+  forces
+
+Concrete deliverables:
+
+- transcribe `configs/missions/mission_03_secure_the_building.toml`
+- extend mission schema/model/validation just enough for Mission 3 static data
+- add bounded terrain-representation support for Building, Hill, and wooded-hill
+  combinations as required by the Mission 3 map
+- land German Rifle Squad support through mission data and German-attack /
+  British-attack modifier resolution
+- keep the current clear-all-hostiles objective family but make the shared
+  terminal-evaluation path honest about that scope
+- widen only the shared Mission-1-only domain/io wording and helper seams that
+  Mission 3 would otherwise make misleading
+- add focused tests and at least one deterministic Mission 3 integration/replay
+  proof without opening Mission 3 baselines or env work
+
+Likely files / subsystems touched:
+
+- `configs/missions/`
+- `src/solo_wargame_ai/domain/mission.py`
+- `src/solo_wargame_ai/domain/terrain.py`
+- `src/solo_wargame_ai/domain/state.py`
+- `src/solo_wargame_ai/domain/combat.py`
+- `src/solo_wargame_ai/domain/german_fire.py`
+- `src/solo_wargame_ai/domain/resolver.py`
+- `src/solo_wargame_ai/domain/legal_actions.py` only if a small helper
+  extraction is justified by the Mission 3 diff
+- `src/solo_wargame_ai/io/mission_schema.py`
+- `src/solo_wargame_ai/io/mission_loader.py`
+- `src/solo_wargame_ai/io/replay.py` only if Mission 3 replay coverage exposes
+  a narrow compatibility gap
+- focused `tests/domain/`, `tests/integration/`, and replay-related tests
+- public docs/assumptions only where Mission 3 rule interpretations or terrain
+  representation become stable behavior
+
+Required tests / verification:
+
+- focused tests for:
+  - Mission 3 config loading and validation
+  - wooded-hill / building / hill combat-threshold behavior
+  - German Rifle Squad attack behavior
+  - deterministic Mission 3 integration/replay progression
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+
+Risks / traps:
+
+- turning the required wooded-hill support into a generic terrain-system rewrite
+- reopening env/action-catalog work because `env/observation.py` or related
+  Mission 1 compatibility code may need a narrow adaptation
+- opening a broad `legal_actions.py` cleanup before Mission 3 proves it is
+  necessary
+- overgeneralizing objective dispatch even though Mission 3 stays on the same
+  objective family
+- pulling Mission 4 into the package once Mission 3 support is almost done
+
+Completion criteria:
+
+- Mission 3 can be loaded, initialized, played, and replayed deterministically
+  through the accepted resolver path
+- Mission 1 preserved references and smoke commands still pass unchanged
+- any new terrain/mission interpretation needed for wooded-hill or German Rifle
+  Squad behavior is documented
+- the packet leaves no blocker that would force env/RL work before Mission 3
+  baselines/search planning
+
+Commit shape:
+
+- one implementation commit preferred
+- one narrow follow-up `fix:` commit acceptable only if a review-requested
+  correction lands after the main slice
+
+Analysis-before-edit:
+
+- required
+
+## Delivery B - Conditional deterministic hardening finish
+
+Status:
+
+- conditional
+
+Goal:
+
+- only if Delivery A does not already leave a clean acceptance surface, add the
+  smallest follow-up needed to finish Mission 3 replay/regression hardening or
+  one bounded shared-seam cleanup
+
+Concrete deliverables:
+
+- at most one narrow follow-up for:
+  - replay compatibility or deterministic trace coverage
+  - one small helper extraction in `legal_actions.py` or another shared module
+    that Delivery A clearly made too noisy
+  - any minimal docs/assumption sync that should not be left implicit
+- no new mission content families
+- no baseline/search/env/learning work
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/domain/legal_actions.py`
+- `src/solo_wargame_ai/io/replay.py`
+- `src/solo_wargame_ai/domain/resolver.py`
+- focused tests and any directly related docs
+
+Required tests / verification:
+
+- focused regression tests for the narrowed follow-up
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- rerun any Mission 3-specific deterministic/replay checks added by Delivery A
+
+Risks / traps:
+
+- reopening Delivery A design questions instead of finishing a narrow blocker
+- turning a cleanup finish into a second broad refactor package
+- mixing packet closeout docs with new implementation scope
+
+Completion criteria:
+
+- the Phase/Packet Master Thread can accept the Mission 3 packet without
+  another implementation package
+- no unresolved replay/determinism/shared-seam blocker remains for later
+  Mission 3 baselines/search planning
+
+Commit shape:
+
+- one small implementation/docs follow-up commit only if the package is opened
+
+Analysis-before-edit:
+
+- required
+
+## Recommended Delivery Thread sequence for the Mission 3 packet
+
+Preferred sequence:
+
+1. Delivery A
+2. Delivery B only if Delivery A leaves a concrete replay/shared-seam blocker
+
+Do not mix in one thread:
+
+- Mission 3 content landing with Mission 3 baselines/search
+- Mission 3 content landing with Mission 3 env/wrapper extension
+- Mission 3 content landing with Mission 3 learning experiments
+- required wooded-hill support with a generic terrain-platform redesign
+- bounded shared-seam cleanup with objective-platform or multi-start-hex work
 
 ## Archived strategic basis for the Phase 6 master-thread
 
