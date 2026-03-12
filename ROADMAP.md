@@ -534,8 +534,8 @@ That next packet has now landed as well:
 - Mission 3 is now a deterministic resolver-playable and replayable slice;
 - bounded support for Building, Hill, wooded-hill semantics, and German Rifle
   Squad behavior is in place;
-- the next packet is no longer Mission 3 content landing itself, but Mission 3
-  baselines/search re-establishment.
+- the subsequent Mission 3 baselines/search packet has also landed and produced
+  a first accepted Mission 3 comparison surface.
 
 ### Completed packets since the original phase roadmap
 
@@ -548,6 +548,16 @@ That next packet has now landed as well:
   - Mission 3 can be loaded, initialized, played, and replayed deterministically
     through the accepted resolver path;
   - the packet stayed out of env/RL/baseline/search follow-on work.
+- [x] **Mission 3 baselines/search re-establishment**
+  Closed as a bounded follow-on packet after the Mission 3 vertical slice.
+  Outcome:
+  - a Mission-3-only comparison surface landed for `random`, `heuristic`, and
+    `rollout-search`;
+  - accepted Mission 3 references were established at
+    `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`;
+  - preserved Mission 1 anchors remained explicit and unchanged;
+  - the packet stayed out of env/wrapper, learning, Mission 4 content, and
+    generic cross-mission platform work.
 
 ---
 
@@ -570,18 +580,17 @@ questions instead of spending more cycles on Mission 1 alone.
 
 ### Recommended next packet
 
-**Mission 3 baselines/search re-establishment**
+**Mission 3 search strengthening**
 
 Goal:
-- rebuild the comparison stack on the richer Mission 3 slice before extending
-  the env or learning path beyond Mission 1.
+- improve the bounded Mission 3 search baseline now that a first accepted
+  comparison stack exists on the richer Mission 3 slice.
 
 Scope:
-- add random/heuristic/search comparisons for Mission 3 only;
-- preserve the accepted Mission 1 anchors while establishing a new Mission 3
-  comparison reference;
-- keep the packet bounded to baseline/search evaluation rather than env/RL
-  extension.
+- keep the work Mission-3-local and bounded to heuristic/search quality;
+- treat the accepted Mission 3 comparison surface as preserved reference
+  history, not as an excuse to reopen the closed packet;
+- prefer search-policy / horizon improvements over env/RL/platform expansion.
 
 Non-goals:
 - no Mission 3 wrapper redesign yet;
@@ -590,10 +599,10 @@ Non-goals:
 - no generic cross-mission platform buildout.
 
 Completion criteria:
-- Mission 3 has at least one accepted baseline/search comparison surface;
-- Mission 1 preserved references remain intact;
-- the project has a documented recommendation for whether the next packet
-  should be Mission 3 env extension, Mission 4 content, or something narrower.
+- the project has a documented decision on whether a stronger bounded Mission 3
+  search baseline is worth accepting before env or learning work;
+- preserved Mission 1 anchors and the first accepted Mission 3 references
+  remain explicit and separate.
 
 ### Likely follow-on packets after that
 
@@ -611,7 +620,7 @@ Completion criteria:
 
 #### Highest-value backlog
 
-1. Mission 3 baselines/search re-establishment
+1. Mission 3 search strengthening
 2. Mission 3 env/wrapper extension
 3. Mission 3 learning experiments
 

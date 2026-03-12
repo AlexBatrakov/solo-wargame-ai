@@ -142,25 +142,36 @@ Accepted runtime surface after Phase 6 closeout:
 
 ## Current post-Mission-3 planning decision
 
-The original six-phase build sequence is finished, and the first richer-content
-packet has now landed as well.
-Future planning should therefore continue from the accepted Mission 3 slice,
-not reopen the content-landing packet that already closed.
+The original six-phase build sequence is finished, the first richer-content
+packet has closed, and the first Mission 3 comparison packet has now closed as
+well.
+Future planning should therefore continue from the accepted Mission 3
+comparison surface, not reopen the just-closed re-establishment packet as an
+informal tail.
 
 Current recommended next packet:
 
-- Mission 3 baselines/search re-establishment
+- Mission 3 search strengthening
 
 Why this is now preferred:
 
-- Mission 3 now exists as a deterministic resolver-playable and replayable
-  slice, but it does not yet have accepted baseline/search references
-- re-establishing the comparison stack on Mission 3 is the smallest next step
-  that turns the richer content landing into actionable evidence
-- this keeps env/RL work sequenced behind fresh baseline evidence instead of
-  widening the stack all at once
-- preserved Mission 1 anchors remain valuable, but should now act as reference
-  context rather than as the only active comparison surface
+- Mission 3 now has an accepted first comparison stack and reference surface:
+  - smoke: `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
+  - benchmark: `random 0/200`, `heuristic 72/200`,
+    `rollout-search 105/200`
+- the packet goal of re-establishing a useful Mission 3 comparison stack is
+  complete, so additional search-quality work should be treated as a new
+  planning decision rather than as retroactive Delivery C work
+- local exploratory diagnostics suggest bounded upside still exists inside the
+  search baseline without opening env/RL/platform scope:
+  - `heuristic_d2 29/64`
+  - `heuristic_d3 30/64`
+  - `rollout_d16_h0 32/64`
+  - `rollout_d24_h0 36/64`
+  - `rollout_d16_h2 41/64`
+  - `rollout_d24_h2 53/64`
+- this keeps env/RL work sequenced behind a better Mission 3 comparison stack
+  if the project chooses to invest in one more bounded non-learning packet
 
 Likely follow-on packets after that:
 
@@ -173,7 +184,7 @@ Likely follow-on packets after that:
 Ranked backlog beyond the active next packet:
 
 - High value:
-  - Mission 3 baselines/search
+  - Mission 3 search strengthening
   - Mission 3 env/wrapper extension
   - Mission 3 learning experiments
 - Medium value:
@@ -193,12 +204,14 @@ Ranked backlog beyond the active next packet:
 Demoted for now:
 
 - another Mission 3 content-landing packet
+- reopening Mission 3 baselines/search re-establishment as an ad hoc quality
+  tail
 - another default Mission 1 strengthening/search packet
 - broad reward/env redesign before richer content creates evidence for it
 - generic search, experiment, or platform buildout
 - tooling campaigns that are not directly required by the next content slice
 
-## Active packet - Mission 3 baselines/search re-establishment
+## Archived packet - Mission 3 baselines/search re-establishment
 
 Packet goal:
 
@@ -368,28 +381,42 @@ Boundary to later packets:
 
 ## Mission 3 baselines/search packet status block
 
-- Delivery A: pending
-- Delivery B: pending
-- Delivery C: conditional
-- Packet overall: planning complete, ready for dispatch
+- Delivery A: completed
+- Delivery B: completed
+- Delivery C: not opened
+- Packet overall: closed
 - Planning audit date: March 11, 2026
-- Closeout audit date: not started
+- Closeout audit date: March 12, 2026
 - Blocking findings before dispatch: none
+- Closeout audit findings:
+  - none acceptance-blocking
+  - stronger search quality remains available, but should be treated as a new
+    packet rather than a tail on this one
 - Required preserved Mission 1 anchors:
   - `random 11/200`
   - learned best `144/200`
   - `heuristic 157/200`
   - `rollout 195/200`
-- Executed package order: pending
-- Closeout gate: do not open Mission 3 env/wrapper, Mission 3 learning, Mission
-  4 content, or cross-mission platform follow-ons until the first Mission 3
-  reference surface is accepted
+- Accepted Mission 3 reference surface:
+  - smoke:
+    `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
+  - benchmark:
+    `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+- Executed package order: Delivery A -> Delivery B
+- Landed implementation commits:
+  - `0e4a8ac mission3: add local comparison surface`
+  - `addae5a mission3: add bounded heuristic and search baselines`
+- Closeout gate:
+  - this packet is closed
+  - do not reopen it for stronger heuristic/search behavior unless a
+    corrective bug is found
+  - treat any search-quality improvement as a new packet
 
 ## Delivery A - Mission 3 comparison surface + random floor
 
 Status:
 
-- pending
+- completed
 
 Goal:
 
@@ -461,7 +488,7 @@ Analysis-before-edit:
 
 Status:
 
-- pending
+- completed
 
 Goal:
 
@@ -536,7 +563,7 @@ Analysis-before-edit:
 
 Status:
 
-- conditional
+- not opened
 
 Goal:
 
@@ -615,6 +642,55 @@ Do not mix in one thread:
 - bounded Mission 3 eval/CLI adaptation with a generic multi-mission
   benchmark/reporting platform
 - bounded heuristic/search adaptation with a broad cleanup/refactor campaign
+
+## Archived Mission 3 baselines/search control record
+
+- Accepted implementation commits:
+  - `0e4a8ac mission3: add local comparison surface`
+  - `addae5a mission3: add bounded heuristic and search baselines`
+- Final accepted verification at closeout:
+  - `git status --short` was empty
+  - `.venv/bin/pytest -q` passed with `231 passed in 47.35s`
+  - `.venv/bin/ruff check src tests` passed with `All checks passed!`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+    preserved `random 2/16`, `heuristic 11/16`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+    preserved `random 11/200`, `heuristic 157/200`, `rollout 195/200`
+  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
+    confirmed the accepted Mission 3 benchmark reference surface
+- Accepted packet result:
+  - Delivery A opened a Mission-3-local comparison/eval/CLI surface and
+    established the deterministic random floor
+  - Delivery B added one bounded Mission 3 heuristic baseline and one bounded
+    Mission 3 rollout/search baseline with explicit budget reporting
+  - preserved Mission 1 anchors remained separate and unchanged
+  - Delivery C was not opened because Delivery B already produced a clean
+    closeout-ready comparison surface
+- Accepted Mission 3 reference numbers:
+  - smoke:
+    `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
+  - benchmark:
+    `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+  - current accepted search budget:
+    full legal root width, `1` rollout per action,
+    `mission3_heuristic(depth=0)`, rollout depth limit `16` player decisions,
+    terminal fallback to frontier-state scoring
+- Exploratory post-closeout signal for later planning only:
+  - local 64-seed diagnostics suggest stronger Mission 3 search is plausible
+    inside bounded scope:
+    `heuristic_d2 29/64`, `heuristic_d3 30/64`, `rollout_d16_h0 32/64`,
+    `rollout_d24_h0 36/64`, `rollout_d16_h2 41/64`,
+    `rollout_d24_h2 53/64`
+  - these are not accepted benchmark anchors and should not overwrite the first
+    accepted Mission 3 reference surface
+  - if pursued, open a new packet tentatively named
+    `Mission 3 search strengthening`
+- Detailed Mission 3 baselines/search planning and acceptance history lives in:
+  - `docs/internal/thread_reports/2026-03-11_mission3-baselines-master-thread.md`
+  - `docs/internal/thread_reports/2026-03-11_mission3-delivery-a-dispatch.md`
+  - `docs/internal/thread_reports/2026-03-11_mission3-delivery-a.md`
+  - `docs/internal/thread_reports/2026-03-11_mission3-delivery-b.md`
+  - `docs/internal/thread_reports/2026-03-12_mission3-baselines-super-master-handoff.md`
 
 ## Archived packet - Mission 3 vertical slice + minimal structural prep
 

@@ -38,6 +38,9 @@ That makes it a useful sandbox for:
   The repository now supports deterministic load/init/play/replay for a richer
   content slice with Buildings, Hills, bounded wooded-hill semantics, and the
   German Rifle Squad.
+- **Mission 3 first comparison stack is in place**
+  Mission 3 now has a fixed-seed Mission-3-only baseline/search surface with
+  accepted `random`, `heuristic`, and `rollout-search` references.
 - **The simulator keeps the written staged turn flow**
   The engine models explicit decision contexts rather than hiding gameplay
   structure behind undocumented macro-actions.
@@ -78,10 +81,11 @@ content slices land.
 - deterministic resolver-playable domain slice;
 - support for Building, Hill, bounded wooded-hill semantics, and German Rifle
   Squad behavior;
+- Mission-3-only baseline/search comparison surface with fixed smoke and
+  benchmark seed aliases;
 - replay/integration coverage through the accepted resolver path.
 
 What is deliberately **not** implemented yet:
-- Mission 3 baselines/search;
 - Mission 3 env/wrapper extension;
 - Mission 3 learning experiments;
 - broader multi-mission infrastructure;
@@ -117,10 +121,11 @@ What is deliberately **not** implemented yet:
 
 The next recommended packet is:
 
-**Mission 3 baselines/search re-establishment**
+**Mission 3 search strengthening**
 
-The goal is to rebuild the comparison stack on the richer Mission 3 slice
-before extending the environment and learning path beyond Mission 1.
+The goal is to improve the bounded Mission 3 search baseline now that the first
+accepted Mission 3 comparison surface exists:
+`random 0/200`, `heuristic 72/200`, `rollout-search 105/200`.
 
 Likely follow-on packets after that:
 - Mission 3 env/wrapper extension;
