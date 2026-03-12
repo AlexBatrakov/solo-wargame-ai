@@ -31,6 +31,8 @@ recovering chat history:
 - preserve the accepted Phase 6 packet, closeout record, and decision gate,
 - preserve the accepted Mission 3 baselines/search re-establishment packet and
   its historical reference surface,
+- preserve the accepted Mission 3 search-strengthening packet and its
+  historical-vs-strengthened reference surfaces,
 - avoid reopening completed Delivery A / B / C work accidentally,
 - recover the accepted baseline, wrapper, and benchmark references quickly,
 - point the next planning thread toward the active packet backlog and later
@@ -47,6 +49,7 @@ recovering chat history:
   - Phase 6 complete
   - Mission 3 vertical-slice packet complete
   - Mission 3 baselines/search re-establishment packet complete
+  - Mission 3 search-strengthening packet complete
 - Local tags:
   - `phase1-complete`
   - `phase2-complete`
@@ -55,11 +58,13 @@ recovering chat history:
   - `phase5-complete`
   - `phase6-complete`
 - Repository state rechecked on March 12, 2026 during Mission 3 search
-  strengthening packet planning:
-  - `git status --short` was empty
+  strengthening packet closeout:
+  - `git status --short` showed only untracked
+    `docs/internal/mission3_cross_mission_probes.md`, intentionally left
+    outside the tracked packet closeout pending later Super Master review
   - `git log --oneline --decorate -12` showed `HEAD` on
-    `a0b49a9 docs: close mission3 baselines packet and queue search strengthening`
-  - `.venv/bin/pytest -q` passed with `231 passed in 47.84s`
+    `c84b1f0 mission3: strengthen search surface and preserve historical baseline`
+  - `.venv/bin/pytest -q` passed with `236 passed in 227.07s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
     succeeded with the preserved `random` `2/16` wins vs `heuristic`
@@ -74,8 +79,11 @@ recovering chat history:
   - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
     confirmed the accepted Mission 3 benchmark reference surface:
     `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark --surface strengthened`
+    confirmed the accepted strengthened Mission 3 benchmark result:
+    `rollout-search-strengthened 171/200`
 
-Accepted runtime surface after Mission 3 baselines/search closeout:
+Accepted runtime surface after Mission 3 search strengthening closeout:
 
 - `Mission` remains static scenario data loaded from config.
 - `GameState` remains runtime truth with explicit staged decision contexts.
@@ -120,11 +128,13 @@ Accepted runtime surface after Mission 3 baselines/search closeout:
   historical heuristic baseline surface, with the preserved benchmark fixed at
   `72/200`.
 - `agents/mission3_rollout_search_agent.py` is the accepted Mission-3-local
-  historical rollout-search baseline surface, with the preserved benchmark
-  fixed at `105/200` under the explicit accepted budget.
+  historical-plus-strengthened rollout-search surface, with the preserved
+  historical benchmark fixed at `105/200` and the accepted strengthened local
+  benchmark fixed at `171/200` under explicit fixed budgets.
 - `eval/mission3_comparison.py` is the accepted Mission-3-only comparison layer
-  for the preserved first Mission 3 reference surface, not a generic
-  cross-mission reporting platform.
+  for the preserved historical Mission 3 reference surface and the accepted
+  strengthened Mission 3 packet surface, not a generic cross-mission reporting
+  platform.
 - `cli/phase3_baselines.py` and `cli/phase4_env_smoke.py` remain the accepted
   preserved operator references.
 - `cli/phase5_train.py`, `cli/phase5_learned_policy_eval.py`, and
@@ -132,8 +142,9 @@ Accepted runtime surface after Mission 3 baselines/search closeout:
 - `cli/phase6_stronger_baseline.py` is the accepted thin operator surface for
   rerunning the stronger Mission 1 rollout baseline on preserved smoke and
   benchmark seed sets.
-- `cli/mission3_comparison.py` is the accepted thin historical operator surface
-  for rerunning the first Mission 3 local comparison stack.
+- `cli/mission3_comparison.py` is the accepted thin Mission-3-only operator
+  surface for rendering preserved historical, strengthened-only, and packet
+  comparison reports without turning into a generic reporting platform.
 - `pyproject.toml` now carries the bounded `numpy` / `torch` learning
   dependency pair, while `configs/missions/` now contains the accepted Mission
   1 and Mission 3 configs and no broader experiment-platform surface.
@@ -143,60 +154,50 @@ Accepted runtime surface after Mission 3 baselines/search closeout:
 ## Current post-Mission-3 planning decision
 
 The original six-phase build sequence is finished, the first richer-content
-packet has closed, and the first Mission 3 comparison packet has now closed as
-well.
-Future planning should therefore continue from the accepted Mission 3
-comparison surface, not reopen the just-closed re-establishment packet as an
-informal tail.
+packet has closed, the first Mission 3 comparison packet has closed, and the
+bounded Mission 3 search-strengthening packet has now closed as well.
+Future planning should therefore continue from the preserved historical Mission
+3 surface plus the accepted strengthened local search surface, not reopen this
+packet by default as an informal tuning tail.
 
 Current recommended next packet:
 
-- Mission 3 search strengthening
+- Mission 3 env/wrapper extension
 
 Why this is now preferred:
 
-- Mission 3 now has an accepted first comparison stack and reference surface:
-  - smoke: `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
-  - benchmark: `random 0/200`, `heuristic 72/200`,
-    `rollout-search 105/200`
-- the packet goal of re-establishing a useful Mission 3 comparison stack is
-  complete, so additional search-quality work should be treated as a new
-  planning decision rather than as retroactive Delivery C work
-- local exploratory diagnostics suggest bounded upside still exists inside the
-  search baseline without opening env/RL/platform scope:
-  - `heuristic_d2 29/64`
-  - `heuristic_d3 30/64`
-  - `rollout_d16_h0 32/64`
-  - `rollout_d24_h0 36/64`
-  - `rollout_d16_h2 41/64`
-  - `rollout_d24_h2 53/64`
-- the code surface shows an immediately bounded explanation for that headroom:
-  the accepted Mission 3 search baseline rolls forward with
-  `mission3_heuristic(depth=0)` even though the accepted Mission 3 historical
-  heuristic row already uses the stronger `Mission3HeuristicAgent()` default
-  depth surface
-- this keeps env/RL work sequenced behind a better Mission 3 comparison stack
-  if the project chooses to invest in one more bounded non-learning packet
-- absent a direct blocker, this packet should be treated as the last bounded
-  non-learning Mission 3 pass before env/wrapper extension rather than the
-  first turn of a new tuning loop
+- the bounded Mission-3-local strengthening pass succeeded materially:
+  - historical benchmark: `rollout-search 105/200`
+  - accepted strengthened benchmark:
+    `rollout-search-strengthened 171/200`
+- the packet cleared its default success target (`120/200`) by a large margin
+  while preserving the historical Mission 3 baseline as visible truth
+- the chosen bounded search-side lever has now been exercised honestly:
+  stronger continuation policy plus one bounded horizon bump
+- another default search packet would now be harder to justify as a bounded
+  local-quality pass; it would more likely be a new explicit transfer/search-
+  localization question, not a continuation of this packet
+- the next high-value question is therefore how far the accepted env boundary
+  needs to extend to make the richer Mission 3 slice usable for later learning
+  and comparison work
 
 Likely follow-on packets after that:
 
 1. Mission 3 env/wrapper extension
 2. Mission 3 learning experiments
 3. Mission 4 or another bounded richer content slice
-4. Cross-mission evaluation/reporting only when more than one active mission
-   makes it worthwhile
+4. Cross-mission evaluation/reporting only when more than one mission is
+   active enough to justify it
 
 Ranked backlog beyond the active next packet:
 
 - High value:
-  - Mission 3 search strengthening
   - Mission 3 env/wrapper extension
   - Mission 3 learning experiments
+  - Mission 4 or another bounded richer content slice
 - Medium value:
-  - Mission 4 or another bounded richer content slice once Mission 3 is stable
+  - a narrow follow-up on search transfer/localization only if a later thread
+    opens that as a new explicit question rather than more generic tuning
   - observation/action redesign only if richer content shows the current
     wrapper is too Mission-1-shaped
   - synthetic fixtures and bounded maintainability work when broader content
@@ -211,7 +212,7 @@ Ranked backlog beyond the active next packet:
 
 Demoted for now:
 
-- another Mission 3 content-landing packet
+- another default Mission 3 search-strengthening packet
 - reopening Mission 3 baselines/search re-establishment as an ad hoc quality
   tail
 - another default Mission 1 strengthening/search packet
@@ -219,182 +220,80 @@ Demoted for now:
 - generic search, experiment, or platform buildout
 - tooling campaigns that are not directly required by the next content slice
 
-## Active packet - Mission 3 search strengthening
+## Archived packet - Mission 3 search strengthening
 
 Packet goal:
 
 - make one bounded non-learning strengthening pass on Mission 3 search
 - try to beat the accepted historical `rollout-search 105/200` benchmark
   result
-- keep any heuristic work subordinate to the search continuation goal rather
-  than opening a standalone heuristic-rewrite packet
+- keep any heuristic work subordinate to the search continuation goal
 - end with a clear gate to Mission 3 env/wrapper extension rather than another
-  "maybe one more tuning pass" loop
+  tuning loop
 
-Planning audit findings:
+Planning audit basis:
 
-- the accepted Mission 3 historical comparison surface is stable and should
-  remain explicit and unchanged:
+- the accepted Mission 3 historical comparison surface was already stable:
   - smoke: `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
   - benchmark: `random 0/200`, `heuristic 72/200`,
     `rollout-search 105/200`
-- the current Mission 3 search baseline is intentionally weaker than the
-  accepted historical Mission 3 heuristic continuation surface:
-  - `Mission3HeuristicAgent()` defaults to `lookahead_depth=2`
-  - `Mission3RolloutSearchAgent` currently rolls forward with
-    `Mission3HeuristicAgent(lookahead_depth=0)`
-- March 12 benchmark reruns confirm the preserved Mission 1 and Mission 3
-  historical anchors are still live and reproducible in the current repo
-  state, so this packet can start from stable truth rather than suspected
-  drift
-- the exploratory 64-seed diagnostics align with the code-surface reading:
-  the strongest visible lever is a stronger continuation policy, with one
-  modest horizon increase as a secondary lever
-- the current Mission 3 report/test surface names only one historical
-  `heuristic` row and one historical `rollout-search` row; silently mutating
-  those defaults would erase accepted history, so preservation/reporting is an
-  active requirement, not a closeout nicety
-- no repo-evidence blocker argues for skipping directly to Mission 3
-  env/wrapper extension before this packet; the visible search-side lever is
-  still bounded and mission-local
+- the bounded local headroom was justified by one concrete search-side seam:
+  the accepted historical search baseline used
+  `mission3_heuristic(depth=0)` continuation even though the accepted Mission 3
+  heuristic row already used the stronger default depth surface
+- the packet was treated from the start as the default last bounded
+  non-learning Mission 3 pass before env/wrapper extension
 
-Packet planning decisions:
+Accepted implementation result:
 
-- Main strengthening lever:
-  - stronger continuation policy inside the Mission-3-local rollout/search
-    baseline
-  - preferred first move:
-    use the accepted Mission 3 heuristic depth surface as the rollout
-    continuation policy instead of `mission3_heuristic(depth=0)`
-- Secondary bounded budget change:
-  - allow one horizon bump from `16` to at most `24` player decisions if it
-    remains paired with `full_legal_width` and `1` rollout per action
-- Not approved in this packet:
-  - increasing `rollouts_per_action` above `1`
-  - widening into root-width tuning sweeps or adaptive budget policies
-  - multiple search families, planner backends, MCTS, tree reuse, or generic
-    search infrastructure
-  - open-ended parameter loops after the first bounded strengthened rerun
-- Narrow heuristic quality pass decision:
-  - not open by default
-  - open only if Delivery A shows the strengthened search is still bottlenecked
-    by continuation-policy quality after the primary search-side change, and
-    the fix can stay subordinate to search
-  - any heuristic change must preserve the accepted historical
-    `heuristic 72/200` row as history rather than silently redefining it
-- Accepted search budget policy for this packet:
-  - root width stays `full_legal_width`
-  - `rollouts_per_action` stays `1`
-  - continuation policy may strengthen once, but remains deterministic and
-    Mission-3-local
-  - rollout depth limit may be `16` or `24`; do not open a broader horizon
-    sweep
-  - terminal fallback remains explicit and separately reported
-- Benchmark and smoke protocol:
-  - exploratory 64-seed diagnostics may guide a bounded package-internal choice
-    between at most two predeclared strengthened presets
-  - final packet truth remains:
-    - smoke `0..15`
-    - benchmark `0..199`
-  - final packet reporting must show:
-    - the historical accepted Mission 3 reference surface
-    - the strengthened packet result on the same seed aliases
-    - deltas versus the historical `heuristic` row
-    - deltas versus the historical `rollout-search` row
-- Required comparison metrics:
-  - `wins`
-  - `defeats`
-  - `win_rate`
-  - `defeat_rate`
-  - `mean_terminal_turn`
-  - `mean_resolved_markers`
-  - `mean_removed_german`
-  - `mean_player_decisions`
-- Required separately reported search-budget fields:
-  - root width
-  - rollouts per action
-  - rollout policy id and depth
-  - rollout depth limit
-  - terminal policy
-- Accepted result framing:
-  - the March 12 Mission 3 baseline surface remains preserved historical truth
-  - any improvement landed by this packet must be reported as a strengthened
-    search result layered over that historical baseline, not as a silent
-    rewrite of the old truth
-- Packet success criteria:
-  - primary success:
-    one bounded strengthened configuration reaches a materially stronger
-    Mission 3 benchmark result, with `120/200` wins or better as the default
-    success target on the preserved `0..199` seed set, and the historical
-    surface remains visible
-  - secondary acceptable outcome:
-    the packet still succeeds if it cleanly falsifies the value of another
-    search packet by showing that the bounded strengthening pass does not clear
-    a material margin and therefore should hand off directly to env/wrapper
-    extension
+- Delivery A landed the accepted implementation commit:
+  - `c84b1f0 mission3: strengthen search surface and preserve historical baseline`
+- the historical Mission 3 surface remains separate, visible, and rerunnable
+- the accepted strengthened local Mission 3 result is:
+  - smoke: `rollout-search-strengthened 12/16`
+  - benchmark: `rollout-search-strengthened 171/200`
+- accepted strengthened search budget:
+  - `full_legal_width`
+  - `1` rollout per action
+  - `mission3_heuristic(depth=2)`
+  - rollout depth limit `24` player decisions
+  - terminal fallback to frontier-state scoring
+- the packet success target was materially exceeded:
+  - `171/200` vs target `120/200`
+  - `+66` wins vs historical Mission 3 `rollout-search 105/200`
+- Delivery B was not opened because Delivery A already produced a clean,
+  decisive result
+- Delivery C was not opened because Delivery A already left a clear
+  historical-vs-strengthened report surface
 
-Active risks / traps:
+Closeout audit findings:
 
-- silently repointing `mission3_comparison` so the accepted `105/200`
-  historical surface can no longer be reproduced or seen
-- letting the packet drift into a standalone heuristic rewrite because
-  `Mission3HeuristicAgent` is already a large mission-local policy surface
-- turning a clear search-side question into a generic planner/search-budget
-  platform
-- mistaking exploratory 64-seed diagnostics for accepted benchmark truth
-- reopening another search packet afterward just to spend more compute if this
-  bounded pass already answers the real question
-
-Active follow-ups from `docs/internal/independent_audit_followups.md`:
-
-- `P4-R4` active as a preservation rule:
-  keep Mission 1 and Mission 3 accepted historical anchors explicit and
-  separate while strengthened-search work lands
-- `C6` active as a caution:
-  Mission-1-specific and Mission-3-specific heuristic coupling may be reused as
-  local rollout support, but must not become the durable future general agent
-  contract
-
-Not active by default in this packet unless a direct blocker appears:
-
-- `C1` replay draw-prediction coupling
-- `C2` `legal_actions.py` growth / separation
-- `C3` multiple-start-hex support
-- `C4` objective-dispatch generalization
-- `C5` synthetic fixtures
-- `T1` through `T4` tooling backlog
-
-Boundary to later packets:
-
-- This packet includes:
-  - Mission-3-local search-side strengthening
-  - the smallest Mission-3-local reporting change needed to preserve
-    historical baseline visibility and show strengthened results honestly
-  - one conditional subordinate heuristic continuation pass only if Delivery A
-    proves it is necessary
-- This packet does not include:
-  - Mission 3 env/wrapper extension
-  - Mission 3 learning experiments
-  - Mission 4 content landing
-  - generic search/reporting/platform work
-  - broad cleanup/refactor or domain-architecture changes
-  - replacing Mission 1 anchors or the accepted historical Mission 3 baseline
-    truth
+- none acceptance-blocking
+- preserved Mission 1 anchors remained unchanged
+- preserved Mission 3 historical references remained unchanged
+- no env/wrapper, learning, Mission 4, or generic search/reporting/platform
+  work was opened inside this packet
+- do not treat any later exploratory cross-mission evidence as a replacement
+  for the accepted historical or strengthened Mission-3-local surfaces unless a
+  future packet explicitly reopens that question
 
 ## Mission 3 search strengthening packet status block
 
-- Delivery A: pending
-- Delivery B: conditional
-- Delivery C: optional
-- Packet overall: open for dispatch
+- Delivery A: completed (`c84b1f0`)
+- Delivery B: not opened
+- Delivery C: not opened
+- Packet overall: closed
 - Planning audit date: March 12, 2026
+- Closeout audit date: March 12, 2026
 - Blocking findings before dispatch: none
+- Closeout audit findings: none acceptance-blocking
+- Executed package order: Delivery A
 - Required preserved Mission 1 anchors:
   - `random 11/200`
   - learned best `144/200`
   - `heuristic 157/200`
   - `rollout 195/200`
-- Required preserved Mission 3 historical baseline:
+- Preserved Mission 3 historical baseline:
   - smoke:
     `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
   - benchmark:
@@ -403,243 +302,90 @@ Boundary to later packets:
     full legal root width, `1` rollout per action,
     `mission3_heuristic(depth=0)`, rollout depth limit `16` player decisions,
     terminal fallback to frontier-state scoring
-- Default packet posture:
-  - treat this as the last bounded non-learning Mission 3 improvement pass
-    before env/wrapper extension
-  - open another similar packet only if this packet produces materially new
-    evidence that is not just "more budget"
+- Accepted strengthened Mission 3 result:
+  - smoke:
+    `rollout-search-strengthened 12/16`
+  - benchmark:
+    `rollout-search-strengthened 171/200`
+  - accepted strengthened budget:
+    full legal root width, `1` rollout per action,
+    `mission3_heuristic(depth=2)`, rollout depth limit `24` player decisions,
+    terminal fallback to frontier-state scoring
+- Closeout gate:
+  - proceed to Mission 3 env/wrapper extension by default
+  - do not open another Mission 3 search packet by default unless a future
+    thread opens a clearly different explicit question
 
 ## Delivery A - Mission 3 search continuation strengthening
 
 Status:
 
-- pending
+- completed (`c84b1f0 mission3: strengthen search surface and preserve historical baseline`)
 
 Goal:
 
 - implement the main Mission 3 search-side strengthening lever and rerun the
   Mission 3 comparison surface without overwriting historical truth
 
-Concrete deliverables:
+Execution outcome:
 
-- analysis-before-edit on the current search budget, continuation policy, and
-  historical report surface
-- one strengthened Mission 3 rollout/search preset driven by a stronger
-  continuation policy, with one optional fixed horizon bump if justified by the
-  bounded diagnostics
-- explicit historical-vs-strengthened reporting on the smoke and benchmark seed
-  aliases
-- no standalone redefinition of the historical `heuristic` row
+- strengthened the continuation policy from historical
+  `mission3_heuristic(depth=0)` to accepted local strengthened
+  `mission3_heuristic(depth=2)`
+- accepted one bounded rollout horizon increase from `16` to `24`
+- preserved the historical Mission 3 surface as a separate rerunnable operator
+  path
+- added strengthened-only and packet report surfaces to show historical versus
+  strengthened results honestly
+- returned a decisive bounded result, so no subordinate heuristic pass was
+  needed
 
-Likely files / subsystems touched:
+Required verification at acceptance:
 
-- `src/solo_wargame_ai/agents/mission3_rollout_search_agent.py`
-- `src/solo_wargame_ai/eval/mission3_comparison.py`
-- `src/solo_wargame_ai/cli/mission3_comparison.py`
-- focused tests under `tests/agents/`, `tests/eval/`, and `tests/cli/`
-- `src/solo_wargame_ai/agents/mission3_heuristic_agent.py` only if a minimal
-  helper exposure is directly required by the strengthened search slice
-
-Required tests / verification:
-
-- focused tests for:
-  - strengthened-search budget reporting
-  - deterministic continuation-policy behavior
-  - historical-vs-strengthened report separation
-- `.venv/bin/pytest -q`
 - `.venv/bin/ruff check src tests`
+- `.venv/bin/pytest -q`
 - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
 - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
-- the preserved historical Mission 3 smoke command
-- the preserved historical Mission 3 benchmark command
-- the strengthened Mission 3 smoke surface
-- the strengthened Mission 3 benchmark surface
-
-Risks / traps:
-
-- building a generic planner/search-budget framework instead of one bounded
-  strengthened preset
-- overwriting or hiding the accepted historical Mission 3 baseline surface
-- spending the package on multiple budget knobs instead of the chosen primary
-  lever
-- widening into env/wrapper, learning, Mission 4, or generic platform work
+- `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode smoke --surface historical`
+- `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark --surface historical`
+- `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode smoke --surface strengthened`
+- `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark --surface strengthened`
+- `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode smoke --surface packet`
 
 Completion criteria:
 
-- one strengthened Mission 3 search result is reported with the historical
-  baseline still visible and with an explicit budget tuple
-- the package returns clear evidence about whether the main search lever paid
-  off materially
-
-Commit shape:
-
-- one implementation commit preferred
-
-Analysis-before-edit:
-
-- required
+- met
+- the packet now has a materially stronger Mission-3-local search reference
+  while historical truth remains visible
 
 ## Delivery B - Conditional narrow heuristic continuation pass
 
 Status:
 
-- conditional
+- not opened
 
-Goal:
+Reason:
 
-- only if Delivery A proves strengthened search is still bottlenecked by
-  continuation-policy quality, add one narrow heuristic improvement that
-  directly serves the strengthened search package
-
-Concrete deliverables:
-
-- at most one small heuristic adjustment or strengthened-only helper consumed
-  by the rollout policy
-- optional diagnostic rerun that shows the search benefit directly, without
-  relabeling the accepted historical `heuristic` row
-- no standalone heuristic package goals
-
-Likely files / subsystems touched:
-
-- `src/solo_wargame_ai/agents/mission3_heuristic_agent.py`
-- `src/solo_wargame_ai/agents/mission3_rollout_search_agent.py`
-- `src/solo_wargame_ai/eval/mission3_comparison.py` only if strengthened
-  reporting needs one narrow addition
-- `src/solo_wargame_ai/cli/mission3_comparison.py` only if strengthened
-  reporting needs one narrow addition
-- focused tests under `tests/agents/`, `tests/eval/`, and `tests/cli/`
-
-Required tests / verification:
-
-- focused tests for any new heuristic continuation helper
-- `.venv/bin/pytest -q`
-- `.venv/bin/ruff check src tests`
-- the preserved historical Mission 3 smoke command
-- the preserved historical Mission 3 benchmark command
-- the strengthened Mission 3 smoke surface
-- the strengthened Mission 3 benchmark surface
-
-Risks / traps:
-
-- turning a subordinate continuation fix into a heuristic-rewrite packet
-- silently changing the meaning of the accepted historical `heuristic 72/200`
-  surface
-- deepening `C6` heuristic coupling beyond the needs of the bounded search
-  packet
-
-Completion criteria:
-
-- the heuristic change remains subordinate, bounded, and either improves the
-  strengthened search materially or cleanly falsifies the need for further
-  heuristic work in this packet
-
-Commit shape:
-
-- one implementation commit only if the package is opened
-
-Analysis-before-edit:
-
-- required
+- Delivery A already returned a decisive strengthened search result without
+  needing a subordinate heuristic-quality pass
 
 ## Delivery C - Optional report/preservation finish
 
 Status:
 
-- optional
+- not opened
 
-Goal:
+Reason:
 
-- only if Deliveries A and B land an algorithmic result but leave the
-  historical-vs-strengthened surfaces muddled, add the smallest report or
-  preservation finish needed for closeout
+- Delivery A already produced a clean closeout-ready historical-vs-strengthened
+  report surface
 
-Concrete deliverables:
+## Archived closeout recommendation
 
-- at most one thin report/CLI/docs follow-up that clarifies:
-  - historical accepted Mission 3 truth
-  - strengthened packet result
-  - search budget and continuation-policy disclosure
-- no new algorithmic changes
-
-Likely files / subsystems touched:
-
-- `src/solo_wargame_ai/eval/`
-- `src/solo_wargame_ai/cli/`
-- focused tests under `tests/eval/` and `tests/cli/`
-- phase/packet control docs if a closeout-support wording sync is needed
-
-Required tests / verification:
-
-- focused tests for any new report/preservation helper
-- `.venv/bin/pytest -q`
-- `.venv/bin/ruff check src tests`
-- the preserved historical Mission 3 smoke command
-- the preserved historical Mission 3 benchmark command
-- the strengthened Mission 3 smoke surface if Delivery C touches it
-- the strengthened Mission 3 benchmark surface if Delivery C touches it
-
-Risks / traps:
-
-- reopening Delivery A/B algorithm choices instead of finishing a narrow closeout
-  blocker
-- turning report separation into a generic reporting platform
-- mixing new algorithmic changes into a preservation/closeout package
-
-Completion criteria:
-
-- the Packet Master Thread can close the packet without ambiguity about
-  historical versus strengthened truth
-
-Commit shape:
-
-- one small eval/docs follow-up commit only if the package is opened
-
-Analysis-before-edit:
-
-- required
-
-## Recommended Delivery Thread sequence for the Mission 3 search strengthening packet
-
-Preferred sequence:
-
-1. Delivery A
-2. Delivery B only if Delivery A leaves one clear search-continuation blocker
-   that is narrower than a new packet
-3. Delivery C only if Deliveries A/B do not already leave a clean
-   closeout-ready report surface
-
-Do not mix in one thread:
-
-- Delivery A search-side strengthening with Delivery B heuristic-rewrite
-  exploration
-- any Mission 3 search-strengthening package with Mission 3 env/wrapper
-  extension
-- any Mission 3 search-strengthening package with Mission 3 learning
-  experiments
-- any Mission 3 search-strengthening package with Mission 4 content landing
-- any Mission 3 search-strengthening package with generic search/reporting or
-  platform work
-- Delivery C preservation/reporting finish with new algorithmic changes
-
-## End-of-packet default decision gate
-
-- Move to Mission 3 env/wrapper extension if:
-  - this packet reruns the bounded strengthened search on smoke and benchmark
-    seed aliases with preserved historical surfaces
-  - either strengthened search reaches the default material-improvement target
-    (`120/200` wins or better on the preserved benchmark) or fails to do so,
-    thereby showing that another search packet is not the best next investment
-  - no direct env-blocking bug is discovered
-- Do not open another search packet by default if:
-  - the remaining argument is only "try more budget"
-  - the only visible next step is a broader heuristic rewrite
-  - the historical and strengthened surfaces are already clear enough to move
-    on
-- Another similar packet requires explicit new evidence from this packet that:
-  - one still-untried bounded lever remains
-  - that lever is not just compute escalation
-  - and the value of delaying env/wrapper extension is still higher than taking
-    the richer-slice handoff
+- close this packet
+- move to Mission 3 env/wrapper extension by default
+- preserve the accepted historical Mission 3 reference surface and the accepted
+  strengthened local Mission 3 result as separate truths
 
 ## Archived packet - Mission 3 baselines/search re-establishment
 

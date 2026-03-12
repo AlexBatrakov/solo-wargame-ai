@@ -558,6 +558,17 @@ That next packet has now landed as well:
   - preserved Mission 1 anchors remained explicit and unchanged;
   - the packet stayed out of env/wrapper, learning, Mission 4 content, and
     generic cross-mission platform work.
+- [x] **Mission 3 search strengthening**
+  Closed as a bounded follow-on packet after Mission 3
+  baselines/search re-establishment.
+  Outcome:
+  - the preserved historical Mission 3 comparison surface remained explicit;
+  - one bounded strengthened Mission-3-local search result landed at
+    `rollout-search-strengthened 171/200`;
+  - the packet stayed out of env/wrapper, learning, Mission 4 content, and
+    generic search/reporting platform work;
+  - the default next step moved to Mission 3 env/wrapper extension rather than
+    another search packet.
 
 ---
 
@@ -580,29 +591,30 @@ questions instead of spending more cycles on Mission 1 alone.
 
 ### Recommended next packet
 
-**Mission 3 search strengthening**
+**Mission 3 env/wrapper extension**
 
 Goal:
-- improve the bounded Mission 3 search baseline now that a first accepted
-  comparison stack exists on the richer Mission 3 slice.
+- extend the accepted env boundary only as far as the richer Mission 3 slice
+  now requires, after the bounded Mission-3-local search pass established a
+  materially stronger local reference.
 
 Scope:
-- keep the work Mission-3-local and bounded to heuristic/search quality;
-- treat the accepted Mission 3 comparison surface as preserved reference
-  history, not as an excuse to reopen the closed packet;
-- prefer search-policy / horizon improvements over env/RL/platform expansion.
+- keep the work Mission-3-local and bounded to env/wrapper concerns only;
+- preserve both the historical Mission 3 references and the accepted
+  strengthened local search result as comparison truth;
+- extend the wrapper only as far as the Mission 3 slice directly forces.
 
 Non-goals:
-- no Mission 3 wrapper redesign yet;
 - no Mission 3 learning experiments yet;
 - no Mission 4 content landing yet;
-- no generic cross-mission platform buildout.
+- no generic multi-mission env/reporting platform buildout;
+- no reopening of Mission 3 search strengthening by default.
 
 Completion criteria:
-- the project has a documented decision on whether a stronger bounded Mission 3
-  search baseline is worth accepting before env or learning work;
-- preserved Mission 1 anchors and the first accepted Mission 3 references
-  remain explicit and separate.
+- the project has a documented Mission 3 env boundary that remains consistent
+  with the accepted domain and comparison surfaces;
+- preserved Mission 1 anchors plus preserved historical and strengthened
+  Mission 3 references remain explicit and separate.
 
 ### Likely follow-on packets after that
 
@@ -620,13 +632,14 @@ Completion criteria:
 
 #### Highest-value backlog
 
-1. Mission 3 search strengthening
-2. Mission 3 env/wrapper extension
-3. Mission 3 learning experiments
+1. Mission 3 env/wrapper extension
+2. Mission 3 learning experiments
+3. Mission 4 or another bounded richer content slice
 
 #### Medium-value backlog
 
-1. Additional content slices such as Mission 4 once Mission 3 is stable
+1. A narrow search-transfer/localization follow-up only if a later thread opens
+   that as a new explicit question rather than more tuning
 2. Observation/action redesign only if richer content shows the accepted
    wrapper is too Mission-1-shaped
 3. Synthetic fixtures and bounded maintainability refactors ahead of broader
@@ -638,11 +651,12 @@ Completion criteria:
 
 1. Additional Mission 1 strengthening only if a very specific research question
    remains after the Mission 3 pivot
-2. Wider tooling upgrades such as `mypy`, Python 3.12 CI, broader Ruff, or
+2. Another default Mission 3 search packet without a clearly different question
+3. Wider tooling upgrades such as `mypy`, Python 3.12 CI, broader Ruff, or
    coverage-driven cleanup
-3. Generic config / artifact / experiment-platform buildout if repeated manual
+4. Generic config / artifact / experiment-platform buildout if repeated manual
    work starts to dominate progress
-4. Additional framework compatibility layers, richer operator UX, or optional
+5. Additional framework compatibility layers, richer operator UX, or optional
    visualization/debug views
 
 ---

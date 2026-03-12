@@ -38,9 +38,10 @@ That makes it a useful sandbox for:
   The repository now supports deterministic load/init/play/replay for a richer
   content slice with Buildings, Hills, bounded wooded-hill semantics, and the
   German Rifle Squad.
-- **Mission 3 first comparison stack is in place**
-  Mission 3 now has a fixed-seed Mission-3-only baseline/search surface with
-  accepted `random`, `heuristic`, and `rollout-search` references.
+- **Mission 3 strengthened search stack is in place**
+  Mission 3 now has preserved historical `random`, `heuristic`, and
+  `rollout-search` references plus an accepted stronger local
+  `rollout-search-strengthened` surface.
 - **The simulator keeps the written staged turn flow**
   The engine models explicit decision contexts rather than hiding gameplay
   structure behind undocumented macro-actions.
@@ -81,8 +82,8 @@ content slices land.
 - deterministic resolver-playable domain slice;
 - support for Building, Hill, bounded wooded-hill semantics, and German Rifle
   Squad behavior;
-- Mission-3-only baseline/search comparison surface with fixed smoke and
-  benchmark seed aliases;
+- Mission-3-only historical and strengthened search comparison surfaces with
+  fixed smoke and benchmark seed aliases;
 - replay/integration coverage through the accepted resolver path.
 
 What is deliberately **not** implemented yet:
@@ -121,14 +122,14 @@ What is deliberately **not** implemented yet:
 
 The next recommended packet is:
 
-**Mission 3 search strengthening**
+**Mission 3 env/wrapper extension**
 
-The goal is to improve the bounded Mission 3 search baseline now that the first
-accepted Mission 3 comparison surface exists:
-`random 0/200`, `heuristic 72/200`, `rollout-search 105/200`.
+The goal is to extend the accepted env boundary only as far as the richer
+Mission 3 slice now requires, after the bounded Mission-3-local search pass
+improved the preserved historical `rollout-search 105/200` reference to the
+accepted strengthened local result `rollout-search-strengthened 171/200`.
 
 Likely follow-on packets after that:
-- Mission 3 env/wrapper extension;
 - Mission 3 learning experiments;
 - later Mission 4 or another bounded richer content slice;
 - cross-mission evaluation/reporting once more than one active mission needs to
