@@ -16,15 +16,17 @@ Phase- or packet-specific planning belongs in `docs/internal/execution_plan.md`.
 - Phase 5 is complete and accepted.
 - Phase 6 is complete and accepted.
 - The Mission 3 vertical-slice packet is complete and accepted.
+- The Mission 3 baselines/search re-establishment packet is complete and
+  accepted.
 - `phase1-complete`, `phase2-complete`, `phase3-complete`, and
   `phase4-complete`, `phase5-complete`, `phase6-complete` are the current
   local milestone tags.
 - The original numbered phase roadmap is exhausted.
 - The next active planning packet should start from the accepted Mission 3
-  domain slice:
-  Mission 3 baselines/search re-establishment is now preferred over reopening
-  either the Mission 3 content-landing packet or another default Mission 1
-  strengthening/search pass.
+  comparison surface:
+  Mission 3 search strengthening is now preferred over reopening the closed
+  re-establishment packet, reopening Mission 3 content landing, or another
+  default Mission 1 strengthening/search pass.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 
@@ -33,12 +35,13 @@ is operating from stale context.
 
 ## Current post-Mission-3 dispatch note
 
-After Mission 3 packet closeout:
+After Mission 3 baselines/search packet closeout:
 
 - use `docs/internal/execution_plan.md` as the first dispatch surface for the
   next active packet
-- treat the Mission 3 content-landing packet as archived accepted history
-  unless repeated use exposes a narrow corrective bug
+- treat the Mission 3 content-landing packet and the Mission 3
+  baselines/search re-establishment packet as archived accepted history unless
+  repeated use exposes a narrow corrective bug
 - keep the preserved Phase 3 baseline CLI and accepted 200-seed snapshot
   discoverable as the pre-RL comparison reference during later work
 - keep the accepted Phase 5 learned-policy result and aggregate benchmark
@@ -46,15 +49,23 @@ After Mission 3 packet closeout:
 - keep the accepted Phase 6 rollout baseline result discoverable:
   `195/200` wins on the preserved benchmark against `heuristic 157/200` and
   learned `best 144/200`
+- keep the accepted Mission 3 historical comparison surface discoverable:
+  - smoke: `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
+  - benchmark: `random 0/200`, `heuristic 72/200`,
+    `rollout-search 105/200`
 - keep the accepted Mission 3 content slice discoverable as the richer
-  deterministic domain target that now needs baselines/search rather than
-  another content-landing pass
-- do not reopen repo hygiene, env-boundary redesign, or generic search/RL-
-  platform buildout casually as a follow-up to the Mission 3 landing
+  deterministic domain target that now needs one bounded search-quality gate
+  rather than another content-landing pass
+- do not reopen repo hygiene, env-boundary redesign, Mission 4 content, or
+  generic search/RL-platform buildout casually as a follow-up to the Mission 3
+  landing
 - the current default next packet is:
-  Mission 3 baselines/search re-establishment
-- do not reopen the Mission 3 content packet or another Mission 1
-  strengthening/search packet by default unless new repo evidence justifies it
+  Mission 3 search strengthening
+- treat that packet as the default last bounded non-learning Mission 3 pass
+  before env/wrapper extension unless new repo evidence contradicts it
+- do not reopen the Mission 3 content packet, the Mission 3 baselines/search
+  re-establishment packet, or another Mission 1 strengthening/search packet by
+  default unless new repo evidence justifies it
 - treat Phase 4 Delivery A / B / C work as archived unless repeated use
   exposes a narrow corrective bug
 
