@@ -570,6 +570,22 @@ That next packet has now landed as well:
   - the default next step moved to Mission 3 env/wrapper extension rather than
     another search packet.
 
+### Current planning pause
+
+After the Mission 3 search-strengthening closeout, additional audit and
+brainstorm work changed the preferred sequencing slightly:
+
+- no big top-level repository reorg is needed;
+- the macro split `domain / io / env / agents / eval / cli` still looks right;
+- the highest-value immediate work is now a **small preparatory packet** before
+  Mission 3 env work, not a broad redesign and not another default Mission 3
+  tuning loop;
+- the main reasons are:
+  - recent mission-config/schema hardening findings are real;
+  - the env layer should grow through a narrow shared adapter seam rather than
+    by turning `Mission1Env` into the permanent center or creating a second
+    isolated `MissionXEnv` island.
+
 ---
 
 ## Post-Phase-6 Planning Model
@@ -591,28 +607,34 @@ questions instead of spending more cycles on Mission 1 alone.
 
 ### Recommended next packet
 
-**Mission 3 env/wrapper extension**
+**Mission 3 env-prep hardening and adapter seam**
 
 Goal:
-- extend the accepted env boundary only as far as the richer Mission 3 slice
-  now requires, after the bounded Mission-3-local search pass established a
-  materially stronger local reference.
+- make one bounded preparatory pass before Mission 3 env/wrapper work.
 
 Scope:
-- keep the work Mission-3-local and bounded to env/wrapper concerns only;
+- strengthen mission-config/schema semantics where recent audits found real
+  gaps;
+- carve a narrow shared resolver-backed env-adapter seam so Mission 3 env work
+  does not become another isolated wrapper stack;
 - preserve both the historical Mission 3 references and the accepted
   strengthened local search result as comparison truth;
-- extend the wrapper only as far as the Mission 3 slice directly forces.
+- allow only the smallest env/eval export cleanup that directly supports that
+  seam.
 
 Non-goals:
+- no broad repo reorganization;
+- no Mission 3 wrapper implementation yet;
 - no Mission 3 learning experiments yet;
 - no Mission 4 content landing yet;
-- no generic multi-mission env/reporting platform buildout;
+- no generic multi-mission env/reporting/search platform buildout;
 - no reopening of Mission 3 search strengthening by default.
 
 Completion criteria:
-- the project has a documented Mission 3 env boundary that remains consistent
-  with the accepted domain and comparison surfaces;
+- the mission loader/validation boundary is stricter and less misleading than
+  it is today;
+- the project has one narrow shared env-extension seam ready for Mission 3
+  wrapper work without committing to a broad env-platform shape;
 - preserved Mission 1 anchors plus preserved historical and strengthened
   Mission 3 references remain explicit and separate.
 
@@ -622,29 +644,31 @@ Completion criteria:
    Extend the accepted env boundary only as far as the new slice requires.
 2. **Mission 3 learning experiments**
    Re-test learnability on content that is materially richer than Mission 1.
-3. **Mission 4 or another bounded richer content slice**
-   Continue content growth only after the Mission 3 stack is healthier.
-4. **Cross-mission comparison and reporting**
+3. **Cross-mission comparison and reporting**
    Add only the evaluation/reporting support needed once more than one mission
    is active.
+4. **Mission 4 or another bounded richer content slice**
+   Continue content growth only after the Mission 3 stack is healthier.
 
 ### Ranked future backlog
 
 #### Highest-value backlog
 
-1. Mission 3 env/wrapper extension
-2. Mission 3 learning experiments
-3. Mission 4 or another bounded richer content slice
+1. Mission 3 env-prep hardening and adapter seam
+2. Mission 3 env/wrapper extension
+3. Mission 3 learning experiments
 
 #### Medium-value backlog
 
-1. A narrow search-transfer/localization follow-up only if a later thread opens
+1. Mission 4 or another bounded richer content slice once the Mission 3 env
+   and learning path are healthier
+2. A narrow search-transfer/localization follow-up only if a later thread opens
    that as a new explicit question rather than more tuning
-2. Observation/action redesign only if richer content shows the accepted
+3. Observation/action redesign only if richer content shows the accepted
    wrapper is too Mission-1-shaped
-3. Synthetic fixtures and bounded maintainability refactors ahead of broader
+4. Synthetic fixtures and bounded maintainability refactors ahead of broader
    multi-mission growth
-4. Better evaluation, reporting, and replay-assisted debugging once more than
+5. Better evaluation, reporting, and replay-assisted debugging once more than
    one mission is active
 
 #### Lower-priority / opportunistic backlog

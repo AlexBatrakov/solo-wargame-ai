@@ -87,6 +87,8 @@ content slices land.
 - replay/integration coverage through the accepted resolver path.
 
 What is deliberately **not** implemented yet:
+- a shared Mission-3-ready env-adapter seam beyond the accepted Mission 1
+  wrapper;
 - Mission 3 env/wrapper extension;
 - Mission 3 learning experiments;
 - broader multi-mission infrastructure;
@@ -122,14 +124,16 @@ What is deliberately **not** implemented yet:
 
 The next recommended packet is:
 
-**Mission 3 env/wrapper extension**
+**Mission 3 env-prep hardening and adapter seam**
 
-The goal is to extend the accepted env boundary only as far as the richer
-Mission 3 slice now requires, after the bounded Mission-3-local search pass
-improved the preserved historical `rollout-search 105/200` reference to the
-accepted strengthened local result `rollout-search-strengthened 171/200`.
+The goal is to make one small preparatory pass before Mission 3 env work:
+- tighten mission-config/schema validation where recent audits found real gaps;
+- add a narrow shared env-adapter seam so Mission 3 does not become a second
+  isolated `MissionXEnv` island;
+- keep the work bounded and avoid a broad repository reorganization.
 
 Likely follow-on packets after that:
+- Mission 3 env/wrapper extension;
 - Mission 3 learning experiments;
 - later Mission 4 or another bounded richer content slice;
 - cross-mission evaluation/reporting once more than one active mission needs to

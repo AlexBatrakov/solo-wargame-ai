@@ -23,6 +23,8 @@ Current source captured here:
 - independent Claude Opus 4.6 audit dated March 8, 2026
 - independent Claude Opus 4.6 audit dated March 9, 2026
 - independent Claude Opus 4.6 audit dated March 10, 2026
+- independent Codex CLI audit dated March 12, 2026
+- independent Codex CLI future-directions brainstorm dated March 12, 2026
 
 High-level verdict accepted from that audit:
 
@@ -41,6 +43,13 @@ High-level verdict accepted from that audit:
   current Mission 1 wrapper, does not justify reopening Package C, and points
   the next macro-step toward stronger baselines/search rather than Mission 3/4
   content extension.
+- The currently supported Mission 1 / Mission 3 slice has no newly discovered
+  functional blocker, but there are real hardening gaps around checkpoint
+  loading and mission-config validation that should not live only in chat
+  history.
+- The repository still looks correct at the top-level package split, but the
+  next growth steps should avoid hardening Mission-1-specific env/eval surfaces
+  into the wrong long-term shape.
 
 ## Accepted conclusions
 
@@ -70,6 +79,180 @@ evidence changes them:
     directly requires.
 11. Future planning should move to a rolling packet backlog rather than
     precommitting to Phase 7 / Phase 8 / Phase 9.
+12. The top-level split `domain / io / env / agents / eval / cli` is still
+    correct; the next structural work should be narrow and seam-oriented rather
+    than a broad repository reorg.
+13. The next useful sequence after Mission 3 search strengthening is:
+    one small hardening + env-adapter seam packet,
+    then Mission 3 env/wrapper extension,
+    then Mission 3 learning,
+    then cross-mission reporting/cleanup only when multiple active missions
+    justify it.
+
+## Accepted conclusions from the March 12, 2026 future-directions brainstorm
+
+These points are accepted as guidance for the next planning cycle.
+
+### B1. No broad top-level repository reorg is needed now
+
+Accepted conclusion:
+- the current macro split `domain / io / env / agents / eval / cli` remains
+  the right top-level shape
+
+Why this matters:
+- the risk is not that the repo is organized incorrectly overall
+- the risk is that a few mission-local or phase-shaped seams could harden into
+  the wrong long-term interface if the next packet grows carelessly
+
+### B2. Add a narrow shared env-adapter seam before Mission 3 env work
+
+Accepted conclusion:
+- Mission 3 env work should grow through a small shared resolver-backed
+  adapter/core seam, not by making `Mission1Env` the permanent center and not
+  by creating a second isolated `MissionXEnv` island
+
+Why this matters:
+- the next env packet is the first place where the env layer could easily
+  solidify into the wrong long-term shape
+
+Desired review point:
+- prioritize in the next bounded packet before Mission 3 env/wrapper extension
+
+### B3. Tighten mission schema + semantic validation before broader growth
+
+Accepted conclusion:
+- the recently reproduced validation issues (`C8`-`C10`) are worth addressing
+  before broader Mission 3 env/content growth makes bad configs harder to
+  debug
+
+Why this matters:
+- validation debt compounds quickly as mission and wrapper surfaces widen
+
+Desired review point:
+- include in the next bounded preparatory packet rather than deferring
+
+### B4. Avoid letting phase-shaped env/eval exports become durable API
+
+Accepted conclusion:
+- `env/` and `eval/` should not keep growing around Mission-1-specific or
+  phase-shaped exports when a small seam extraction would keep later growth
+  cleaner
+
+Why this matters:
+- this is a local API-shape problem, not a reason for a broad reorg
+
+Desired review point:
+- allow only the minimal export/seam cleanup that directly supports the next
+  env-prep packet
+
+### B5. Defer larger maintainability work until the next real forcing function
+
+Accepted conclusion:
+- splitting `legal_actions.py`, broader test regrouping, and larger cleanup are
+  still worth revisiting, but they are not the immediate next packet by
+  default
+
+Why this matters:
+- those items become more compelling before additional rule families or broader
+  multi-mission growth, not necessarily before one bounded env-prep packet
+
+## Accepted follow-ups from the March 12, 2026 Codex CLI audit
+
+These findings were independently reproduced locally and are accepted as real
+repo risks rather than speculative nits.
+
+### C7. Untrusted Phase 5 checkpoint loading is unsafe
+
+Audit finding:
+- `load_phase5_checkpoint(...)` currently uses `torch.load(...)` directly on a
+  caller-supplied checkpoint path.
+
+Why this matters:
+- PyTorch checkpoint loading can execute arbitrary code when the checkpoint
+  file is untrusted.
+- This is not a blocker for the current repo workflow, where checkpoints are
+  local trusted artifacts, but it is a real security boundary if `.pt` files
+  ever come from outside the repo or are shared more casually.
+
+Current repo evidence:
+- `src/solo_wargame_ai/agents/masked_actor_critic_training.py`
+  loads checkpoints with `torch.load(checkpoint_path, map_location="cpu")`
+  without a safer serialization policy or an explicit trusted-input boundary.
+
+Desired review point:
+- revisit before any broader checkpoint-sharing, model-download, or
+  externally-supplied artifact workflow is introduced
+- likely fix direction is either a safer loading mode / format or a very
+  explicit "trusted local artifacts only" boundary backed by docs and tests
+
+### C8. Mission validation does not enforce important numeric invariants
+
+Audit finding:
+- static mission validation currently checks structural consistency but does
+  not reject obviously nonsensical numeric values such as `turn_limit = 0` or
+  `base_to_hit = -99`.
+
+Why this matters:
+- invalid mission data can load cleanly and fail later or behave
+  nonsensically, which is exactly the kind of config drift that should be
+  caught at the loader/validation boundary.
+
+Current repo evidence:
+- `validate_mission(...)` currently validates map/British/German structure but
+  not core numeric domains for turns, attack thresholds, German attack values,
+  or combat modifiers.
+- This was locally reproduced on March 12, 2026:
+  - `turn_limit = 0` still loads
+  - a British attack `base_to_hit = -99` still loads
+
+Desired review point:
+- prioritize before additional mission/content growth creates more config
+  surface
+- likely fix direction is explicit numeric-domain validation in the static
+  mission-validation layer rather than letting runtime behavior surface it
+
+### C9. Loader/runtime mismatch on multi-start missions
+
+Audit finding:
+- the mission loader/validator currently accepts multiple start hexes, while
+  runtime initialization still hard-rejects anything except exactly one start
+  hex.
+
+Why this matters:
+- this creates a misleading contract boundary: a mission can "load
+  successfully" and still be impossible to initialize.
+
+Current repo evidence:
+- static validation only checks that start hexes are playable
+- `create_initial_game_state(...)` still raises on anything other than exactly
+  one start hex
+- this was locally reproduced on March 12, 2026 with a two-start Mission 1
+  variant: load succeeds, initialization fails
+
+Desired review point:
+- before missions that genuinely need multiple start hexes
+- either tighten validation to reject unsupported multi-start missions early or
+  widen runtime initialization when that support becomes part of accepted scope
+
+### C10. Mission schema parsing is too lenient on extras and too raw on missing keys
+
+Audit finding:
+- schema parsing ignores unknown keys silently and raises raw `KeyError`
+  exceptions for missing required fields.
+
+Why this matters:
+- silent acceptance of unknown keys makes config drift harder to detect
+- raw `KeyError` is a poor UX compared with a structured schema/validation
+  error that points to the real problem consistently
+
+Current repo evidence:
+- an unexpected top-level mission key is currently accepted without complaint
+- removing `map.coordinate_system` currently produces `KeyError('coordinate_system')`
+
+Desired review point:
+- medium priority; useful hardening before broader mission/config evolution
+- likely fix direction is a stricter parser/validator boundary that reports
+  unknown and missing fields as structured mission-schema errors
 
 ## Resolved follow-ups since the Phase 2 audit
 

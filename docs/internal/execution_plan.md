@@ -7,10 +7,10 @@ dispatch, and closeout.
 
 As of March 12, 2026, the original six-phase roadmap is complete by repository
 evidence.
-The active planning problem is no longer "which post-Phase-6 packet should the
-project open next," but "whether one last bounded Mission 3 non-learning
-search-strengthening packet is worth taking before env/wrapper extension, and
-how to keep that packet from turning into open-ended tuning or platform work."
+The active planning problem is no longer "whether to open one more Mission 3
+search packet," but "how to pause cleanly after Mission 3
+search-strengthening, preserve the accepted results, and queue the smallest
+next packet that reduces risk before Mission 3 env/wrapper extension."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -57,14 +57,14 @@ recovering chat history:
   - `phase4-complete`
   - `phase5-complete`
   - `phase6-complete`
-- Repository state rechecked on March 12, 2026 during Mission 3 search
-  strengthening packet closeout:
+- Repository state rechecked on March 12, 2026 after Mission 3 search
+  strengthening closeout and before the next packet is opened:
   - `git status --short` showed only untracked
     `docs/internal/mission3_cross_mission_probes.md`, intentionally left
     outside the tracked packet closeout pending later Super Master review
   - `git log --oneline --decorate -12` showed `HEAD` on
-    `c84b1f0 mission3: strengthen search surface and preserve historical baseline`
-  - `.venv/bin/pytest -q` passed with `236 passed in 227.07s`
+    `aece79e docs: close mission3 search strengthening packet`
+  - `.venv/bin/pytest -q` passed with `236 passed`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
     succeeded with the preserved `random` `2/16` wins vs `heuristic`
@@ -157,45 +157,67 @@ The original six-phase build sequence is finished, the first richer-content
 packet has closed, the first Mission 3 comparison packet has closed, and the
 bounded Mission 3 search-strengthening packet has now closed as well.
 Future planning should therefore continue from the preserved historical Mission
-3 surface plus the accepted strengthened local search surface, not reopen this
-packet by default as an informal tuning tail.
+3 surface plus the accepted strengthened local search surface.
+
+The strategic pause after that closeout is now informed by three extra inputs:
+
+- the local exploratory note `docs/internal/mission3_cross_mission_probes.md`,
+  intentionally preserved as exploratory evidence rather than accepted
+  benchmark truth;
+- the independently reproduced March 12 hardening findings (`C7`-`C10`);
+- an additional March 12 architecture/brainstorm review that argued for a
+  small extension-seam packet before Mission 3 env work, rather than a broad
+  reorg or another default Mission 3 tuning loop.
 
 Current recommended next packet:
 
-- Mission 3 env/wrapper extension
+- Mission 3 env-prep hardening and adapter seam
 
 Why this is now preferred:
 
-- the bounded Mission-3-local strengthening pass succeeded materially:
+- the bounded Mission-3-local strengthening pass already succeeded materially:
   - historical benchmark: `rollout-search 105/200`
   - accepted strengthened benchmark:
     `rollout-search-strengthened 171/200`
-- the packet cleared its default success target (`120/200`) by a large margin
-  while preserving the historical Mission 3 baseline as visible truth
-- the chosen bounded search-side lever has now been exercised honestly:
-  stronger continuation policy plus one bounded horizon bump
 - another default search packet would now be harder to justify as a bounded
-  local-quality pass; it would more likely be a new explicit transfer/search-
-  localization question, not a continuation of this packet
-- the next high-value question is therefore how far the accepted env boundary
-  needs to extend to make the richer Mission 3 slice usable for later learning
-  and comparison work
+  local-quality pass; it would more likely be a different research question,
+  not a continuation of the just-closed packet
+- the March 12 hardening findings (`C8`, `C9`, `C10`) are real and now
+  confirmed by local reproduction:
+  - mission validation is too permissive on important numeric fields
+  - the loader accepts multi-start missions that runtime initialization still
+    rejects
+  - mission schema parsing is lenient on unknown keys and raw on missing keys
+- the current top-level repo split still looks good, so a broad reorg is not
+  justified
+- however, the next env step should not harden `Mission1Env` into the
+  permanent center or create a second isolated `MissionXEnv` island
+- the best next move is therefore one bounded preparatory packet that:
+  - strengthens the mission-config/schema boundary where recent audits found
+    real issues
+  - carves a narrow shared env-adapter seam
+  - leaves Mission 3 env/wrapper implementation itself for the packet after
+    that
+- the local exploratory cross-mission probe note remains worth preserving, but
+  not strong enough by itself to displace the new bounded prep packet
 
 Likely follow-on packets after that:
 
 1. Mission 3 env/wrapper extension
 2. Mission 3 learning experiments
-3. Mission 4 or another bounded richer content slice
-4. Cross-mission evaluation/reporting only when more than one mission is
+3. Cross-mission evaluation/reporting only when more than one mission is
    active enough to justify it
+4. Mission 4 or another bounded richer content slice
 
 Ranked backlog beyond the active next packet:
 
 - High value:
+  - Mission 3 env-prep hardening and adapter seam
   - Mission 3 env/wrapper extension
   - Mission 3 learning experiments
-  - Mission 4 or another bounded richer content slice
 - Medium value:
+  - Mission 4 or another bounded richer content slice once the Mission 3 env
+    and learning path are healthier
   - a narrow follow-up on search transfer/localization only if a later thread
     opens that as a new explicit question rather than more generic tuning
   - observation/action redesign only if richer content shows the current
@@ -203,9 +225,12 @@ Ranked backlog beyond the active next packet:
   - synthetic fixtures and bounded maintainability work when broader content
     makes them pay back
   - cross-mission evaluation/reporting once more than one mission is active
+  - splitting `legal_actions.py` or finishing broader test regrouping before
+    additional rule families land, but not as the immediate next packet
 - Lower priority:
   - another Mission 1 strengthening packet without a specific new research
     question
+  - another default Mission 3 search-strengthening packet
   - generic experiment/search platform work
   - tooling campaigns not directly required by the next content slice
   - visualization/operator UX beyond thin debugging needs
@@ -217,6 +242,7 @@ Demoted for now:
   tail
 - another default Mission 1 strengthening/search packet
 - broad reward/env redesign before richer content creates evidence for it
+- a broad top-level repo reorganization
 - generic search, experiment, or platform buildout
 - tooling campaigns that are not directly required by the next content slice
 
