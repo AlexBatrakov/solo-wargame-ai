@@ -8,6 +8,7 @@ from solo_wargame_ai.agents.base import AgentFactory
 from solo_wargame_ai.agents.mission3_heuristic_agent import Mission3HeuristicAgent
 from solo_wargame_ai.agents.mission3_rollout_search_agent import (
     DEFAULT_MISSION3_SEARCH_BUDGET,
+    STRENGTHENED_MISSION3_SEARCH_BUDGET,
     Mission3RolloutSearchAgent,
     Mission3SearchBudget,
 )
@@ -16,7 +17,9 @@ from solo_wargame_ai.domain.mission import Mission
 from solo_wargame_ai.eval.episode_runner import EpisodeResult, run_episodes
 from solo_wargame_ai.eval.metrics import (
     EpisodeMetrics,
+    EpisodeMetricsDelta,
     aggregate_episode_results,
+    diff_episode_metrics,
     format_metrics_table,
 )
 
@@ -42,6 +45,17 @@ class Mission3Comparison:
     baseline_runs: tuple[Mission3BaselineRun, ...]
     report_table: str
     search_budget: Mission3SearchBudget | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Mission3SearchStrengtheningComparison:
+    """Historical-vs-strengthened Mission 3 surface for the active packet."""
+
+    seeds: tuple[int, ...]
+    historical_comparison: Mission3Comparison
+    strengthened_comparison: Mission3Comparison
+    strengthened_vs_historical_heuristic: EpisodeMetricsDelta
+    strengthened_vs_historical_rollout_search: EpisodeMetricsDelta
 
 
 def run_mission3_baseline(
@@ -150,14 +164,74 @@ def run_mission3_comparison(
     )
 
 
+def run_mission3_strengthened_search_comparison(
+    mission: Mission,
+    *,
+    seeds: tuple[int, ...] = MISSION3_BENCHMARK_SEEDS,
+    search_budget: Mission3SearchBudget = STRENGTHENED_MISSION3_SEARCH_BUDGET,
+) -> Mission3Comparison:
+    """Run the strengthened Mission 3 rollout/search result on one seed surface."""
+
+    return build_mission3_comparison(
+        (
+            run_mission3_baseline(
+                mission,
+                agent_factory=lambda seed: Mission3RolloutSearchAgent(
+                    budget=search_budget,
+                    name="rollout-search-strengthened",
+                ),
+                seeds=seeds,
+            ),
+        ),
+        search_budget=search_budget,
+    )
+
+
+def run_mission3_search_strengthening_comparison(
+    mission: Mission,
+    *,
+    seeds: tuple[int, ...] = MISSION3_BENCHMARK_SEEDS,
+    search_budget: Mission3SearchBudget = STRENGTHENED_MISSION3_SEARCH_BUDGET,
+) -> Mission3SearchStrengtheningComparison:
+    """Run preserved historical and strengthened Mission 3 surfaces together."""
+
+    historical_comparison = run_mission3_comparison(mission, seeds=seeds)
+    strengthened_comparison = run_mission3_strengthened_search_comparison(
+        mission,
+        seeds=seeds,
+        search_budget=search_budget,
+    )
+    historical_metrics = {
+        run.agent_name: run.metrics for run in historical_comparison.baseline_runs
+    }
+    strengthened_metrics = strengthened_comparison.baseline_runs[0].metrics
+
+    return Mission3SearchStrengtheningComparison(
+        seeds=seeds,
+        historical_comparison=historical_comparison,
+        strengthened_comparison=strengthened_comparison,
+        strengthened_vs_historical_heuristic=diff_episode_metrics(
+            historical_metrics["heuristic"],
+            strengthened_metrics,
+        ),
+        strengthened_vs_historical_rollout_search=diff_episode_metrics(
+            historical_metrics["rollout-search"],
+            strengthened_metrics,
+        ),
+    )
+
+
 __all__ = [
     "MISSION3_BENCHMARK_SEEDS",
     "MISSION3_SMOKE_SEEDS",
     "Mission3BaselineRun",
     "Mission3Comparison",
+    "Mission3SearchStrengtheningComparison",
     "build_mission3_comparison",
     "run_mission3_comparison",
     "run_mission3_baseline",
     "run_mission3_random_floor_comparison",
+    "run_mission3_search_strengthening_comparison",
     "run_mission3_smoke_comparison",
+    "run_mission3_strengthened_search_comparison",
 ]

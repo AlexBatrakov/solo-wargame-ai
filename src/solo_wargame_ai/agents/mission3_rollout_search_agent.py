@@ -19,12 +19,24 @@ class Mission3SearchBudget:
 
     root_width_policy: str = "full_legal_width"
     rollouts_per_action: int = 1
-    rollout_policy: str = "mission3_heuristic(depth=0)"
+    rollout_policy_id: str = "mission3_heuristic"
+    rollout_policy_depth: int = 0
     rollout_depth_limit: int = 16
     terminal_policy: str = "stop_at_terminal_else_score_frontier_state"
 
+    @property
+    def rollout_policy(self) -> str:
+        """Return the stable report label for the deterministic continuation policy."""
 
-DEFAULT_MISSION3_SEARCH_BUDGET = Mission3SearchBudget()
+        return f"{self.rollout_policy_id}(depth={self.rollout_policy_depth})"
+
+
+HISTORICAL_MISSION3_SEARCH_BUDGET = Mission3SearchBudget()
+STRENGTHENED_MISSION3_SEARCH_BUDGET = Mission3SearchBudget(
+    rollout_policy_depth=2,
+    rollout_depth_limit=24,
+)
+DEFAULT_MISSION3_SEARCH_BUDGET = HISTORICAL_MISSION3_SEARCH_BUDGET
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,8 +62,10 @@ class Mission3RolloutSearchAgent:
         *,
         rollout_policy: Agent | None = None,
         budget: Mission3SearchBudget = DEFAULT_MISSION3_SEARCH_BUDGET,
+        name: str = "rollout-search",
     ) -> None:
-        self._rollout_policy = rollout_policy or Mission3HeuristicAgent(lookahead_depth=0)
+        self.name = name
+        self._rollout_policy = rollout_policy or build_mission3_rollout_policy(budget)
         self._budget = budget
 
     @property
@@ -145,9 +159,23 @@ class Mission3RolloutSearchAgent:
         )
 
 
+def build_mission3_rollout_policy(budget: Mission3SearchBudget) -> Agent:
+    """Build the deterministic Mission 3 continuation policy for a fixed budget."""
+
+    if budget.rollout_policy_id != "mission3_heuristic":
+        raise ValueError(
+            "Mission3RolloutSearchAgent supports only the mission3_heuristic "
+            f"continuation policy, got {budget.rollout_policy_id!r}",
+        )
+    return Mission3HeuristicAgent(lookahead_depth=budget.rollout_policy_depth)
+
+
 __all__ = [
     "DEFAULT_MISSION3_SEARCH_BUDGET",
+    "HISTORICAL_MISSION3_SEARCH_BUDGET",
     "Mission3RolloutEvaluation",
     "Mission3RolloutSearchAgent",
     "Mission3SearchBudget",
+    "STRENGTHENED_MISSION3_SEARCH_BUDGET",
+    "build_mission3_rollout_policy",
 ]

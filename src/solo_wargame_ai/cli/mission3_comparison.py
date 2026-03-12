@@ -12,8 +12,11 @@ from solo_wargame_ai.eval.mission3_comparison import (
     MISSION3_BENCHMARK_SEEDS,
     MISSION3_SMOKE_SEEDS,
     Mission3Comparison,
+    Mission3SearchStrengtheningComparison,
     run_mission3_comparison,
+    run_mission3_search_strengthening_comparison,
     run_mission3_smoke_comparison,
+    run_mission3_strengthened_search_comparison,
 )
 from solo_wargame_ai.io.mission_loader import load_mission
 
@@ -38,6 +41,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run the 16-seed smoke floor or the 200-seed benchmark floor.",
     )
     parser.add_argument(
+        "--surface",
+        choices=("historical", "strengthened", "packet"),
+        default="historical",
+        help=(
+            "Render the preserved historical surface, the strengthened-only search "
+            "surface, or the combined packet report."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         help="Optionally write the rendered report to a plain-text file.",
@@ -49,14 +61,20 @@ def format_mission3_report(
     *,
     mode: str,
     comparison: Mission3Comparison,
+    surface: str,
 ) -> str:
-    """Render a Mission-3-only report around the local comparison table."""
+    """Render one explicit Mission 3 surface without mixing historical truth."""
+
+    title = "Mission 3 comparison surface"
+    if surface == "strengthened":
+        title = "Mission 3 strengthened search surface"
 
     lines = [
-        "Mission 3 comparison surface",
+        title,
         f"mode: {mode}",
         f"mission: {MISSION_PATH.name}",
         "comparison_scope: mission3_only",
+        f"surface: {surface}",
         f"seed_alias: {_format_seed_alias(comparison.seeds)}",
         f"seed_set: {_format_seed_set(comparison.seeds)}",
         "",
@@ -105,14 +123,58 @@ def format_mission3_report(
         (
             "",
             "Surface status:",
-            (
-                "mission3_agents_ready: "
-                f"{', '.join(run.agent_name for run in comparison.baseline_runs)}"
-            ),
+            f"mission3_surface: {surface}",
+            "mission3_agents_ready: "
+            f"{', '.join(run.agent_name for run in comparison.baseline_runs)}",
             "mission1_anchor_surface: preserved separately",
         ),
     )
     return "\n".join(lines)
+
+
+def format_mission3_packet_report(
+    *,
+    mode: str,
+    comparison: Mission3SearchStrengtheningComparison,
+) -> str:
+    """Render the preserved historical Mission 3 surface beside the strengthened result."""
+
+    return "\n".join(
+        (
+            "Mission 3 search strengthening packet",
+            f"mode: {mode}",
+            f"mission: {MISSION_PATH.name}",
+            "comparison_scope: mission3_only",
+            "surface: packet",
+            f"seed_alias: {_format_seed_alias(comparison.seeds)}",
+            f"seed_set: {_format_seed_set(comparison.seeds)}",
+            "",
+            "Historical accepted Mission 3 surface:",
+            comparison.historical_comparison.report_table,
+            "",
+            "Historical search budget policy:",
+            _format_search_budget(comparison.historical_comparison.search_budget),
+            "",
+            "Strengthened Mission 3 search surface:",
+            comparison.strengthened_comparison.report_table,
+            "",
+            "Strengthened search budget policy:",
+            _format_search_budget(comparison.strengthened_comparison.search_budget),
+            "",
+            "Signed metric deltas (strengthened rollout-search - historical heuristic):",
+            _format_metric_deltas(comparison.strengthened_vs_historical_heuristic),
+            "",
+            "Signed metric deltas (strengthened rollout-search - historical rollout-search):",
+            _format_metric_deltas(
+                comparison.strengthened_vs_historical_rollout_search,
+            ),
+            "",
+            "Surface status:",
+            "historical_mission3_surface: preserved",
+            "strengthened_mission3_surface: visible",
+            "mission1_anchor_surface: preserved separately",
+        ),
+    )
 
 
 def _format_seed_alias(seeds: tuple[int, ...]) -> str:
@@ -150,9 +212,10 @@ def _format_metric_deltas(deltas: EpisodeMetricsDelta) -> str:
 def _format_search_budget(budget: Mission3SearchBudget) -> str:
     return "\n".join(
         (
-            f"root_width            {budget.root_width_policy}",
+            f"root_width_policy     {budget.root_width_policy}",
             f"rollouts_per_action   {budget.rollouts_per_action}",
-            f"rollout_policy        {budget.rollout_policy}",
+            f"rollout_policy_id     {budget.rollout_policy_id}",
+            f"rollout_policy_depth  {budget.rollout_policy_depth}",
             f"rollout_depth_limit   {budget.rollout_depth_limit} player decisions",
             f"terminal_policy       {budget.terminal_policy}",
         ),
@@ -165,15 +228,50 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     mission = load_mission(MISSION_PATH)
 
-    if args.mode == "smoke":
-        comparison = run_mission3_smoke_comparison(mission)
-    else:
-        comparison = run_mission3_comparison(
-            mission,
-            seeds=MISSION3_BENCHMARK_SEEDS,
+    if args.surface == "historical":
+        if args.mode == "smoke":
+            comparison = run_mission3_smoke_comparison(mission)
+        else:
+            comparison = run_mission3_comparison(
+                mission,
+                seeds=MISSION3_BENCHMARK_SEEDS,
+            )
+        report = format_mission3_report(
+            mode=args.mode,
+            comparison=comparison,
+            surface="historical",
         )
-
-    report = format_mission3_report(mode=args.mode, comparison=comparison)
+    elif args.surface == "strengthened":
+        if args.mode == "smoke":
+            comparison = run_mission3_strengthened_search_comparison(
+                mission,
+                seeds=MISSION3_SMOKE_SEEDS,
+            )
+        else:
+            comparison = run_mission3_strengthened_search_comparison(
+                mission,
+                seeds=MISSION3_BENCHMARK_SEEDS,
+            )
+        report = format_mission3_report(
+            mode=args.mode,
+            comparison=comparison,
+            surface="strengthened",
+        )
+    else:
+        if args.mode == "smoke":
+            comparison = run_mission3_search_strengthening_comparison(
+                mission,
+                seeds=MISSION3_SMOKE_SEEDS,
+            )
+        else:
+            comparison = run_mission3_search_strengthening_comparison(
+                mission,
+                seeds=MISSION3_BENCHMARK_SEEDS,
+            )
+        report = format_mission3_packet_report(
+            mode=args.mode,
+            comparison=comparison,
+        )
     print(report)
 
     if args.output is not None:

@@ -5,8 +5,10 @@ from pathlib import Path
 
 import pytest
 
+from solo_wargame_ai.agents.mission3_heuristic_agent import Mission3HeuristicAgent
 from solo_wargame_ai.agents.mission3_rollout_search_agent import (
     DEFAULT_MISSION3_SEARCH_BUDGET,
+    STRENGTHENED_MISSION3_SEARCH_BUDGET,
     Mission3RolloutEvaluation,
     Mission3RolloutSearchAgent,
 )
@@ -55,7 +57,17 @@ def test_mission3_rollout_search_selects_only_from_the_provided_legal_actions(
 def test_mission3_rollout_search_budget_is_explicit_and_fixed() -> None:
     assert DEFAULT_MISSION3_SEARCH_BUDGET.root_width_policy == "full_legal_width"
     assert DEFAULT_MISSION3_SEARCH_BUDGET.rollouts_per_action == 1
+    assert DEFAULT_MISSION3_SEARCH_BUDGET.rollout_policy_id == "mission3_heuristic"
+    assert DEFAULT_MISSION3_SEARCH_BUDGET.rollout_policy_depth == 0
     assert DEFAULT_MISSION3_SEARCH_BUDGET.rollout_depth_limit == 16
+
+
+def test_mission3_strengthened_search_budget_is_explicit_and_fixed() -> None:
+    assert STRENGTHENED_MISSION3_SEARCH_BUDGET.root_width_policy == "full_legal_width"
+    assert STRENGTHENED_MISSION3_SEARCH_BUDGET.rollouts_per_action == 1
+    assert STRENGTHENED_MISSION3_SEARCH_BUDGET.rollout_policy_id == "mission3_heuristic"
+    assert STRENGTHENED_MISSION3_SEARCH_BUDGET.rollout_policy_depth == 2
+    assert STRENGTHENED_MISSION3_SEARCH_BUDGET.rollout_depth_limit == 24
 
 
 def test_mission3_rollout_search_evaluates_each_root_action_once_in_legal_order(
@@ -113,6 +125,45 @@ def test_mission3_rollout_search_evaluates_each_root_action_once_in_legal_order(
 
     assert evaluated_actions == list(legal_actions)
     assert selected_action == reveal_action
+
+
+@pytest.mark.parametrize(
+    ("budget", "expected_depth"),
+    [
+        (DEFAULT_MISSION3_SEARCH_BUDGET, 0),
+        (STRENGTHENED_MISSION3_SEARCH_BUDGET, 2),
+    ],
+)
+def test_mission3_rollout_search_uses_budget_configured_continuation_depth(
+    monkeypatch,
+    budget,
+    expected_depth: int,
+) -> None:
+    mission = load_mission(MISSION_PATH)
+    state = create_initial_game_state(mission, seed=0)
+    legal_actions = get_legal_actions(state)
+    observed_depths: list[int] = []
+
+    def fake_select_action(
+        self: Mission3HeuristicAgent,
+        state,
+        legal_actions,
+    ):
+        observed_depths.append(self._lookahead_depth)
+        return legal_actions[0]
+
+    monkeypatch.setattr(
+        Mission3HeuristicAgent,
+        "select_action",
+        fake_select_action,
+    )
+
+    agent = Mission3RolloutSearchAgent(budget=budget)
+    selected_action = agent.select_action(state, legal_actions)
+
+    assert selected_action in legal_actions
+    assert observed_depths
+    assert set(observed_depths) == {expected_depth}
 
 
 def test_mission3_rollout_search_preserves_legality_across_short_seeded_runs() -> None:
