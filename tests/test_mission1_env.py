@@ -104,6 +104,16 @@ def test_default_terminal_reward_is_terminal_only(
     assert default_terminal_reward(terminal_outcome) == expected_reward
 
 
+def test_step_requires_reset_before_accepting_action_ids(mission) -> None:
+    env = Mission1Env(mission)
+
+    with pytest.raises(
+        RuntimeError,
+        match=r"Mission1Env\.reset\(\) must be called before step\(\)",
+    ):
+        env.step(0)
+
+
 def test_reset_uses_seeded_deterministic_progression_and_initial_legality(mission) -> None:
     env = Mission1Env(mission)
     select_unit_a_id = env.action_catalog.encode(
