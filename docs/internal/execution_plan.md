@@ -169,6 +169,18 @@ The strategic pause after that closeout is now informed by three extra inputs:
   small extension-seam packet before Mission 3 env work, rather than a broad
   reorg or another default Mission 3 tuning loop.
 
+One additional local heuristic investigation is also worth preserving in the
+tracked planning record:
+
+- the local reports
+  `docs/internal/thread_reports/2026-03-12_mission3_heuristic_isolated_followup.md`
+  and
+  `docs/internal/thread_reports/2026-03-14_mission3_heuristic_handoff_report.md`,
+  which suggest that the strongest Mission 3 heuristic-side idea so far is not
+  broad score tuning but current-turn reasoning plus a contestability gate:
+  avoid revealing enemies that the current or remaining British units cannot
+  realistically contest before handover.
+
 Current recommended next packet:
 
 - Mission 3 env-prep hardening and adapter seam
@@ -200,6 +212,10 @@ Why this is now preferred:
     that
 - the local exploratory cross-mission probe note remains worth preserving, but
   not strong enough by itself to displace the new bounded prep packet
+- the local heuristic reports also remain worth preserving, but they should be
+  treated as exploratory evidence for a possible later bounded validation or
+  productization question, not as accepted benchmark truth and not as a reason
+  to reorder the current next packet
 
 Likely follow-on packets after that:
 
@@ -245,6 +261,515 @@ Demoted for now:
 - a broad top-level repo reorganization
 - generic search, experiment, or platform buildout
 - tooling campaigns that are not directly required by the next content slice
+
+## Active packet - Mission 3 env-prep hardening and adapter seam
+
+Packet goal:
+
+- make one bounded preparatory pass before Mission 3 env/wrapper extension
+- close the reproduced mission loader/schema hardening gaps that now have clear
+  repo evidence
+- add one narrow shared resolver-backed env-adapter seam so the next env packet
+  grows through a small shared core rather than another isolated wrapper stack
+- preserve the accepted Mission 1 and Mission 3 reference surfaces unchanged
+
+Planning audit findings:
+
+- Repository state was rechecked on March 14, 2026 before opening this packet:
+  - `git status --short` showed local tracked edits in
+    `docs/internal/execution_plan.md` plus untracked
+    `docs/internal/mission3_cross_mission_probes.md`
+  - `git log --oneline --decorate -12` showed `HEAD` on
+    `d3188cc docs: capture post-search planning pause`
+  - `.venv/bin/pytest -q` passed with `236 passed in 220.40s`
+  - `.venv/bin/ruff check src tests` passed with `All checks passed!`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+    preserved `random 2/16`, `heuristic 11/16`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+    preserved `32` action ids, `35` decision steps, defeat, reward `-1.0`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+    preserved best `144` and median `133`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+    preserved `random 11/200`, `heuristic 157/200`, `rollout 195/200`
+  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
+    preserved the historical Mission 3 benchmark surface
+    `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+- The active hardening risks are the reproduced loader/schema findings `C8`,
+  `C9`, and `C10`.
+- `C7` unsafe checkpoint loading remains real, but current repo evidence does
+  not tie it directly to the env-prep packet:
+  it lives on the Phase 5 checkpoint/artifact path rather than on the mission
+  loader or shared env-extension seam.
+- Current env growth risk is architectural, not performance-related:
+  `normalize_env_state(...)` already shows a shared resolver-backed decision
+  boundary, but reset/step/session lifecycle still lives inside `Mission1Env`,
+  so Mission 3 env work would otherwise either harden `Mission1Env` into the
+  wrong center or create a second local wrapper island.
+- Current Mission 1 wrapper behavior is accepted and must remain stable through
+  this packet:
+  the fixed 32-id action surface, legal-id/mask behavior, terminal-only reward,
+  and accepted Phase 4 smoke output are preserved reference history.
+
+Small-prep decision:
+
+- yes, open one prep packet before Mission 3 env/wrapper extension
+
+Why this packet must stay small:
+
+- the next question is not whether Mission 3 needs an env; it is whether the
+  repo can remove a few known hardening traps and expose one clean extension
+  seam before that env lands
+- the reproduced issues are localized to the mission loader/schema boundary and
+  the env session seam
+- widening into Mission 3 wrapper implementation, learning, Mission 4, or a
+  generic env/search/reporting platform would mix separate decision gates and
+  make acceptance less honest
+
+Accepted scope:
+
+- stricter mission schema parsing for unknown keys and missing required fields
+- stricter semantic mission validation for the numeric domains already covered
+  by the supported mission slice
+- explicit loader/runtime synchronization for unsupported multi-start missions
+- one narrow shared resolver-backed env-adapter core below mission-local
+  wrappers
+- only the smallest `env/` or `eval/` export cleanup directly required to
+  expose that seam honestly
+- tracked internal docs and packet status/closeout guidance for this packet
+
+Out of scope:
+
+- Mission 3 env/wrapper implementation itself
+- Mission 3 learning experiments
+- Mission 4 content or genuine multi-start mission support
+- broader checkpoint/training security hardening unless a direct env-prep
+  linkage is proven
+- generic multi-mission env platform, generic action-catalog platform, or
+  generic comparison/reporting platform
+- broad repo reorganization, replay redesign, `legal_actions.py`
+  decomposition, objective-dispatch generalization, or a synthetic-fixture
+  program
+- reopening accepted Mission 3 search strengthening or replacing accepted
+  benchmark history with exploratory notes
+
+Active hardening items now:
+
+- `C8`
+  - active and in scope
+  - tighten numeric validation for values already covered by the supported
+    mission slice, such as `turn_limit`, British `base_to_hit`, German
+    `attack_to_hit`, reveal-table roll bounds, and current combat-modifier
+    fields
+- `C9`
+  - active and in scope
+  - hard-sync the loader/runtime boundary for multi-start support now rather
+    than leaving "loads but cannot initialize" as an implicit contract
+- `C10`
+  - active and in scope
+  - reject unknown schema keys and replace raw missing-key failures with
+    structured schema errors
+- `C7`
+  - not active by default
+  - keep recorded in the audit follow-ups, but do not pull checkpoint/training
+    hardening into this packet unless a direct env-prep dependency is found
+
+Key planning decisions:
+
+### Validation/schema boundary decision
+
+- Split the loader boundary into two explicit layers:
+  - schema parsing should reject unknown keys and report missing required
+    fields as structured mission-schema failures
+  - semantic validation should enforce cross-field and numeric-domain rules on
+    the typed mission model
+- Do not build a generic schema framework or generic config platform for this
+  packet.
+- Keep the change bounded to the currently accepted mission/config surface.
+- Missing keys and unknown keys should no longer surface as silent acceptance
+  or raw `KeyError` leaks.
+
+### Multi-start handling decision
+
+- Hard-sync loader and runtime now.
+- The correct sync direction for this packet is:
+  reject unsupported multi-start missions at the loader/validation boundary.
+- Do not widen runtime initialization to true multi-start support here.
+- Keep the single-start limit explicit as a current scope guard, not as a
+  forever engine truth.
+
+### Shared env-adapter seam decision
+
+- Add one shared resolver-backed env core below mission-local wrappers.
+- That shared core should own:
+  - deterministic reset from `Mission` + seed
+  - automatic progression to the env decision boundary
+  - current legal staged domain actions
+  - step-count / episode-open / optional max-step bookkeeping
+  - domain-action application through the resolver path
+- That shared core should not own:
+  - mission-local action-id catalogs
+  - mission-local observation schemas
+  - mission-local reward policy
+  - a generic multi-mission env registry or env-factory platform
+- `Mission1Env` should become a thin Mission-1-specific wrapper over that seam.
+- The later Mission 3 env packet should compose the same seam with its own
+  Mission-3-local observation/action adapter rather than cloning wrapper
+  lifecycle logic.
+
+### Minimal export cleanup decision
+
+- Allow minimal `env/` export cleanup only if it is directly needed to make the
+  shared seam visible and to stop Mission-1-local helpers from reading like the
+  package-wide future API.
+- Allow `eval/` cleanup only if a tiny import or naming update is directly
+  required by that seam extraction.
+- Do not open a broader `env/` or `eval/` cleanup campaign inside this packet.
+
+### Preserved-surface policy
+
+- Preserve the accepted Mission 1 anchors:
+  - `random 11/200`
+  - learned best `144/200`
+  - `heuristic 157/200`
+  - `rollout 195/200`
+- Preserve the accepted Mission 3 historical surface:
+  - smoke:
+    `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
+  - benchmark:
+    `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+- Preserve the accepted strengthened Mission 3 local search result:
+  - smoke:
+    `rollout-search-strengthened 12/16`
+  - benchmark:
+    `rollout-search-strengthened 171/200`
+- Preserve the accepted operator references:
+  - `cli/phase3_baselines.py`
+  - `cli/phase4_env_smoke.py`
+  - `cli/phase5_summary.py`
+  - `cli/phase6_stronger_baseline.py`
+  - `cli/mission3_comparison.py`
+
+### Durable API vs implementation-detail decision
+
+- Durable for the current planning cycle:
+  - `io.load_mission(...)` / `load_mission_from_data(...)`
+  - the typed static `Mission` model after the stricter loader/validation pass
+  - `create_initial_game_state(...)` as the runtime-entry seam, while keeping
+    the single-start restriction documented as current scope
+  - `resolver.get_legal_actions(...)`, `resolver.apply_action(...)`, and
+    `resolver.resolve_automatic_progression(...)`
+  - `eval/episode_runner.py` and `eval/metrics.py` as the lower-level
+    domain-action comparison seam
+  - the accepted Mission 1 wrapper behavior for existing callers
+- Treat as current implementation detail rather than permanent cross-mission
+  contract:
+  - the fixed 32-id Mission 1 action catalog as the center of future env
+    growth
+  - `MISSION_1_ID`, `MissionActionCatalog`, and
+    `build_mission1_action_catalog(...)` as package-wide env exports
+  - the current `build_observation(...)` Mission 1 payload shape as a future
+    cross-mission default
+  - broad `env.__init__` re-exports that imply the whole current Mission 1
+    helper set is the future shared API
+  - any Phase-5-specific learned-eval import surface that happens to point at
+    `Mission1Env`
+
+Boundary to later packets:
+
+- This env-prep packet includes:
+  - loader/schema/validation hardening
+  - single-start contract synchronization
+  - one shared env session seam
+  - the smallest preservation/export cleanup that seam directly needs
+- Mission 3 env/wrapper extension starts only when:
+  - a Mission 3 observation boundary is being added
+  - a Mission 3 action adapter/catalog/mask surface is being added
+  - Mission 3 wrapper semantics are being defined
+- Mission 3 learning starts only when:
+  - a Mission 3 wrapper already exists and is accepted
+- Search/heuristic productization starts only when:
+  - a later packet explicitly reopens those exploratory reports as a new
+    question
+- Mission 4 starts only when:
+  - new content beyond Mission 3 is being transcribed or supported
+- Generic platform work starts only when:
+  - more than one active mission genuinely requires shared abstraction beyond
+    the narrow seams above
+
+## Mission 3 env-prep packet status block
+
+- Delivery A: pending
+- Delivery B: pending
+- Delivery C: conditional
+- Packet overall: planned
+- Planning audit date: March 14, 2026
+- Blocking findings before dispatch:
+  - `C8`
+  - `C9`
+  - `C10`
+- Not-active-by-default finding:
+  - `C7`
+- Required preserved Mission 1 anchors:
+  - `random 11/200`
+  - learned best `144/200`
+  - `heuristic 157/200`
+  - `rollout 195/200`
+- Required preserved Mission 3 historical surface:
+  - smoke:
+    `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
+  - benchmark:
+    `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+- Required preserved Mission 3 strengthened local result:
+  - smoke:
+    `rollout-search-strengthened 12/16`
+  - benchmark:
+    `rollout-search-strengthened 171/200`
+- Recommended delivery order:
+  - Delivery A
+  - Delivery B
+  - Delivery C only if Deliveries A/B do not already leave a clean closeout
+    surface
+- End-of-packet default gate:
+  - proceed to Mission 3 env/wrapper extension
+  - do not open another preparatory packet by default unless this packet
+    exposes a new concrete blocker that was not already visible here
+
+## Delivery A - Mission loader/schema hardening and multi-start sync
+
+Status:
+
+- pending
+
+Goal:
+
+- tighten the mission loader/validation boundary so current supported missions
+  fail early, strictly, and readably instead of loading permissively and
+  breaking later
+
+Concrete deliverables:
+
+- structured schema-level rejection of unknown keys
+- structured schema-level errors for missing required fields
+- explicit numeric-domain validation for current supported mission data
+- explicit early rejection of unsupported multi-start missions so loader and
+  runtime no longer disagree
+- focused tests covering the reproduced `C8`, `C9`, and `C10` cases
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/io/mission_schema.py`
+- `src/solo_wargame_ai/io/mission_loader.py`
+- `src/solo_wargame_ai/domain/validation.py`
+- `src/solo_wargame_ai/domain/state.py` only if one error message or guard
+  wording must be aligned with the loader contract
+- focused mission loader/validation tests under `tests/`
+
+Required tests / verification:
+
+- focused tests for:
+  - unknown-key rejection
+  - missing-key structured errors
+  - numeric-domain validation failures
+  - unsupported multi-start rejection at load/validation time
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+- `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
+
+Risks / traps:
+
+- turning the parser hardening into a generic schema-system project
+- widening runtime initialization to real multi-start support instead of
+  rejecting unsupported scope early
+- mixing objective/general content work into numeric validation changes
+- changing accepted mission behavior while trying to improve error UX
+
+Completion criteria:
+
+- unknown keys no longer pass silently
+- missing required fields no longer surface as raw `KeyError`
+- obviously invalid numeric values are rejected at the loader/validation
+  boundary
+- multi-start missions no longer load successfully and then fail later at
+  runtime initialization
+
+Commit shape:
+
+- one implementation commit preferred
+- two commits acceptable only if parser/schema errors and semantic-validation
+  sync are materially clearer to review separately
+
+Analysis-before-edit:
+
+- required
+
+## Delivery B - Shared resolver-backed env-adapter seam
+
+Status:
+
+- pending
+
+Goal:
+
+- extract one narrow shared env session seam that Mission 1 can delegate to now
+  and Mission 3 can reuse later, without committing to a broad env platform
+
+Concrete deliverables:
+
+- one shared env core around reset / normalized state / legal domain actions /
+  step / episode bookkeeping
+- `Mission1Env` migrated to that core without changing accepted external
+  Mission 1 behavior
+- only the minimal `env/` or `eval/` import/export cleanup required to keep
+  the new seam honest
+- focused regression tests proving preserved Mission 1 wrapper behavior
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/env/`
+- `src/solo_wargame_ai/env/mission1_env.py`
+- `src/solo_wargame_ai/env/normalized_state.py` or a directly adjacent shared
+  replacement seam
+- `src/solo_wargame_ai/env/__init__.py`
+- `src/solo_wargame_ai/eval/learned_policy_eval.py` only if a tiny import
+  cleanup is directly required
+- focused env/eval regression tests under `tests/`
+
+Required tests / verification:
+
+- focused tests for:
+  - deterministic seeded Mission 1 reset/step preservation
+  - legal-id/mask preservation
+  - truncation and terminal semantics preservation
+  - learned-policy evaluation compatibility if the seam changes a direct import
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+
+Risks / traps:
+
+- turning the shared seam into a generic multi-mission env platform
+- forcing a new cross-mission observation or action-id abstraction too early
+- changing accepted Mission 1 wrapper semantics while extracting the seam
+- widening `eval/` into a cross-mission env-evaluation platform
+
+Completion criteria:
+
+- one shared resolver-backed env session seam exists below mission-local
+  wrappers
+- `Mission1Env` behavior remains compatible with the accepted Phase 4/5
+  surfaces
+- the next Mission 3 env packet can build on the seam without cloning wrapper
+  lifecycle logic
+
+Commit shape:
+
+- one implementation commit preferred
+- one narrow follow-up `fix:` commit acceptable only if review finds a clear
+  preservation issue
+
+Analysis-before-edit:
+
+- required
+
+## Delivery C - Optional export/preservation cleanup finish
+
+Status:
+
+- conditional
+
+Goal:
+
+- only if Deliveries A and B do not already leave a clean closeout-ready
+  surface, add the smallest follow-up needed to clarify shared-vs-local env
+  boundaries without widening scope
+
+Concrete deliverables:
+
+- at most one narrow follow-up for:
+  - minimal `env/__init__` or `eval/__init__` export cleanup
+  - one small wording or helper rename that makes the shared seam easier to
+    read
+  - one preservation fix if A/B made Mission-1-local helpers look like the new
+    default cross-mission contract
+- no Mission 3 wrapper work
+- no learning/search/content scope
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/env/__init__.py`
+- `src/solo_wargame_ai/eval/__init__.py` only if directly required
+- small directly related tests
+
+Required tests / verification:
+
+- focused tests for any new export/helper surface
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+
+Risks / traps:
+
+- turning a cleanup finish into a broad naming/export campaign
+- reopening Delivery A/B design questions instead of fixing one narrow blocker
+- smuggling generic platform work into a preservation pass
+
+Completion criteria:
+
+- the Packet Master Thread can close the packet without another preparatory
+  implementation thread
+- the shared seam and Mission-local implementation details are clearly
+  separated in code and docs
+
+Commit shape:
+
+- one small implementation or docs-and-implementation follow-up commit only if
+  the package is opened
+
+Analysis-before-edit:
+
+- required
+
+## Recommended Delivery Thread sequence for the Mission 3 env-prep packet
+
+Preferred sequence:
+
+1. Delivery A
+2. Delivery B
+3. Delivery C only if Deliveries A/B do not already leave a clean closeout
+   surface
+
+Do not mix in one thread:
+
+- loader/schema hardening with shared env seam extraction
+- any env-prep package with Mission 3 env/wrapper implementation
+- any env-prep package with Mission 3 learning experiments
+- any env-prep package with Mission 4 content landing
+- bounded env seam extraction with a generic env platform or cross-mission
+  reporting buildout
+- reproduced hardening fixes with checkpoint/training security work unless a
+  direct dependency is found
+
+End-of-packet decision gate:
+
+- Proceed directly to Mission 3 env/wrapper extension if:
+  - loader/schema failures are strict and readable
+  - unsupported multi-start missions are rejected before runtime
+  - the shared env session seam exists and `Mission1Env` delegates to it
+    without accepted-surface drift
+  - no new blocker appears that clearly belongs in a separate prep packet
+- Do not open another preparatory packet by default unless:
+  - Deliveries A/B expose a new concrete blocker that was not already visible
+    from the current repo evidence
+  - or acceptance fails because the shared seam cannot be landed without a
+    narrowly justified extra finish package
+
+Archived packet history continues below.
 
 ## Archived packet - Mission 3 search strengthening
 

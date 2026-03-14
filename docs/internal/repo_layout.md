@@ -197,6 +197,14 @@ Likely responsibilities:
 - Gymnasium-compatible environment wrapper.
 
 This package is important later, but should not drive the initial architecture.
+When multi-mission growth resumes, prefer one narrow shared resolver-backed env
+core plus mission-local wrappers/observation/action adapters rather than
+hardening `Mission1Env` into the permanent center or building a broad generic
+env platform early.
+Until multiple missions really require wider abstraction, Mission-1-specific
+helpers such as fixed action catalogs, observation builders, and reward helpers
+should be treated as local wrapper details rather than as the future package-
+wide default API.
 
 ### `src/solo_wargame_ai/eval/`
 Benchmarking and analysis utilities.
@@ -207,6 +215,9 @@ Typical responsibilities:
 - summarizing results,
 - producing evaluation reports,
 - comparing agents.
+
+Mission-local comparison helpers may remain local until more than one mission
+actually needs a shared evaluation/reporting layer.
 
 ### `src/solo_wargame_ai/cli/`
 Small command-line interfaces for local development.
