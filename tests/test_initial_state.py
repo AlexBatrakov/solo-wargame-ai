@@ -1,4 +1,7 @@
+from dataclasses import replace
 from pathlib import Path
+
+import pytest
 
 from solo_wargame_ai.domain.decision_context import (
     ChooseBritishUnitContext,
@@ -44,3 +47,17 @@ def test_create_initial_game_state_matches_the_stage_3b_runtime_contract() -> No
 
     assert state.rng_state.seed == 0
     assert len(state.rng_state.internal_state) > 0
+
+
+def test_create_initial_game_state_keeps_single_start_guard_aligned_with_loader() -> None:
+    mission = load_mission(MISSION_PATH)
+    broken_map = replace(
+        mission.map,
+        start_hexes=mission.map.start_hexes + (HexCoord(-1, 3),),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="Current supported missions require exactly one start hex",
+    ):
+        create_initial_game_state(replace(mission, map=broken_map))

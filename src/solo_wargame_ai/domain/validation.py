@@ -10,6 +10,8 @@ from .terrain import TerrainType
 
 MISSION_D6_MIN = 1
 MISSION_D6_MAX = 6
+MISSION_2D6_TOTAL_MIN = 2
+MISSION_2D6_TOTAL_MAX = 12
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,6 +64,7 @@ def validate_mission(mission: Mission) -> None:
     collector = ValidationCollector()
 
     _validate_map(mission, collector)
+    _validate_numeric_domains(mission, collector)
     _validate_british_data(mission, collector)
     _validate_german_data(mission, collector)
 
@@ -112,6 +115,12 @@ def _validate_map(mission: Mission, collector: ValidationCollector) -> None:
                 "map.start_hexes",
                 f"start hex ({start_hex.q}, {start_hex.r}) is not playable",
             )
+
+    if len(mission.map.start_hexes) != 1:
+        collector.add(
+            "map.start_hexes",
+            "current supported missions require exactly one start hex",
+        )
 
     if len(mission.map.forward_directions) != len(set(mission.map.forward_directions)):
         collector.add("map.forward_directions", "forward directions must be unique")
@@ -187,29 +196,104 @@ def _validate_british_data(mission: Mission, collector: ValidationCollector) -> 
             )
 
 
+def _validate_numeric_domains(mission: Mission, collector: ValidationCollector) -> None:
+    if mission.turns.turn_limit < 1:
+        collector.add("turns.turn_limit", "turn_limit must be at least 1")
+
+    for unit_class in mission.british.unit_classes:
+        for attack in unit_class.attacks:
+            _validate_2d6_threshold(
+                attack.base_to_hit,
+                path=(
+                    "british.unit_classes."
+                    f"{unit_class.unit_class}.attacks.{attack.attack_id}.base_to_hit"
+                ),
+                field_name="base_to_hit",
+                collector=collector,
+            )
+
+    for unit_class in mission.german.unit_classes:
+        _validate_2d6_threshold(
+            unit_class.attack_to_hit,
+            path=f"german.unit_classes.{unit_class.unit_class}.attack_to_hit",
+            field_name="attack_to_hit",
+            collector=collector,
+        )
+
+    _validate_non_negative(
+        mission.combat_modifiers.defender_in_woods,
+        path="combat_modifiers.defender_in_woods",
+        field_name="defender_in_woods",
+        collector=collector,
+    )
+    _validate_non_negative(
+        mission.combat_modifiers.defender_in_building,
+        path="combat_modifiers.defender_in_building",
+        field_name="defender_in_building",
+        collector=collector,
+    )
+    _validate_non_positive(
+        mission.combat_modifiers.attacker_from_hill,
+        path="combat_modifiers.attacker_from_hill",
+        field_name="attacker_from_hill",
+        collector=collector,
+    )
+    _validate_non_positive(
+        mission.combat_modifiers.attacker_outside_target_fire_zone,
+        path="combat_modifiers.attacker_outside_target_fire_zone",
+        field_name="attacker_outside_target_fire_zone",
+        collector=collector,
+    )
+    _validate_non_positive(
+        mission.combat_modifiers.per_other_british_unit_adjacent_to_target,
+        path="combat_modifiers.per_other_british_unit_adjacent_to_target",
+        field_name="per_other_british_unit_adjacent_to_target",
+        collector=collector,
+    )
+
+
 def _validate_german_data(mission: Mission, collector: ValidationCollector) -> None:
     unit_class_names = mission.german.unit_classes_by_name
-    for row in mission.german.reveal_table:
+    coverage_rows = []
+    can_validate_coverage = True
+    for index, row in enumerate(mission.german.reveal_table):
+        row_path = f"german.reveal_table[{index}]"
         if row.result_unit_class not in unit_class_names:
             collector.add(
                 "german.reveal_table",
                 f"unknown reveal-table unit class {row.result_unit_class!r}",
             )
+        if row.roll_min < MISSION_D6_MIN or row.roll_min > MISSION_D6_MAX:
+            collector.add(
+                f"{row_path}.roll_min",
+                f"roll_min must be between {MISSION_D6_MIN} and {MISSION_D6_MAX}",
+            )
+            can_validate_coverage = False
+        if row.roll_max < MISSION_D6_MIN or row.roll_max > MISSION_D6_MAX:
+            collector.add(
+                f"{row_path}.roll_max",
+                f"roll_max must be between {MISSION_D6_MIN} and {MISSION_D6_MAX}",
+            )
+            can_validate_coverage = False
         if row.roll_min > row.roll_max:
             collector.add(
                 "german.reveal_table",
                 f"invalid reveal-table row {row.roll_min}-{row.roll_max}",
             )
+            can_validate_coverage = False
+        if (
+            MISSION_D6_MIN <= row.roll_min <= MISSION_D6_MAX
+            and MISSION_D6_MIN <= row.roll_max <= MISSION_D6_MAX
+            and row.roll_min <= row.roll_max
+        ):
+            coverage_rows.append(row)
 
-    sorted_rows = sorted(
-        mission.german.reveal_table,
-        key=lambda row: (row.roll_min, row.roll_max),
-    )
+    if not can_validate_coverage:
+        return
+
+    sorted_rows = sorted(coverage_rows, key=lambda row: (row.roll_min, row.roll_max))
     expected_next_roll = MISSION_D6_MIN
     for row in sorted_rows:
-        if row.roll_min > row.roll_max:
-            continue
-
         if row.roll_min > expected_next_roll:
             collector.add(
                 "german.reveal_table",
@@ -229,6 +313,42 @@ def _validate_german_data(mission: Mission, collector: ValidationCollector) -> N
             "german.reveal_table",
             f"reveal-table gap for rolls {expected_next_roll}-{MISSION_D6_MAX}",
         )
+
+
+def _validate_2d6_threshold(
+    value: int,
+    *,
+    path: str,
+    field_name: str,
+    collector: ValidationCollector,
+) -> None:
+    if value < MISSION_2D6_TOTAL_MIN or value > MISSION_2D6_TOTAL_MAX:
+        collector.add(
+            path,
+            f"{field_name} must be between {MISSION_2D6_TOTAL_MIN} and {MISSION_2D6_TOTAL_MAX}",
+        )
+
+
+def _validate_non_negative(
+    value: int,
+    *,
+    path: str,
+    field_name: str,
+    collector: ValidationCollector,
+) -> None:
+    if value < 0:
+        collector.add(path, f"{field_name} must be non-negative")
+
+
+def _validate_non_positive(
+    value: int,
+    *,
+    path: str,
+    field_name: str,
+    collector: ValidationCollector,
+) -> None:
+    if value > 0:
+        collector.add(path, f"{field_name} must be non-positive")
 
 
 __all__ = [

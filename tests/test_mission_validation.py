@@ -34,6 +34,40 @@ def test_loader_rejects_unknown_terrain_name() -> None:
     _assert_issue_present(exc_info.value, "map.hexes[0].terrain", "Unknown terrain type: bog")
 
 
+def test_loader_rejects_unknown_top_level_schema_key() -> None:
+    mission_data = _load_raw_mission_data()
+    mission_data["unexpected_top_level_key"] = "oops"
+
+    with pytest.raises(MissionValidationError) as exc_info:
+        load_mission_from_data(mission_data)
+
+    _assert_issue_present(exc_info.value, "unexpected_top_level_key", "unknown field")
+
+
+def test_loader_rejects_unknown_nested_schema_key() -> None:
+    mission_data = _load_raw_mission_data()
+    mission_data["turns"]["bonus_turn"] = True
+
+    with pytest.raises(MissionValidationError) as exc_info:
+        load_mission_from_data(mission_data)
+
+    _assert_issue_present(exc_info.value, "turns.bonus_turn", "unknown field")
+
+
+def test_loader_reports_missing_required_field_structurally() -> None:
+    mission_data = _load_raw_mission_data()
+    del mission_data["map"]["coordinate_system"]
+
+    with pytest.raises(MissionValidationError) as exc_info:
+        load_mission_from_data(mission_data)
+
+    _assert_issue_present(
+        exc_info.value,
+        "map.coordinate_system",
+        "missing required field",
+    )
+
+
 def test_loader_rejects_unsupported_multi_terrain_combinations() -> None:
     mission_data = _load_raw_mission_data()
     mission_data["map"]["hexes"][0]["terrain"] = ["woods", "building"]
@@ -59,6 +93,75 @@ def test_loader_rejects_unknown_forward_direction_name() -> None:
         exc_info.value,
         "map.forward_directions[1]",
         "Unknown hex direction: north",
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutate", "path_fragment", "message_fragment"),
+    [
+        (
+            lambda data: data["turns"].__setitem__("turn_limit", 0),
+            "turns.turn_limit",
+            "turn_limit must be at least 1",
+        ),
+        (
+            lambda data: data["british_unit_classes"]["rifle_squad"]["attacks"]["fire"].__setitem__(
+                "base_to_hit",
+                -99,
+            ),
+            "british.unit_classes.rifle_squad.attacks.fire.base_to_hit",
+            "base_to_hit must be between 2 and 12",
+        ),
+        (
+            lambda data: data["german_unit_classes"]["heavy_machine_gun"].__setitem__(
+                "attack_to_hit",
+                -5,
+            ),
+            "german.unit_classes.heavy_machine_gun.attack_to_hit",
+            "attack_to_hit must be between 2 and 12",
+        ),
+        (
+            lambda data: data["enemy_reveal_table"][0].__setitem__("roll_min", 0),
+            "german.reveal_table[0].roll_min",
+            "roll_min must be between 1 and 6",
+        ),
+        (
+            lambda data: data["combat_modifiers"].__setitem__("defender_in_woods", -1),
+            "combat_modifiers.defender_in_woods",
+            "must be non-negative",
+        ),
+        (
+            lambda data: data["combat_modifiers"].__setitem__("attacker_from_hill", 1),
+            "combat_modifiers.attacker_from_hill",
+            "must be non-positive",
+        ),
+    ],
+)
+def test_loader_rejects_invalid_numeric_domains(
+    mutate,
+    path_fragment: str,
+    message_fragment: str,
+) -> None:
+    mission_data = _load_raw_mission_data()
+    mutate(mission_data)
+
+    with pytest.raises(MissionValidationError) as exc_info:
+        load_mission_from_data(mission_data)
+
+    _assert_issue_present(exc_info.value, path_fragment, message_fragment)
+
+
+def test_loader_rejects_unsupported_multi_start_missions_before_runtime_init() -> None:
+    mission_data = _load_raw_mission_data()
+    mission_data["map"]["start_hexes"].append({"q": -1, "r": 3})
+
+    with pytest.raises(MissionValidationError) as exc_info:
+        load_mission_from_data(mission_data)
+
+    _assert_issue_present(
+        exc_info.value,
+        "map.start_hexes",
+        "exactly one start hex",
     )
 
 

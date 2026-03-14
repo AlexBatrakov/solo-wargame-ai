@@ -148,7 +148,7 @@ def create_initial_game_state(
     """Build the deterministic initial runtime state from a loaded mission."""
 
     if len(mission.map.start_hexes) != 1:
-        raise ValueError("Current initial state construction expects exactly one start hex")
+        raise ValueError("Current supported missions require exactly one start hex")
 
     start_hex = mission.map.start_hexes[0]
     state = GameState(
