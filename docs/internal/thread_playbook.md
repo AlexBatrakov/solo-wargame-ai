@@ -19,18 +19,16 @@ Phase- or packet-specific planning belongs in `docs/internal/execution_plan.md`.
 - The Mission 3 baselines/search re-establishment packet is complete and
   accepted.
 - The Mission 3 search-strengthening packet is complete and accepted.
-- The repo is currently in a deliberate planning pause after Mission 3 search
-  strengthening, not in the middle of another active implementation packet.
+- The Mission 3 env-prep hardening and adapter-seam packet is complete and
+  accepted.
 - `phase1-complete`, `phase2-complete`, `phase3-complete`, and
   `phase4-complete`, `phase5-complete`, `phase6-complete` are the current
   local milestone tags.
 - The original numbered phase roadmap is exhausted.
 - The next active planning packet should start from the accepted Mission 3
-  strengthened local comparison surface plus the recent audit findings:
-  a small Mission 3 env-prep hardening and adapter-seam packet is now
-  preferred over jumping directly to Mission 3 env/wrapper extension,
-  reopening the closed search-strengthening packet, reopening Mission 3
-  content landing, or another default Mission 1 strengthening/search pass.
+  env-prep closeout state:
+  Mission 3 env/wrapper extension is now the default next packet, while Mission
+  3 learning, Mission 4 content, and broader platform work remain later gates.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 
@@ -39,7 +37,7 @@ is operating from stale context.
 
 ## Current post-Mission-3 dispatch note
 
-After Mission 3 search-strengthening packet closeout:
+After Mission 3 env-prep packet closeout:
 
 - use `docs/internal/execution_plan.md` as the first dispatch surface for the
   next active packet
@@ -61,22 +59,21 @@ After Mission 3 search-strengthening packet closeout:
   - smoke: `rollout-search-strengthened 12/16`
   - benchmark: `rollout-search-strengthened 171/200`
 - keep the accepted Mission 3 content slice discoverable as the richer
-  deterministic domain target that now needs one bounded preparatory packet
-  before env/wrapper extension
-- keep the recent hardening findings and architecture observations in mind:
-  - mission numeric/schema validation needs tightening
-  - loader/runtime multi-start mismatch should not stay an implicit contract
-  - the next env step should prefer a narrow shared adapter seam over another
-    Mission-local wrapper island
+  deterministic domain target that is now ready for env/wrapper extension
+- keep the accepted env-prep outcomes discoverable:
+  - mission numeric/schema validation is now stricter at the loader boundary
+  - unsupported multi-start missions are now rejected before runtime
+  - the next env step should build on the accepted narrow shared resolver-backed
+    adapter seam rather than another Mission-local wrapper island
 - do not reopen repo hygiene as a broad campaign, another default
   search-strengthening packet, Mission 4 content, or generic search/RL-
   platform buildout casually as a follow-up to the Mission 3 landing
 - the current default next packet is:
-  Mission 3 env-prep hardening and adapter seam
+  Mission 3 env/wrapper extension
 - do not reopen the Mission 3 content packet, the Mission 3 baselines/search
-  re-establishment packet, the Mission 3 search-strengthening packet, or
-  another Mission 1 strengthening/search packet by default unless new repo
-  evidence justifies it
+  re-establishment packet, the Mission 3 search-strengthening packet, the
+  Mission 3 env-prep packet, or another Mission 1 strengthening/search packet
+  by default unless new repo evidence justifies it
 - treat Phase 4 Delivery A / B / C work as archived unless repeated use
   exposes a narrow corrective bug
 
