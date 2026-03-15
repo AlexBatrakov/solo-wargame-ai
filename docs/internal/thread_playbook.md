@@ -22,24 +22,24 @@ Phase- or packet-specific planning belongs in `docs/internal/execution_plan.md`.
 - The Mission 3 env-prep hardening and adapter-seam packet is complete and
   accepted.
 - The Mission 3 env/wrapper extension packet is complete and accepted.
+- The Mission 3 learning experiments packet is complete and accepted.
 - `phase1-complete`, `phase2-complete`, `phase3-complete`, and
   `phase4-complete`, `phase5-complete`, `phase6-complete` are the current
   local milestone tags.
 - The original numbered phase roadmap is exhausted.
 - The next active planning packet should start from the accepted Mission 3
-  env/wrapper closeout state:
-  Mission 3 learning experiments are now the default next packet, while Mission
-  1 honest/fair-agent lab work, Mission 4 content, and broader platform work
-  remain later gates.
+  learning closeout state:
+  Mission 1 honest/fair-agent lab work is now the default next packet, while
+  Mission 4 content and broader platform work remain later gates.
 - Preserved external-audit follow-ups live in
   `docs/internal/independent_audit_followups.md`.
 
 If a thread behaves as though Mission 1 still needs to be built from scratch, it
 is operating from stale context.
 
-## Current post-Mission-3 dispatch note
+## Current post-Mission-3-learning dispatch note
 
-After Mission 3 env/wrapper packet closeout:
+After Mission 3 learning packet closeout:
 
 - use `docs/internal/execution_plan.md` as the first dispatch surface for the
   next active packet
@@ -76,24 +76,34 @@ After Mission 3 env/wrapper packet closeout:
     wrapper-local contact handles
   - `mission3_env_smoke` is now the thin wrapper smoke/operator surface kept
     separate from historical `mission3_comparison`
+- keep the accepted Mission 3 learning outcomes discoverable:
+  - the accepted Phase-5-style learner family now runs end-to-end on
+    `Mission3Env`
+  - `mission3_train`, `mission3_learned_policy_eval`, and `mission3_summary`
+    now provide the Mission 3 local operator surface under
+    `outputs/mission3_learning/`
+  - the first accepted smoke learned surface was weak (`0/16`), matching the
+    preserved random reference rather than beating the preserved
+    heuristic/search references
+  - that weak first-pass result did not justify opening reward shaping or broad
+    RL redesign by default
 - keep the fair-vs-oracle distinction discoverable during future planning:
   - the Mission 1 heuristic is the most defensible fair-ish baseline currently
     in repo history
   - Mission 3 heuristic/search and rollout-style search surfaces are still
     useful preserved references, but should not be treated as honest
     player-information benchmarks without qualification
-- keep the preserved Mission 3 comparison surfaces separate from any new
-  Mission 3 env smoke or later Mission 3 learning outputs
+- keep the preserved Mission 3 comparison surfaces separate from the Mission 3
+  learned-policy operator surface and outputs
 - do not reopen repo hygiene as a broad campaign, another default
   search-strengthening packet, Mission 4 content, or generic search/RL-
   platform buildout casually as a follow-up to the Mission 3 landing
 - the current default next packet is:
-  Mission 3 learning experiments
+  Mission 1 honest/fair-agent lab kickoff
 - do not reopen the Mission 3 content packet, the Mission 3 baselines/search
   re-establishment packet, the Mission 3 search-strengthening packet, the
-  Mission 3 env-prep packet, the Mission 3 env/wrapper packet, or another
-  Mission 1 strengthening/search packet by default unless new repo evidence
-  justifies it
+  Mission 3 env-prep packet, the Mission 3 env/wrapper packet, or the Mission
+  3 learning packet by default unless new repo evidence justifies it
 - treat Phase 4 Delivery A / B / C work as archived unless repeated use
   exposes a narrow corrective bug
 

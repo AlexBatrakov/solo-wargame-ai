@@ -223,44 +223,40 @@ tracked planning record:
 
 Current recommended next packet:
 
-- Mission 3 learning experiments
+- Mission 1 honest/fair-agent lab kickoff
 
 Why this is now preferred:
 
-- the bounded Mission-3-local strengthening pass already succeeded materially:
-  - historical benchmark: `rollout-search 105/200`
-  - accepted strengthened benchmark:
-    `rollout-search-strengthened 171/200`
-- the March 12 hardening findings (`C8`, `C9`, `C10`) were real and are now
-  closed in accepted repo history through the env-prep packet
+- the Mission 3 learning packet is now complete in accepted repo history:
+  - `2604228 mission3: transfer phase5 learner core`
+  - `2556b7c mission3: add learned operator surfaces`
+- that packet answered the bounded transfer question without reward shaping or
+  broad RL redesign:
+  - the accepted Phase-5-style learner family now runs end-to-end on
+    `Mission3Env`
+  - Mission 3 now has local train / eval / summary operator surfaces under
+    `outputs/mission3_learning/`
+  - the first accepted smoke learned surface stayed weak (`0/16`) and did not
+    justify automatically opening reward shaping or RL redesign
+- the next highest-value unanswered line is now the Mission 1 honest/fair-agent
+  ladder, because:
+  - the fair-vs-oracle distinction is now explicit in repo history
+  - Mission 2 same-rules transfer and any later Mission 3 honest-agent work
+    depend on having a better Mission 1 fair-agent anchor
 - the current top-level repo split still looks good, so a broad reorg is not
   justified
-- the Mission 3 env/wrapper packet is now accepted in repo history, including
-  the player-visible observation boundary, opaque contact-handle public
-  surface, and thin `mission3_env_smoke` operator
-- the next mainline question is now how learnable Mission 3 is under that
-  accepted wrapper contract rather than whether the wrapper should exist
-- the local exploratory cross-mission probe note remains worth preserving, but
-  not strong enough by itself to displace the Mission 3 env mainline
-- the local heuristic reports also remain worth preserving, but they should be
-  treated as exploratory evidence for a possible later bounded validation or
-  productization question, not as accepted benchmark truth and not as a reason
-  to reorder the current next packet
-- the March 14 fairness reports also remain worth preserving:
-  they strengthen the case for an explicit fair-vs-oracle split, but they do
-  not displace Mission 3 learning experiments as the current next packet
 
 Likely follow-on packets after that:
 
-1. Mission 3 learning experiments
-2. Mission 1 honest/fair-agent lab kickoff after the Mission 3 learning packet
-3. Mission 2 same-rules transfer once the Mission 1 fair-agent ladder has a
+1. Mission 1 honest/fair-agent lab kickoff
+2. Mission 2 same-rules transfer once the Mission 1 fair-agent ladder has a
    usable exact and honest-search surface
-4. Mission 3 honest-agent approximation after the repo has both the Mission 3
-   wrapper and some fair-agent reference discipline from Missions 1/2
-5. Cross-mission evaluation/reporting only when more than one mission is
+3. Mission 3 honest-agent approximation after the repo has both the Mission 3
+   wrapper, the Mission 3 learned baseline surface, and some fair-agent
+   reference discipline from Missions 1/2
+4. Cross-mission evaluation/reporting only when more than one mission is
    active enough to justify it
-6. Mission 4 or another bounded richer content slice
+5. Mission 4 or another bounded richer content slice
 
 Preserved deferred research line beyond the next packet:
 
@@ -330,9 +326,7 @@ Preserved March 14-15 sandbox idea bank for later packet design:
 Ranked backlog beyond the active next packet:
 
 - High value:
-  - Mission 3 learning experiments
-  - Mission 1 honest/fair-agent lab kickoff after the Mission 3 learning
-    packet
+  - Mission 1 honest/fair-agent lab kickoff
   - Mission 2 same-rules transfer once the Mission 1 fair-agent ladder has a
     usable exact and honest-search surface
 - Medium value:
@@ -380,7 +374,29 @@ Demoted for now:
 - generic search, experiment, or platform buildout
 - tooling campaigns that are not directly required by the next content slice
 
-## Active packet - Mission 3 learning experiments
+## Archived packet - Mission 3 learning experiments
+
+Closeout summary:
+
+- Delivery A completed and landed in
+  `2604228 mission3: transfer phase5 learner core`
+- Delivery B completed and landed in
+  `2556b7c mission3: add learned operator surfaces`
+- Delivery C was not opened because Deliveries A/B already left a clean
+  closeout-ready implementation surface
+- Packet result:
+  the accepted Phase-5-style learner family now runs end-to-end on
+  `Mission3Env`, Mission 3 now has local train / eval / summary operator
+  surfaces under `outputs/mission3_learning/`, and the first accepted learned
+  Mission 3 surface is explicitly separated from preserved historical
+  heuristic/search references
+- Transfer verdict:
+  the learner family transfers mechanically to Mission 3 without reward
+  shaping or broad RL redesign, but the first accepted smoke surface remained
+  weak (`0/16`), matching the preserved random reference and sitting below the
+  preserved heuristic/search references
+- Default next packet:
+  Mission 1 honest/fair-agent lab kickoff
 
 Packet goal:
 
@@ -654,20 +670,14 @@ Minimum new in-thread verification that should still run before acceptance:
 
 ## Mission 3 learning packet status block
 
-- Delivery A: pending
-- Delivery B: pending
-- Delivery C: conditional
-- Packet overall: open
+- Delivery A: completed in `2604228 mission3: transfer phase5 learner core`
+- Delivery B: completed in `2556b7c mission3: add learned operator surfaces`
+- Delivery C: not opened
+- Packet overall: complete and accepted
 - Planning audit date: March 15, 2026
-- Closeout audit date: pending
-- Blocking findings before dispatch:
-  - none acceptance-blocking
-- Active planning risks:
-  - Mission-1-shaped adapter drift
-  - generic RL-platform creep
-  - fairness/oracle reporting blur
-  - weak-result overreaction
-  - heavy-run ownership confusion
+- Closeout audit date: March 15, 2026
+- Closeout finding:
+  - no further implementation delivery is needed by default
 - Required preserved Mission 1 anchors:
   - `random 11/200`
   - learned best `144/200`
@@ -683,14 +693,20 @@ Minimum new in-thread verification that should still run before acceptance:
     `rollout-search-strengthened 12/16`
   - benchmark:
     `rollout-search-strengthened 171/200`
+- Accepted first learned Mission 3 surface:
+  - short accepted smoke train / eval / summary path exists on the Mission 3
+    local CLI surface
+  - accepted first smoke learned result:
+    `0/16`, matching preserved Mission 3 random and below preserved heuristic
+    and rollout-search references
 - Default result-interpretation rule:
   - a weak first-pass learner result is evidence, not automatic packet failure
-- End-of-packet default gate:
-  - close the packet once a first Mission 3 learned result surface exists and
-    its transfer verdict is explicit
-  - after closeout, move by default to the Mission 1 honest/fair-agent lab
-    kickoff rather than to reward shaping, Mission 4, or a generic RL-platform
-    packet
+- Default post-packet rule:
+  - substantive Mission 3 training/eval reruns are now operator-owned follow-on
+    evidence on the accepted CLI surface rather than another default
+    implementation delivery
+  - move by default to the Mission 1 honest/fair-agent lab kickoff rather than
+    to Delivery C, reward shaping, Mission 4, or a generic RL-platform packet
 
 ## Delivery A - Mission 3 learner transfer core
 
