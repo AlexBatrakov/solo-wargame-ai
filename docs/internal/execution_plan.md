@@ -7,10 +7,11 @@ dispatch, and closeout.
 
 As of March 15, 2026, the original six-phase roadmap is complete by repository
 evidence.
-The active planning problem is no longer "whether to queue one more preparatory
-packet before Mission 3 env work," but "how to dispatch the bounded Mission 3
-env/wrapper extension cleanly without widening into Mission 3 learning,
-Mission 4 content, fair-agent research, or a generic env platform."
+The active planning problem is no longer "how to dispatch the bounded Mission 3
+env/wrapper extension cleanly," but "how to move from the now-accepted Mission
+3 wrapper contract into Mission 3 learning without blurring fair observation-
+based wrapper work, preserved oracle-style Mission 3 history, Mission 4
+content, or a generic env platform."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -34,6 +35,8 @@ recovering chat history:
 - preserve the accepted Mission 3 search-strengthening packet and its
   historical-vs-strengthened reference surfaces,
 - preserve the accepted Mission 3 env-prep packet and its shared-session seam,
+- preserve the accepted Mission 3 env/wrapper packet and its observation-based
+  wrapper/operator surfaces,
 - avoid reopening completed Delivery A / B / C work accidentally,
 - recover the accepted baseline, wrapper, and benchmark references quickly,
 - point the next planning thread toward the active packet backlog and later
@@ -52,6 +55,7 @@ recovering chat history:
   - Mission 3 baselines/search re-establishment packet complete
   - Mission 3 search-strengthening packet complete
   - Mission 3 env-prep hardening and adapter-seam packet complete
+  - Mission 3 env/wrapper extension packet complete
 - Local tags:
   - `phase1-complete`
   - `phase2-complete`
@@ -59,12 +63,12 @@ recovering chat history:
   - `phase4-complete`
   - `phase5-complete`
   - `phase6-complete`
-- Repository state rechecked on March 15, 2026 after Mission 3 env-prep
-  closeout and before dispatch of Mission 3 env/wrapper extension:
+- Repository state rechecked on March 15, 2026 after Mission 3 env/wrapper
+  closeout:
   - `git status --short` showed one unrelated local tracked edit:
     `M docs/internal/experiments/README.md`
   - `git log --oneline --decorate -12` showed `HEAD` on
-    `f3be20a docs: sync roadmap and local experiment workflow`
+    `faaba99 mission3: add env smoke cli`
   - `git show --no-patch --decorate phase1-complete` still resolved to
     `d6445d9`
   - `git show --no-patch --decorate phase2-complete` still resolved to
@@ -77,7 +81,7 @@ recovering chat history:
     `9d8beb9`
   - `git show --no-patch --decorate phase6-complete` still resolved to
     `f80fde5`
-  - `.venv/bin/pytest -q` passed with `251 passed in 230.69s`
+  - `.venv/bin/pytest -q` passed with `275 passed in 221.38s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
     succeeded with the preserved `random` `2/16` wins vs `heuristic`
@@ -94,11 +98,14 @@ recovering chat history:
   - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
     confirmed the accepted Mission 3 benchmark reference surface:
     `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_env_smoke --seed 0`
+    confirmed the accepted Mission 3 wrapper smoke surface:
+    `49` action ids, `72` decision steps, defeat, reward `-1.0`
   - evidence-only local notes remain present under
     `docs/internal/thread_reports/`, but none of them replace the preserved
     accepted benchmark surfaces above
 
-Accepted runtime surface after Mission 3 env-prep closeout:
+Accepted runtime surface after Mission 3 env/wrapper closeout:
 
 - `Mission` remains static scenario data loaded from config.
 - `GameState` remains runtime truth with explicit staged decision contexts.
@@ -130,6 +137,14 @@ Accepted runtime surface after Mission 3 env-prep closeout:
   the shared resolver session seam, with deterministic `reset(seed=...)`,
   `step(action_id)`, terminal-only default reward, and `terminated` /
   `truncated` semantics already frozen.
+- `env/mission3_env.py` is now the accepted thin dependency-free Mission 3
+  wrapper over the shared resolver session seam, with deterministic
+  `reset(seed=...)`, `step(action_id)`, player-visible observation, fixed
+  49-id action exposure, opaque contact handles on the public Mission 3
+  surface, and terminal-only default reward.
+- `env/mission3_observation.py` and `env/mission3_action_catalog.py` are now
+  the accepted Mission-3-local observation/action helper surfaces rather than a
+  generic cross-mission env API.
 - `agents/feature_adapter.py`, `agents/learned_policy.py`,
   `agents/masked_action_selection.py`, and `agents/masked_actor_critic.py`
   remain the accepted Phase 5 learning-side library surface.
@@ -165,6 +180,9 @@ Accepted runtime surface after Mission 3 env-prep closeout:
 - `cli/mission3_comparison.py` is the accepted thin Mission-3-only operator
   surface for rendering preserved historical, strengthened-only, and packet
   comparison reports without turning into a generic reporting platform.
+- `cli/mission3_env_smoke.py` is the accepted thin operator surface for
+  rerunning the observation-based Mission 3 wrapper without conflating it with
+  historical Mission 3 comparison history.
 - `pyproject.toml` now carries the bounded `numpy` / `torch` learning
   dependency pair, while `configs/missions/` now contains the accepted Mission
   1 and Mission 3 configs and no broader experiment-platform surface.
@@ -205,7 +223,7 @@ tracked planning record:
 
 Current recommended next packet:
 
-- Mission 3 env/wrapper extension
+- Mission 3 learning experiments
 
 Why this is now preferred:
 
@@ -217,10 +235,11 @@ Why this is now preferred:
   closed in accepted repo history through the env-prep packet
 - the current top-level repo split still looks good, so a broad reorg is not
   justified
-- the env-prep packet already landed the narrow shared resolver-backed session
-  seam that the Mission 3 wrapper should extend rather than replace
-- the next mainline question is now the observation-based Mission 3 wrapper
-  contract itself, not another preparatory packet
+- the Mission 3 env/wrapper packet is now accepted in repo history, including
+  the player-visible observation boundary, opaque contact-handle public
+  surface, and thin `mission3_env_smoke` operator
+- the next mainline question is now how learnable Mission 3 is under that
+  accepted wrapper contract rather than whether the wrapper should exist
 - the local exploratory cross-mission probe note remains worth preserving, but
   not strong enough by itself to displace the Mission 3 env mainline
 - the local heuristic reports also remain worth preserving, but they should be
@@ -234,7 +253,7 @@ Why this is now preferred:
 Likely follow-on packets after that:
 
 1. Mission 3 learning experiments
-2. Mission 1 honest/fair-agent lab kickoff after the Mission 3 wrapper closes
+2. Mission 1 honest/fair-agent lab kickoff after the Mission 3 learning packet
 3. Mission 2 same-rules transfer once the Mission 1 fair-agent ladder has a
    usable exact and honest-search surface
 4. Mission 3 honest-agent approximation after the repo has both the Mission 3
@@ -359,7 +378,18 @@ Demoted for now:
 - generic search, experiment, or platform buildout
 - tooling campaigns that are not directly required by the next content slice
 
-## Active packet - Mission 3 env/wrapper extension
+## Archived packet - Mission 3 env/wrapper extension
+
+Closeout summary:
+
+- Delivery A completed and landed in `fe919df mission3: add env wrapper contract`
+- Delivery B completed and landed in `faaba99 mission3: add env smoke cli`
+- Delivery C was not opened because Deliveries A/B already left a clean
+  closeout-ready packet surface
+- Packet result:
+  Mission 3 now has an accepted observation-based wrapper contract on top of
+  `ResolverEnvSession`, plus a thin smoke/operator surface that stays separate
+  from preserved historical Mission 3 comparison history
 
 Packet goal:
 
@@ -622,12 +652,12 @@ Boundary to later packets:
 
 ## Mission 3 env/wrapper packet status block
 
-- Delivery A: pending
-- Delivery B: pending
+- Delivery A: completed (`fe919df`)
+- Delivery B: completed (`faaba99`)
 - Delivery C: not opened
-- Packet overall: active
+- Packet overall: closed
 - Planning audit date: March 15, 2026
-- Closeout audit date: pending
+- Closeout audit date: March 15, 2026
 - Blocking findings before dispatch:
   - none acceptance-blocking
 - Active planning risks:
@@ -649,11 +679,9 @@ Boundary to later packets:
     `rollout-search-strengthened 12/16`
   - benchmark:
     `rollout-search-strengthened 171/200`
-- Recommended delivery order:
+- Executed package order:
   - Delivery A
   - Delivery B
-  - Delivery C only if Deliveries A/B do not already leave a clean closeout
-    surface
 - End-of-packet default gate:
   - proceed to Mission 3 learning experiments
   - do not open another preparatory packet by default unless implementation
@@ -663,7 +691,7 @@ Boundary to later packets:
 
 Status:
 
-- pending
+- completed (`fe919df`)
 
 Goal:
 
@@ -740,7 +768,7 @@ Analysis-before-edit:
 
 Status:
 
-- pending
+- completed (`faaba99`)
 
 Goal:
 

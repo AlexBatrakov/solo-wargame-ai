@@ -84,12 +84,18 @@ content slices land.
   Squad behavior;
 - Mission-3-only historical and strengthened search comparison surfaces with
   fixed smoke and benchmark seed aliases;
+- dependency-free `Mission3Env` wrapper with a player-visible default
+  observation boundary, opaque contact handles, a fixed 49-id Mission-3-local
+  action catalog view, resolver-owned legality masks, and terminal-only
+  default reward;
+- thin `mission3_env_smoke` operator support for rerunning the accepted
+  wrapper surface without mixing it into the preserved historical comparison
+  CLI;
 - a shared resolver-backed env session seam that Mission-local wrappers can
   build on without duplicating lifecycle/state progression logic;
 - replay/integration coverage through the accepted resolver path.
 
 What is deliberately **not** implemented yet:
-- Mission 3 env/wrapper extension;
 - Mission 3 learning experiments;
 - broader multi-mission infrastructure;
 - generic experiment/search platform work.
@@ -101,7 +107,8 @@ What is deliberately **not** implemented yet:
 - `src/solo_wargame_ai/io/`
   Mission loading, validation, and replay/serialization helpers.
 - `src/solo_wargame_ai/env/`
-  RL-friendly Mission 1 wrapper plus a shared resolver-backed env session seam.
+  RL-friendly Mission 1 / Mission 3 wrappers plus a shared resolver-backed env
+  session seam.
 - `src/solo_wargame_ai/agents/`
   Random, heuristic, rollout-search, and learned-policy code.
 - `src/solo_wargame_ai/eval/`
@@ -124,14 +131,14 @@ What is deliberately **not** implemented yet:
 
 The next recommended packet is:
 
-**Mission 3 env/wrapper extension**
+**Mission 3 learning experiments**
 
-The goal is to extend the accepted env boundary to the richer Mission 3 slice
-without reopening the domain/content packet, the historical Mission 3 baseline
-surface, or the accepted Mission 3 search-strengthening packet.
+The goal is to test learnability on the richer Mission 3 slice using the now
+accepted observation-based `Mission3Env` contract without reopening the
+historical Mission 3 baseline surface, the strengthened search packet, or the
+wrapper-boundary packet that just closed.
 
 Likely follow-on packets after that:
-- Mission 3 learning experiments;
 - a deferred honest/fair-agent research line that starts with Mission 1 exact
   artifacts, then uses Mission 2 as a same-rules transfer step before moving
   to harder honest-agent work on Mission 3, with later RL-agent design

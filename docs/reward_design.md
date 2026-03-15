@@ -2,12 +2,12 @@
 
 ## Status
 
-The first reward contract is now accepted for the Mission 1 env wrapper, but
-reward is still not a domain-layer concern.
+The accepted default reward contract now covers both Mission 1 and Mission 3
+env wrappers, but reward is still not a domain-layer concern.
 
 ## Accepted default contract
 
-- `Mission1Env` uses terminal-only default reward:
+- `Mission1Env` and `Mission3Env` use terminal-only default reward:
   - victory `+1`
   - defeat `-1`
   - nonterminal states `0`
@@ -21,7 +21,7 @@ reward is still not a domain-layer concern.
 ## Current policy
 
 - do not optimize the domain architecture around reward shaping;
-- keep the accepted terminal-only default reward stable unless a later phase
+- keep the accepted terminal-only default reward stable unless a later packet
   explicitly changes it;
 - treat Phase 3 evaluation metrics as analysis signals, not default reward
   terms;
@@ -32,14 +32,14 @@ reward is still not a domain-layer concern.
 
 The accepted Phase 5 planning decision is:
 
-- the first end-to-end learner pass must use the accepted default reward
-  unchanged;
+- the first end-to-end learner pass on a newly accepted wrapper should use the
+  accepted default reward unchanged;
 - a failed or weak terminal-only pass is evidence, not permission to
   immediately rewrite the default contract;
 - any shaping belongs only in an explicit optional follow-up package after the
   terminal-only result has been evaluated honestly;
-- shaped variants must remain clearly separate from the default
-  `Mission1Env` reward contract.
+- shaped variants must remain clearly separate from the default env reward
+  contract.
 
 ## If shaping is opened later
 

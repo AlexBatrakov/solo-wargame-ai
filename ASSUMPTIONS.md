@@ -170,34 +170,55 @@ separate from revealed unit state.
 It also preserves the distinction between simulator truth, player-visible
 information, and replay/debugging behavior.
 
-### A12. First env observation is structured and player-visible
-The first accepted RL-facing observation is a structured Mission 1 view derived
-from runtime state rather than a raw `GameState` export.
+### A12. Accepted env observations are structured and player-visible by default
+The accepted RL-facing observation family is now a structured player-visible
+view derived from runtime state rather than a raw `GameState` export.
+
+Current implementation fact:
+- `Mission1Env` and `Mission3Env` both expose structured observation dicts
+- the default observation boundary includes current decision context, public
+  mission/map data, British units, revealed German units, and unresolved
+  marker/contact positions
+- Mission 3 uses opaque wrapper-local `contact_id` handles in the public
+  observation surface rather than leaking raw `qm_*` domain ids
+- RNG state and other simulator-only debugging fields stay out of the default
+  observation boundary
 
 Rationale:
-The accepted wrapper exposes the current decision context, public mission/map
-data, British units, revealed German units, and unresolved marker positions,
-while keeping RNG state and other simulator-only debugging fields out of the
-observation boundary.
+This keeps the accepted wrappers aligned with player-visible information and
+preserves a clean distinction between simulator truth, replay/debugging state,
+and the default agent-facing contract.
 
-### A13. First env action surface uses fixed Mission 1 action ids
-The first accepted RL-facing action interface is a fixed Mission 1 action
-catalog that encodes the staged domain `GameAction` family directly.
+### A13. Accepted env action surfaces use fixed mission-local action ids
+The accepted RL-facing action interfaces use fixed mission-local catalogs over
+the staged domain `GameAction` family.
+
+Current implementation fact:
+- `Mission1Env` exposes a fixed 32-id Mission 1 catalog
+- `Mission3Env` exposes a fixed 49-id Mission 3 public catalog view with
+  opaque `contact_id` handles
+- legality remains resolver-owned and is surfaced as legal ids plus a
+  fixed-length legal-action mask
 
 Rationale:
 This preserves the written staged decision flow, keeps legality owned by the
 resolver, and avoids hiding doubles, activation-die choice, order sequencing,
 or German activation order inside undocumented macro-actions.
 
-### A14. First env reward and termination contract stays terminal-only
-The first accepted env reward contract is terminal-only: victory `+1`, defeat
-`-1`, and nonterminal states `0`.
+### A14. Accepted env reward and termination contract stays terminal-only
+The accepted env reward contract is terminal-only: victory `+1`, defeat `-1`,
+and nonterminal states `0`.
+
+Current implementation fact:
+- `Mission1Env` and `Mission3Env` both use the same default reward policy
+- mission victory and mission defeat, including turn-limit defeat, map to
+  `terminated=True` and `truncated=False`
+- truncation is reserved for external wrapper limits such as optional step caps
 
 Rationale:
-Reward remains an env-layer concern, not a domain-layer concern. Mission
-victory and mission defeat, including turn-limit defeat, map to
-`terminated=True` and `truncated=False`; truncation is reserved for external
-wrapper limits such as optional step caps.
+Reward remains an env-layer concern, not a domain-layer concern. Keeping the
+default contract aligned across the accepted wrappers reduces interpretation
+drift before Mission 3 learning begins.
 
 ---
 

@@ -618,7 +618,7 @@ Each new packet should define:
 The current default should be to let richer content drive the next design
 questions instead of spending more cycles on Mission 1 alone.
 
-### Recommended next packet
+### Recently closed packet
 
 **Mission 3 env/wrapper extension**
 
@@ -643,12 +643,12 @@ Non-goals:
   default;
 - no generic cross-mission reporting/search infrastructure.
 
-Completion criteria:
+Accepted closeout result:
 - Mission 3 has an accepted env-side contract built on the shared resolver
   session seam;
 - Mission 1 wrapper behavior stays regression-safe;
-- the project is ready to ask the next honest question: how learnable is the
-  richer Mission 3 slice under an explicit observation-based contract?
+- the project is now ready to ask the next honest question: how learnable is
+  the richer Mission 3 slice under an explicit observation-based contract?
 
 ### Likely follow-on packets after that
 
@@ -685,7 +685,7 @@ Completion criteria:
 This research line should stay visible in planning but does not displace the
 current Mission 3 mainline.
 
-It becomes formally sensible once the Mission 3 env/wrapper extension is
+It becomes formally sensible now that the Mission 3 env/wrapper extension is
 accepted and the repo has a cleaner fair-vs-oracle boundary.
 
 Planned packet sequence:
@@ -767,9 +767,9 @@ are worth pinning in the roadmap so they do not disappear between packets.
 
 #### Highest-value backlog
 
-1. Mission 3 env/wrapper extension
-2. Mission 3 learning experiments
-3. Mission 1 honest/fair-agent lab kickoff
+1. Mission 3 learning experiments
+2. Mission 1 honest/fair-agent lab kickoff
+3. Mission 2 same-rules transfer and exactness check
 
 #### Medium-value backlog
 
