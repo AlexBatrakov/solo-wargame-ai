@@ -6,10 +6,10 @@ from dataclasses import dataclass
 from random import Random
 from typing import TYPE_CHECKING
 
-from solo_wargame_ai.env.observation import Observation
-
-from .feature_adapter import ObservationFeatureAdapter
+from .feature_adapter import FeatureAdapter
 from .learned_policy import (
+    EnvInfo,
+    EnvObservation,
     LearnedPolicy,
     legal_action_mask_from_info,
 )
@@ -27,7 +27,7 @@ except ModuleNotFoundError:  # pragma: no cover - exercised only without torch i
     nn = None
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Sequence
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +38,8 @@ class ActorCriticActionRecord:
     log_prob: float
     entropy: float
     value_estimate: float
+
+
 class MaskedActorCriticNetwork(nn.Module if nn is not None else object):
     """Small shared-body actor-critic network for the first masked learner."""
 
@@ -115,7 +117,7 @@ class MaskedActorCriticPolicy(LearnedPolicy):
 
     def __init__(
         self,
-        adapter: ObservationFeatureAdapter,
+        adapter: FeatureAdapter,
         model: MaskedActorCriticNetwork,
         *,
         seed: int | None = None,
@@ -129,8 +131,8 @@ class MaskedActorCriticPolicy(LearnedPolicy):
 
     def select_action(
         self,
-        observation: Observation,
-        info: Mapping[str, object],
+        observation: EnvObservation,
+        info: EnvInfo,
         *,
         evaluation: bool = True,
     ) -> int:
@@ -144,8 +146,8 @@ class MaskedActorCriticPolicy(LearnedPolicy):
 
     def policy_step(
         self,
-        observation: Observation,
-        info: Mapping[str, object],
+        observation: EnvObservation,
+        info: EnvInfo,
         *,
         evaluation: bool,
     ) -> ActorCriticActionRecord:

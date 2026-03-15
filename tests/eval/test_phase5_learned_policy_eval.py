@@ -21,6 +21,12 @@ MISSION_PATH = (
     / "missions"
     / "mission_01_secure_the_woods_1.toml"
 )
+MISSION3_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "configs"
+    / "missions"
+    / "mission_03_secure_the_building.toml"
+)
 
 
 class FirstLegalPolicy:
@@ -61,6 +67,28 @@ def test_learned_policy_evaluation_reuses_the_phase3_metric_schema() -> None:
     assert all(
         run.result.player_decision_count == run.final_info["decision_step_count"]
         for run in evaluation.episode_runs
+    )
+
+
+def test_learned_policy_evaluation_supports_the_mission3_wrapper_contract() -> None:
+    mission = load_mission(MISSION3_PATH)
+
+    evaluation = evaluate_learned_policy(
+        mission,
+        policy_factory=FirstLegalPolicy,
+        seeds=(0,),
+        evaluation=True,
+    )
+
+    assert evaluation.policy_name == "first_legal"
+    assert evaluation.metrics.agent_name == "first_legal"
+    assert evaluation.metrics.episode_count == 1
+    assert evaluation.seeds == (0,)
+    assert evaluation.episode_runs[0].final_info["action_catalog_size"] == 49
+    assert evaluation.episode_runs[0].result.terminal_outcome in TerminalOutcome
+    assert (
+        evaluation.episode_runs[0].result.player_decision_count
+        == evaluation.episode_runs[0].final_info["decision_step_count"]
     )
 
 

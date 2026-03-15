@@ -7,16 +7,16 @@ from contextlib import nullcontext
 from dataclasses import dataclass
 
 from solo_wargame_ai.agents.learned_policy import (
+    EnvInfo,
+    EnvObservation,
     LearnedPolicy,
     LearnedPolicyFactory,
     legal_action_ids_from_info,
     policy_name,
 )
+from solo_wargame_ai.agents.learning_mission_support import build_learning_env
 from solo_wargame_ai.domain.mission import Mission
 from solo_wargame_ai.domain.state import TerminalOutcome
-from solo_wargame_ai.env import Mission1Env
-from solo_wargame_ai.env.mission1_env import EnvInfo
-from solo_wargame_ai.env.observation import Observation
 from solo_wargame_ai.eval.episode_runner import EpisodeResult
 from solo_wargame_ai.eval.metrics import EpisodeMetrics, aggregate_episode_results
 
@@ -32,7 +32,7 @@ except ModuleNotFoundError:  # pragma: no cover - exercised only without torch i
 class LearnedEpisodeRun:
     """Full one-episode learned-policy output on the accepted env boundary."""
 
-    final_observation: Observation
+    final_observation: EnvObservation
     final_info: EnvInfo
     result: EpisodeResult
 
@@ -54,9 +54,9 @@ def run_learned_episode(
     seed: int,
     evaluation: bool = True,
 ) -> LearnedEpisodeRun:
-    """Run one full Mission 1 episode through ``Mission1Env`` and a learned policy."""
+    """Run one full accepted-wrapper episode through a learned policy."""
 
-    env = Mission1Env(mission)
+    env = build_learning_env(mission)
     observation, info = env.reset(seed=seed)
     initial_marker_count = len(observation["unresolved_markers"])
     policy.reset()

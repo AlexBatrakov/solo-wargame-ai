@@ -10,7 +10,6 @@ from random import Random
 from typing import Any
 
 from solo_wargame_ai.domain.mission import Mission
-from solo_wargame_ai.env import Mission1Env
 from solo_wargame_ai.eval.learned_policy_eval import evaluate_learned_policy
 from solo_wargame_ai.eval.learned_policy_reporting import format_seed_set
 from solo_wargame_ai.eval.learned_policy_seeds import (
@@ -23,8 +22,12 @@ from solo_wargame_ai.eval.learned_policy_seeds import (
 )
 from solo_wargame_ai.eval.metrics import EpisodeMetrics, format_metrics_table
 
-from .feature_adapter import ObservationFeatureAdapter
+from .feature_adapter import FeatureAdapter
 from .learned_policy import legal_action_ids_from_info, legal_action_mask_from_info
+from .learning_mission_support import (
+    build_learning_env,
+    build_learning_feature_adapter,
+)
 from .masked_action_selection import ActionMaskError, select_masked_action
 from .masked_actor_critic import MaskedActorCriticNetwork, MaskedActorCriticPolicy
 
@@ -129,7 +132,7 @@ class LoadedPhase5Checkpoint:
     model_selection_seeds: tuple[int, ...]
     checkpoint_selection_policy: str
     model_selection_metrics: EpisodeMetrics | None
-    adapter: ObservationFeatureAdapter
+    adapter: FeatureAdapter
     model: MaskedActorCriticNetwork
 
 
@@ -137,12 +140,13 @@ def build_phase5_feature_adapter(
     mission: Mission,
     *,
     feature_adapter_seed: int = PHASE5_FEATURE_ADAPTER_SEED,
-) -> ObservationFeatureAdapter:
-    """Build the fixed observation adapter from a disjoint dedicated seed."""
+) -> FeatureAdapter:
+    """Build the fixed mission-local adapter from a disjoint dedicated seed."""
 
-    env = Mission1Env(mission)
-    initial_observation, _ = env.reset(seed=feature_adapter_seed)
-    return ObservationFeatureAdapter.from_initial_observation(initial_observation)
+    return build_learning_feature_adapter(
+        mission,
+        feature_adapter_seed=feature_adapter_seed,
+    )
 
 
 def default_phase5_output_dir(
@@ -191,7 +195,7 @@ def train_masked_actor_critic(
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     action_rng = Random(config.training_seed)
-    env = Mission1Env(mission)
+    env = build_learning_env(mission)
 
     checkpoints: list[Phase5CheckpointRecord] = []
     total_env_steps = 0
@@ -436,13 +440,13 @@ def format_phase5_training_report(training_run: Phase5TrainingRun) -> str:
 
 
 def _action_count_for_mission(mission: Mission) -> int:
-    env = Mission1Env(mission)
+    env = build_learning_env(mission)
     return env.action_space_size
 
 
 def _training_action_step(
     model: MaskedActorCriticNetwork,
-    adapter: ObservationFeatureAdapter,
+    adapter: FeatureAdapter,
     observation,
     info,
     *,
@@ -527,7 +531,7 @@ def _optimize_episode(
 def _evaluate_and_save_checkpoint(
     *,
     mission: Mission,
-    adapter: ObservationFeatureAdapter,
+    adapter: FeatureAdapter,
     model: MaskedActorCriticNetwork,
     config: Phase5TrainingConfig,
     checkpoint_dir: Path,
@@ -563,7 +567,7 @@ def _evaluate_and_save_checkpoint(
 def _evaluate_model_selection_metrics(
     *,
     mission: Mission,
-    adapter: ObservationFeatureAdapter,
+    adapter: FeatureAdapter,
     model: MaskedActorCriticNetwork,
     config: Phase5TrainingConfig,
 ) -> EpisodeMetrics:

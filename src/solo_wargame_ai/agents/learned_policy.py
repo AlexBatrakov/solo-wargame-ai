@@ -6,8 +6,8 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Protocol, TypeAlias
 
-from solo_wargame_ai.env.observation import Observation
-
+EnvObservation: TypeAlias = Mapping[str, object]
+EnvInfo: TypeAlias = Mapping[str, object]
 
 @dataclass(frozen=True, slots=True)
 class PolicyActionRecord:
@@ -29,8 +29,8 @@ class LearnedPolicy(Protocol):
 
     def select_action(
         self,
-        observation: Observation,
-        info: Mapping[str, object],
+        observation: EnvObservation,
+        info: EnvInfo,
         *,
         evaluation: bool = True,
     ) -> int:
@@ -59,6 +59,8 @@ def legal_action_mask_from_info(info: Mapping[str, object]) -> tuple[bool, ...]:
 
 
 __all__ = [
+    "EnvInfo",
+    "EnvObservation",
     "LearnedPolicy",
     "LearnedPolicyFactory",
     "PolicyActionRecord",
