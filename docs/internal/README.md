@@ -20,8 +20,11 @@ Recommended starting points:
 - `docs/internal/independent_audit_followups.md` - preserved findings and deferred improvements from external audits
 
 Local working reports can live under `docs/internal/thread_reports/`.
-That subdirectory is intended for gitignored per-thread markdown notes, with
-only its README/template tracked.
+That subdirectory is intended for gitignored per-thread notes, with only its
+README/template tracked.
+
+Scratch experiment code, one-off runners, and local helper scripts should live
+under `docs/internal/experiments/`, also gitignored except for its README.
 
 Other local-only helper material, such as project/career positioning notes for
 resumes, cover letters, or interview prep, can live under

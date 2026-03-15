@@ -65,6 +65,12 @@ After Mission 3 env-prep packet closeout:
   - unsupported multi-start missions are now rejected before runtime
   - the next env step should build on the accepted narrow shared resolver-backed
     adapter seam rather than another Mission-local wrapper island
+- keep the fair-vs-oracle distinction discoverable during future planning:
+  - the Mission 1 heuristic is the most defensible fair-ish baseline currently
+    in repo history
+  - Mission 3 heuristic/search and rollout-style search surfaces are still
+    useful preserved references, but should not be treated as honest
+    player-information benchmarks without qualification
 - do not reopen repo hygiene as a broad campaign, another default
   search-strengthening packet, Mission 4 content, or generic search/RL-
   platform buildout casually as a follow-up to the Mission 3 landing

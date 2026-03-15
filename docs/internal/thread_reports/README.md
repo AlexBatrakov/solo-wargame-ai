@@ -5,6 +5,9 @@ This directory is for short local reports created during Codex threads.
 These reports are intentionally gitignored, except for this README and the
 template file.
 
+Experiment scripts do not belong here. Put scratch runners and one-off helper
+code under `docs/internal/experiments/` instead.
+
 ## Why this exists
 
 Thread reports are useful for:

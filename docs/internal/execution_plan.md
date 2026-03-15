@@ -60,7 +60,8 @@ recovering chat history:
 - Repository state rechecked on March 12, 2026 after Mission 3 search
   strengthening closeout and before the next packet is opened:
   - `git status --short` showed only untracked
-    `docs/internal/mission3_cross_mission_probes.md`, intentionally left
+    `docs/internal/thread_reports/2026-03-12_mission3_cross_mission_probes.md`,
+    intentionally left
     outside the tracked packet closeout pending later Super Master review
   - `git log --oneline --decorate -12` showed `HEAD` on
     `aece79e docs: close mission3 search strengthening packet`
@@ -161,7 +162,8 @@ Future planning should therefore continue from the preserved historical Mission
 
 The strategic pause after that closeout is now informed by three extra inputs:
 
-- the local exploratory note `docs/internal/mission3_cross_mission_probes.md`,
+- the local exploratory note
+  `docs/internal/thread_reports/2026-03-12_mission3_cross_mission_probes.md`,
   intentionally preserved as exploratory evidence rather than accepted
   benchmark truth;
 - the independently reproduced March 12 hardening findings (`C7`-`C10`);
@@ -183,7 +185,7 @@ tracked planning record:
 
 Current recommended next packet:
 
-- Mission 3 env-prep hardening and adapter seam
+- Mission 3 env/wrapper extension
 
 Why this is now preferred:
 
@@ -191,53 +193,126 @@ Why this is now preferred:
   - historical benchmark: `rollout-search 105/200`
   - accepted strengthened benchmark:
     `rollout-search-strengthened 171/200`
-- another default search packet would now be harder to justify as a bounded
-  local-quality pass; it would more likely be a different research question,
-  not a continuation of the just-closed packet
-- the March 12 hardening findings (`C8`, `C9`, `C10`) are real and now
-  confirmed by local reproduction:
-  - mission validation is too permissive on important numeric fields
-  - the loader accepts multi-start missions that runtime initialization still
-    rejects
-  - mission schema parsing is lenient on unknown keys and raw on missing keys
+- the March 12 hardening findings (`C8`, `C9`, `C10`) were real and are now
+  closed in accepted repo history through the env-prep packet
 - the current top-level repo split still looks good, so a broad reorg is not
   justified
-- however, the next env step should not harden `Mission1Env` into the
-  permanent center or create a second isolated `MissionXEnv` island
-- the best next move is therefore one bounded preparatory packet that:
-  - strengthens the mission-config/schema boundary where recent audits found
-    real issues
-  - carves a narrow shared env-adapter seam
-  - leaves Mission 3 env/wrapper implementation itself for the packet after
-    that
+- the env-prep packet already landed the narrow shared resolver-backed session
+  seam that the Mission 3 wrapper should extend rather than replace
+- the next mainline question is now the observation-based Mission 3 wrapper
+  contract itself, not another preparatory packet
 - the local exploratory cross-mission probe note remains worth preserving, but
-  not strong enough by itself to displace the new bounded prep packet
+  not strong enough by itself to displace the Mission 3 env mainline
 - the local heuristic reports also remain worth preserving, but they should be
   treated as exploratory evidence for a possible later bounded validation or
   productization question, not as accepted benchmark truth and not as a reason
   to reorder the current next packet
+- the March 14 fairness reports also remain worth preserving:
+  they strengthen the case for an explicit fair-vs-oracle split, but they do
+  not displace Mission 3 env/wrapper extension as the current next packet
 
 Likely follow-on packets after that:
 
-1. Mission 3 env/wrapper extension
-2. Mission 3 learning experiments
-3. Cross-mission evaluation/reporting only when more than one mission is
+1. Mission 3 learning experiments
+2. Mission 1 honest/fair-agent lab kickoff after the Mission 3 wrapper closes
+3. Mission 2 same-rules transfer once the Mission 1 fair-agent ladder has a
+   usable exact and honest-search surface
+4. Mission 3 honest-agent approximation after the repo has both the Mission 3
+   wrapper and some fair-agent reference discipline from Missions 1/2
+5. Cross-mission evaluation/reporting only when more than one mission is
    active enough to justify it
-4. Mission 4 or another bounded richer content slice
+6. Mission 4 or another bounded richer content slice
+
+Preserved deferred research line beyond the next packet:
+
+- honest/fair-agent research ladder, to be opened only after the Mission 3
+  env/wrapper milestone unless project priorities change
+- recommended packet sequence inside that ladder:
+  1. exact Mission 1 fair-ceiling artifact
+  2. honest Mission 1 search baselines
+  3. Mission 1 value-function study against exact labels
+  4. bounded Mission 1 search-efficiency ideas such as pruning, beam search,
+     top-K rollouts, and later MCTS-style work only if the simpler honest
+     ladder is already in place
+  5. Mission 2 same-rules transfer and exactness check
+  6. Mission 3 honest-agent approximation without an exact oracle, likely using
+     sampled chance handling, honest rollouts, pruning, and other bounded
+     approximations
+- Mission 2 deserves special treatment inside this ladder because it uses the
+  same rules family as Mission 1, so it can serve as the cleanest bridge
+  between an exact small-mission lab and richer-slice honest-agent work
+- heavy exact or large seeded runs inside this ladder should prefer a thin
+  operator-controlled local command over a long worker-owned terminal session
+- if a future exact/benchmark workload is naturally seed-parallel, one bounded
+  future packet may add local multi-core execution support so the user can use
+  available hardware without changing benchmark meaning
+
+Preserved March 14-15 sandbox idea bank for later packet design:
+
+- benchmark-contract discipline:
+  - keep fair player-information agents distinct from oracle/clairvoyant
+    references in both naming and interpretation
+- honest-search families worth preserving:
+  - expected one-step / greedy fair scoring
+  - depth-limited expectimax
+  - sampled chance evaluation / sampled expectimax
+  - rollout-from-top-candidates
+  - beam-style bounded search
+  - later bounded stochastic tree-search / MCTS-style directions
+- specific Mission 3 honest-approximation variants worth preserving:
+  - common-random-number rollouts
+  - stronger continuation policies before simply increasing rollout count
+  - exact German-order solving paired with heuristic British continuation
+  - exact chance expansion only at selected stochastic nodes
+  - root-only fair action evaluation rather than full exact turn search
+- negative-result reminders worth preserving:
+  - naive terminal Monte Carlo was too noisy to trust as the main recipe
+  - Mission 1 one-turn fair search matched the accepted heuristic rather than
+    clearly beating it
+  - direct exact fair turn-search did not scale cleanly from Mission 1 to
+    Mission 3
+  - weak continuation policies made root Monte Carlo look much worse than the
+    idea itself might deserve
+- state-evaluation / data-modeling ideas worth preserving:
+  - exact Mission 1 values as supervised labels
+  - manual feature families around tempo, threat, force survival, and
+    positional quality
+  - regression, boosting, small neural models, and later other bounded
+    approximators for `P(win | state)` or aligned value targets
+- RL-agent design ideas worth preserving for much later packets:
+  - masked legal-action policies
+  - hierarchical policies
+  - action-scoring networks over legal actions
+  - aggregated-feature, fixed-slot, and entity-based state encodings
+  - actor-critic / PPO-style baselines
+  - imitation learning and search-distilled policies before or alongside later
+    RL fine-tuning
 
 Ranked backlog beyond the active next packet:
 
 - High value:
-  - Mission 3 env-prep hardening and adapter seam
   - Mission 3 env/wrapper extension
   - Mission 3 learning experiments
+  - Mission 1 honest/fair-agent lab kickoff after the Mission 3 wrapper
 - Medium value:
+  - Mission 1 exact-ceiling artifact and honest-search baselines
+  - Mission 1 value-function study and learned evaluators backed by exact
+    labels
+  - Mission 2 same-rules transfer and possible exact ceiling check
+  - Mission 3 honest-agent approximation after the Mission 3 wrapper/learning
+    path is established
   - Mission 4 or another bounded richer content slice once the Mission 3 env
     and learning path are healthier
   - a narrow follow-up on search transfer/localization only if a later thread
     opens that as a new explicit question rather than more generic tuning
   - observation/action redesign only if richer content shows the current
     wrapper is too Mission-1-shaped
+  - explicit fair-vs-oracle benchmark framing when the next fair-agent packet
+    is opened
+  - operator-controlled multi-core local runners for heavy exact or seeded
+    experiments once the honest-agent lab starts needing repeated long runs
+  - later RL-agent design work around state/action encoding and policy/value
+    architecture once the fair-agent ladder has stronger foundations
   - synthetic fixtures and bounded maintainability work when broader content
     makes them pay back
   - cross-mission evaluation/reporting once more than one mission is active
@@ -247,6 +322,8 @@ Ranked backlog beyond the active next packet:
   - another Mission 1 strengthening packet without a specific new research
     question
   - another default Mission 3 search-strengthening packet
+  - broad RL-architecture churn before the honest/fair-agent line produces
+    clearer evidence
   - generic experiment/search platform work
   - tooling campaigns not directly required by the next content slice
   - visualization/operator UX beyond thin debugging needs
@@ -278,7 +355,7 @@ Planning audit findings:
 - Repository state was rechecked on March 14, 2026 before opening this packet:
   - `git status --short` showed local tracked edits in
     `docs/internal/execution_plan.md` plus untracked
-    `docs/internal/mission3_cross_mission_probes.md`
+    `docs/internal/thread_reports/2026-03-12_mission3_cross_mission_probes.md`
   - `git log --oneline --decorate -12` showed `HEAD` on
     `d3188cc docs: capture post-search planning pause`
   - `.venv/bin/pytest -q` passed with `236 passed in 220.40s`

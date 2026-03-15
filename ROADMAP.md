@@ -569,22 +569,35 @@ That next packet has now landed as well:
     generic search/reporting platform work;
   - the default next step moved to Mission 3 env/wrapper extension rather than
     another search packet.
+- [x] **Mission 3 env-prep hardening and adapter seam**
+  Closed as a bounded preparatory packet after Mission 3 search strengthening.
+  Outcome:
+  - mission-schema parsing now rejects unknown keys and reports missing
+    required fields structurally;
+  - numeric mission validation is stricter for the currently supported slice;
+  - unsupported multi-start missions are rejected before runtime;
+  - a narrow shared resolver-backed env session seam landed under
+    `Mission1Env`;
+  - the default next step is now Mission 3 env/wrapper extension.
 
 ### Current planning pause
 
 After the Mission 3 search-strengthening closeout, additional audit and
-brainstorm work changed the preferred sequencing slightly:
+brainstorm work changed the preferred sequencing slightly, and the follow-up
+env-prep packet is now complete:
 
 - no big top-level repository reorg is needed;
 - the macro split `domain / io / env / agents / eval / cli` still looks right;
-- the highest-value immediate work is now a **small preparatory packet** before
-  Mission 3 env work, not a broad redesign and not another default Mission 3
-  tuning loop;
+- the highest-value immediate work is now **Mission 3 env/wrapper extension**
+  on top of the accepted env-prep seam, not another default Mission 3 tuning
+  loop;
 - the main reasons are:
-  - recent mission-config/schema hardening findings are real;
-  - the env layer should grow through a narrow shared adapter seam rather than
-    by turning `Mission1Env` into the permanent center or creating a second
-    isolated `MissionXEnv` island.
+  - the preparatory hardening gaps were real and are now closed;
+  - the env layer now has a narrow shared adapter/session seam to extend rather
+    than forcing Mission 3 wrapper work into `Mission1Env` or a second
+    isolated `MissionXEnv` island;
+  - future fair/non-oracle agent work now has a cleaner path to sit on top of
+    an explicit observation-based Mission 3 contract.
 
 ---
 
@@ -607,79 +620,191 @@ questions instead of spending more cycles on Mission 1 alone.
 
 ### Recommended next packet
 
-**Mission 3 env-prep hardening and adapter seam**
+**Mission 3 env/wrapper extension**
 
 Goal:
-- make one bounded preparatory pass before Mission 3 env/wrapper work.
+- extend the accepted env boundary to Mission 3 using the shared
+  resolver-backed session seam that now exists below Mission-local wrappers.
 
 Scope:
-- strengthen mission-config/schema semantics where recent audits found real
-  gaps;
-- carve a narrow shared resolver-backed env-adapter seam so Mission 3 env work
-  does not become another isolated wrapper stack;
-- preserve both the historical Mission 3 references and the accepted
-  strengthened local search result as comparison truth;
-- allow only the smallest env/eval export cleanup that directly supports that
-  seam.
+- add a Mission-3-capable wrapper surface on top of the accepted Mission 3
+  domain slice;
+- keep observation/action/reward/termination design explicit and bounded;
+- preserve Mission 1 anchors plus preserved historical and strengthened Mission
+  3 search references as separate comparison history;
+- keep the work focused on the wrapper/interface contract rather than on new
+  search, learning, or Mission 4 content.
 
 Non-goals:
-- no broad repo reorganization;
-- no Mission 3 wrapper implementation yet;
 - no Mission 3 learning experiments yet;
 - no Mission 4 content landing yet;
-- no generic multi-mission env/reporting/search platform buildout;
-- no reopening of Mission 3 search strengthening by default.
+- no broad env-platform buildout;
+- no reopening of the Mission 3 env-prep or search-strengthening packets by
+  default;
+- no generic cross-mission reporting/search infrastructure.
 
 Completion criteria:
-- the mission loader/validation boundary is stricter and less misleading than
-  it is today;
-- the project has one narrow shared env-extension seam ready for Mission 3
-  wrapper work without committing to a broad env-platform shape;
-- preserved Mission 1 anchors plus preserved historical and strengthened
-  Mission 3 references remain explicit and separate.
+- Mission 3 has an accepted env-side contract built on the shared resolver
+  session seam;
+- Mission 1 wrapper behavior stays regression-safe;
+- the project is ready to ask the next honest question: how learnable is the
+  richer Mission 3 slice under an explicit observation-based contract?
 
 ### Likely follow-on packets after that
 
-1. **Mission 3 env/wrapper extension**
-   Extend the accepted env boundary only as far as the new slice requires.
-2. **Mission 3 learning experiments**
+1. **Mission 3 learning experiments**
    Re-test learnability on content that is materially richer than Mission 1.
-3. **Cross-mission comparison and reporting**
+2. **Mission 1 honest/fair-agent lab - exact ceiling artifact**
+   Productize the exact Mission 1 solution as a preserved fair-reference
+   artifact rather than leaving it only as a scratch capability.
+3. **Mission 1 honest/fair-agent lab - honest search baselines**
+   Add bounded non-oracle Mission 1 search baselines such as depth-limited
+   expectimax, sampled chance evaluation, and rollout-from-top-candidates.
+4. **Mission 1 honest/fair-agent lab - value-function study**
+   Compare heuristic state evaluation against exact Mission 1 values and try
+   data-driven approximators such as regression or random forests.
+5. **Mission 1 honest/fair-agent lab - search-efficiency ideas**
+   Explore action pruning, beam-style search, hierarchical filtering, and other
+   bounded efficiency ideas once honest baselines exist.
+6. **Mission 2 same-rules transfer and ceiling check**
+   Reuse the same-rule Mission 1 tools on Mission 2, check whether an exact
+   solution is still tractable, and measure how well honest heuristics/search
+   transfer across two missions with the same rules.
+7. **Mission 3 honest-agent approximation**
+   Move the fair-agent line onto the richer Mission 3 slice with sampled
+   expectimax, honest rollouts, and other bounded approximations once there is
+   no exact oracle to lean on.
+8. **Cross-mission comparison and reporting**
    Add only the evaluation/reporting support needed once more than one mission
    is active.
-4. **Mission 4 or another bounded richer content slice**
+9. **Mission 4 or another bounded richer content slice**
    Continue content growth only after the Mission 3 stack is healthier.
+
+### Preserved future research line: honest/fair-agent ladder
+
+This research line should stay visible in planning but does not displace the
+current Mission 3 mainline.
+
+It becomes formally sensible once the Mission 3 env/wrapper extension is
+accepted and the repo has a cleaner fair-vs-oracle boundary.
+
+Planned packet sequence:
+
+1. **Mission 1 exact ceiling artifact**
+   Save and document the exact Mission 1 solution as a durable reference for
+   fair optimal play.
+2. **Mission 1 honest search baselines**
+   Try non-oracle Mission 1 baselines such as expected one-step scoring,
+   depth-limited expectimax, sampled expectimax, and bounded rollouts.
+3. **Mission 1 value-function study**
+   Measure how well the current heuristic evaluation aligns with exact values,
+   then try learned evaluators.
+4. **Mission 1 search-efficiency ideas**
+   Explore pruning, beam search, top-K rollout filtering, and later bounded
+   MCTS-style ideas only after the simpler honest ladder exists.
+5. **Mission 2 same-rules transfer and exactness check**
+   Use the fact that Mission 2 shares the same rules as Mission 1 to test
+   whether exact methods, value models, and honest search baselines transfer,
+   and to determine whether Mission 2 also admits a practical exact ceiling.
+6. **Mission 3 honest-agent approximation**
+   Move from exact-oracle-backed research to richer-slice approximation:
+   sampled expectimax, honest rollouts, pruning, and later bounded stochastic
+   tree-search ideas where exact solution is no longer available.
+
+Why Mission 2 deserves to stay visible:
+
+- it shares the same core rules as Mission 1, so it is the cleanest
+  generalization step after a Mission 1 exact lab;
+- it may still admit an exact or near-exact solution, which would make it a
+  second high-value calibration point;
+- it is a better bridge to Mission 3 than jumping directly from one tiny exact
+  mission to a much richer slice with no oracle.
+
+Operational note for this research ladder:
+
+- some exact or large fixed-seed experiments may take many minutes rather than
+  seconds;
+- when that happens, the preferred shape is a thin operator-controlled command
+  that the user can run locally rather than a long worker-thread terminal job;
+- if the workload is naturally seed-parallel or episode-parallel, future
+  research packets may add bounded multi-core local execution support so the
+  user can exploit available hardware without changing benchmark semantics.
+
+### Preserved long-horizon idea bank
+
+These ideas are intentionally farther out than the current mainline, but they
+are worth pinning in the roadmap so they do not disappear between packets.
+
+- keep fair and oracle agent families explicitly separated in future benchmark
+  framing and docs;
+- preserve the March 14 negative-result lessons:
+  - naive terminal Monte Carlo is often too noisy;
+  - shallow fair search only helps when the leaf evaluator is strong;
+  - direct exact fair turn-search scaled badly from Mission 1 to Mission 3;
+- continue the honest-search ladder with practical hybrids such as:
+  - top-K candidate filtering;
+  - sampled expectimax;
+  - rollout-from-top-candidates;
+  - beam-style bounded search;
+  - later bounded stochastic tree-search / MCTS-style ideas;
+- keep state-evaluation research visible:
+  - hand-designed feature families;
+  - exact-value supervision on Mission 1;
+  - regression / boosting / small neural estimators;
+- keep Mission 2 transfer visible as the clean same-rules generalization step;
+- keep Mission 3 honest-agent approximation visible as the first place where
+  sampling, pruning, and bounded fair search must work without an exact oracle;
+- keep later RL-agent design ideas visible, including:
+  - masked legal-action policies;
+  - hierarchical policies;
+  - action-scoring networks over legal actions;
+  - aggregated, fixed-slot, or entity-based state encodings;
+  - actor-critic / PPO-style baselines;
+  - imitation learning or search-distilled policies before or alongside later
+    RL fine-tuning.
 
 ### Ranked future backlog
 
 #### Highest-value backlog
 
-1. Mission 3 env-prep hardening and adapter seam
-2. Mission 3 env/wrapper extension
-3. Mission 3 learning experiments
+1. Mission 3 env/wrapper extension
+2. Mission 3 learning experiments
+3. Mission 1 honest/fair-agent lab kickoff
 
 #### Medium-value backlog
 
-1. Mission 4 or another bounded richer content slice once the Mission 3 env
+1. Mission 1 exact ceiling artifact and honest-search baselines once the
+   Mission 3 wrapper milestone is complete
+2. Mission 1 value-function study and learned evaluators backed by exact labels
+3. Mission 2 same-rules transfer and exactness check
+4. Mission 3 honest-agent approximation once the Mission 3 wrapper and first
+   learning pass are in place
+5. Mission 4 or another bounded richer content slice once the Mission 3 env
    and learning path are healthier
-2. A narrow search-transfer/localization follow-up only if a later thread opens
+6. A narrow search-transfer/localization follow-up only if a later thread opens
    that as a new explicit question rather than more tuning
-3. Observation/action redesign only if richer content shows the accepted
+7. Observation/action redesign only if richer content shows the accepted
    wrapper is too Mission-1-shaped
-4. Synthetic fixtures and bounded maintainability refactors ahead of broader
+8. Synthetic fixtures and bounded maintainability refactors ahead of broader
    multi-mission growth
-5. Better evaluation, reporting, and replay-assisted debugging once more than
+9. Better evaluation, reporting, and replay-assisted debugging once more than
    one mission is active
+10. Operator-controlled multi-core local runners for heavy exact or seeded
+    experiments once the honest-agent lab starts needing repeated long runs
+11. Later RL-agent design work around state/action encoding and policy/value
+    architecture once the fair-agent ladder has stronger foundations
 
 #### Lower-priority / opportunistic backlog
 
-1. Additional Mission 1 strengthening only if a very specific research question
-   remains after the Mission 3 pivot
+1. Additional Mission 1 oracle-style strengthening only if a very specific
+   research question remains after the fair-agent line is clearer
 2. Another default Mission 3 search packet without a clearly different question
 3. Wider tooling upgrades such as `mypy`, Python 3.12 CI, broader Ruff, or
    coverage-driven cleanup
 4. Generic config / artifact / experiment-platform buildout if repeated manual
    work starts to dominate progress
+5. Broad agent-architecture churn before the Mission 1 / Mission 2 fair-agent
+   line has produced clearer evidence
 5. Additional framework compatibility layers, richer operator UX, or optional
    visualization/debug views
 

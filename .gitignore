@@ -5,9 +5,13 @@
 outputs/
 
 # Local internal thread reports
-docs/internal/thread_reports/*.md
+docs/internal/thread_reports/*
 !docs/internal/thread_reports/README.md
 !docs/internal/thread_reports/TEMPLATE.md
+
+# Local internal scratch experiments
+docs/internal/experiments/*
+!docs/internal/experiments/README.md
 
 # Local internal project/career profiles
 docs/internal/project_profiles/

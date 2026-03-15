@@ -84,11 +84,11 @@ content slices land.
   Squad behavior;
 - Mission-3-only historical and strengthened search comparison surfaces with
   fixed smoke and benchmark seed aliases;
+- a shared resolver-backed env session seam that Mission-local wrappers can
+  build on without duplicating lifecycle/state progression logic;
 - replay/integration coverage through the accepted resolver path.
 
 What is deliberately **not** implemented yet:
-- a shared Mission-3-ready env-adapter seam beyond the accepted Mission 1
-  wrapper;
 - Mission 3 env/wrapper extension;
 - Mission 3 learning experiments;
 - broader multi-mission infrastructure;
@@ -101,7 +101,7 @@ What is deliberately **not** implemented yet:
 - `src/solo_wargame_ai/io/`
   Mission loading, validation, and replay/serialization helpers.
 - `src/solo_wargame_ai/env/`
-  RL-friendly Mission 1 wrapper and observation/action/mask boundary.
+  RL-friendly Mission 1 wrapper plus a shared resolver-backed env session seam.
 - `src/solo_wargame_ai/agents/`
   Random, heuristic, rollout-search, and learned-policy code.
 - `src/solo_wargame_ai/eval/`
@@ -124,17 +124,19 @@ What is deliberately **not** implemented yet:
 
 The next recommended packet is:
 
-**Mission 3 env-prep hardening and adapter seam**
+**Mission 3 env/wrapper extension**
 
-The goal is to make one small preparatory pass before Mission 3 env work:
-- tighten mission-config/schema validation where recent audits found real gaps;
-- add a narrow shared env-adapter seam so Mission 3 does not become a second
-  isolated `MissionXEnv` island;
-- keep the work bounded and avoid a broad repository reorganization.
+The goal is to extend the accepted env boundary to the richer Mission 3 slice
+without reopening the domain/content packet, the historical Mission 3 baseline
+surface, or the accepted Mission 3 search-strengthening packet.
 
 Likely follow-on packets after that:
-- Mission 3 env/wrapper extension;
 - Mission 3 learning experiments;
+- a deferred honest/fair-agent research line that starts with Mission 1 exact
+  artifacts, then uses Mission 2 as a same-rules transfer step before moving
+  to harder honest-agent work on Mission 3, with later RL-agent design
+  questions such as state/action encoding and policy/value architecture kept
+  visible as a future track;
 - later Mission 4 or another bounded richer content slice;
 - cross-mission evaluation/reporting once more than one active mission needs to
   be compared.

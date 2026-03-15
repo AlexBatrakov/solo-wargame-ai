@@ -254,6 +254,37 @@ Desired review point:
 - likely fix direction is a stricter parser/validator boundary that reports
   unknown and missing fields as structured mission-schema errors
 
+### C11. Fair-vs-oracle benchmark framing is still too implicit
+
+Audit finding:
+- some accepted heuristic/search baselines are reproducible and useful, but
+  they are not all fair player-information policies. In particular, several
+  Mission 3 agents and rollout/search baselines can rank actions using
+  branch-realized randomness from cloned simulator states.
+
+Why this matters:
+- this is not a simulator-correctness failure, but it is a benchmark-contract
+  and interpretation risk
+- without an explicit split, future planning can accidentally compare fair
+  observation-based agents, oracle-style search references, and learned
+  policies as if they measured the same thing
+
+Current repo evidence:
+- the local reports
+  `docs/internal/thread_reports/2026-03-14_fairness_analysis_mission1_mission3.md`
+  and
+  `docs/internal/thread_reports/2026-03-14_rng-branch-peeking_fairness_report.md`
+  argue that the accepted Mission 1 heuristic is broadly defensible as
+  fair-ish, while Mission 3 heuristic/search surfaces and rollout-style
+  baselines should be treated as oracle/clairvoyant references unless later
+  work replaces them with honest counterparts
+
+Desired review point:
+- before making stronger cross-agent claims on richer content and before
+  formalizing the later Mission 1 honest/fair-agent research line
+- likely fix direction is an explicit fair-vs-oracle split in benchmark
+  framing, observation-based contracts, and future fair-agent packet design
+
 ## Resolved follow-ups since the Phase 2 audit
 
 ### P3-R1. Agent-engine API note

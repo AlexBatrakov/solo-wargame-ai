@@ -55,7 +55,9 @@ repo/
 │   ├── testing_strategy.md
 │   ├── development_workflow.md
 │   └── internal/
-│       └── thread_reports/
+│       ├── thread_reports/
+│       ├── experiments/
+│       └── project_profiles/
 ├── configs/
 │   ├── missions/
 │   ├── agents/
@@ -108,6 +110,8 @@ Contains the formalized specification of the project and reference materials.
 The tracked internal workflow notes also live under `docs/internal/`.
 Short per-thread local reports may live under `docs/internal/thread_reports/`,
 with the reports themselves gitignored.
+Scratch experiment code may live under `docs/internal/experiments/`, also
+gitignored except for a short local README.
 
 ### `configs/`
 Configuration files for missions, agents, and experiments.
