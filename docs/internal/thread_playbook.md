@@ -65,17 +65,31 @@ After Mission 3 env-prep packet closeout:
   - unsupported multi-start missions are now rejected before runtime
   - the next env step should build on the accepted narrow shared resolver-backed
     adapter seam rather than another Mission-local wrapper island
+- keep the active Mission 3 env/wrapper packet boundary explicit:
+  - the preferred wrapper shape is a separate `Mission3Env` over the shared
+    resolver session seam
+  - the default Mission 3 observation boundary should be player-visible rather
+    than raw `GameState`
+  - Mission-3-local action catalog / legality-mask work is in scope
+  - Mission 3 learning, Mission 4 content, and generic env-platform work are
+    not part of this packet
 - keep the fair-vs-oracle distinction discoverable during future planning:
   - the Mission 1 heuristic is the most defensible fair-ish baseline currently
     in repo history
   - Mission 3 heuristic/search and rollout-style search surfaces are still
     useful preserved references, but should not be treated as honest
     player-information benchmarks without qualification
+- keep the preserved Mission 3 comparison surfaces separate from any new
+  Mission 3 env smoke or later Mission 3 learning outputs
 - do not reopen repo hygiene as a broad campaign, another default
   search-strengthening packet, Mission 4 content, or generic search/RL-
   platform buildout casually as a follow-up to the Mission 3 landing
 - the current default next packet is:
   Mission 3 env/wrapper extension
+- the default package shape for that packet is:
+  Delivery A wrapper surface, Delivery B operator/preservation finish,
+  optional Delivery C only if A/B do not already leave a clean closeout-ready
+  surface
 - do not reopen the Mission 3 content packet, the Mission 3 baselines/search
   re-establishment packet, the Mission 3 search-strengthening packet, the
   Mission 3 env-prep packet, or another Mission 1 strengthening/search packet

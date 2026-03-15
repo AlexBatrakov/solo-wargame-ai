@@ -5,12 +5,12 @@
 This file is the current master control surface for repository-level planning,
 dispatch, and closeout.
 
-As of March 12, 2026, the original six-phase roadmap is complete by repository
+As of March 15, 2026, the original six-phase roadmap is complete by repository
 evidence.
-The active planning problem is no longer "whether to open one more Mission 3
-search packet," but "how to pause cleanly after Mission 3
-search-strengthening, preserve the accepted results, and queue the smallest
-next packet that reduces risk before Mission 3 env/wrapper extension."
+The active planning problem is no longer "whether to queue one more preparatory
+packet before Mission 3 env work," but "how to dispatch the bounded Mission 3
+env/wrapper extension cleanly without widening into Mission 3 learning,
+Mission 4 content, fair-agent research, or a generic env platform."
 
 If a future thread needs to know what to do next, it should read this file
 after the public specs and the rules digest.
@@ -33,6 +33,7 @@ recovering chat history:
   its historical reference surface,
 - preserve the accepted Mission 3 search-strengthening packet and its
   historical-vs-strengthened reference surfaces,
+- preserve the accepted Mission 3 env-prep packet and its shared-session seam,
 - avoid reopening completed Delivery A / B / C work accidentally,
 - recover the accepted baseline, wrapper, and benchmark references quickly,
 - point the next planning thread toward the active packet backlog and later
@@ -50,6 +51,7 @@ recovering chat history:
   - Mission 3 vertical-slice packet complete
   - Mission 3 baselines/search re-establishment packet complete
   - Mission 3 search-strengthening packet complete
+  - Mission 3 env-prep hardening and adapter-seam packet complete
 - Local tags:
   - `phase1-complete`
   - `phase2-complete`
@@ -57,34 +59,46 @@ recovering chat history:
   - `phase4-complete`
   - `phase5-complete`
   - `phase6-complete`
-- Repository state rechecked on March 12, 2026 after Mission 3 search
-  strengthening closeout and before the next packet is opened:
-  - `git status --short` showed only untracked
-    `docs/internal/thread_reports/2026-03-12_mission3_cross_mission_probes.md`,
-    intentionally left
-    outside the tracked packet closeout pending later Super Master review
+- Repository state rechecked on March 15, 2026 after Mission 3 env-prep
+  closeout and before dispatch of Mission 3 env/wrapper extension:
+  - `git status --short` showed one unrelated local tracked edit:
+    `M docs/internal/experiments/README.md`
   - `git log --oneline --decorate -12` showed `HEAD` on
-    `aece79e docs: close mission3 search strengthening packet`
-  - `.venv/bin/pytest -q` passed with `236 passed`
+    `f3be20a docs: sync roadmap and local experiment workflow`
+  - `git show --no-patch --decorate phase1-complete` still resolved to
+    `d6445d9`
+  - `git show --no-patch --decorate phase2-complete` still resolved to
+    `1ef74ab`
+  - `git show --no-patch --decorate phase3-complete` still resolved to
+    `98519c7`
+  - `git show --no-patch --decorate phase4-complete` still resolved to
+    `0e4a6a8`
+  - `git show --no-patch --decorate phase5-complete` still resolved to
+    `9d8beb9`
+  - `git show --no-patch --decorate phase6-complete` still resolved to
+    `f80fde5`
+  - `.venv/bin/pytest -q` passed with `251 passed in 230.69s`
   - `.venv/bin/ruff check src tests` passed with `All checks passed!`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
     succeeded with the preserved `random` `2/16` wins vs `heuristic`
     `11/16` wins reference
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+    preserved the accepted Mission 1 wrapper smoke surface:
+    `32` action ids, `35` decision steps, defeat, reward `-1.0`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+    preserved best `144` and median `133`
   - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
     confirmed `rollout 195/200`, versus preserved anchors `random 11/200`,
     `heuristic 157/200`, and accepted learned references `best 144/200`,
     `median 133/200`
-  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode smoke`
-    confirmed the accepted Mission 3 smoke reference surface:
-    `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
   - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
     confirmed the accepted Mission 3 benchmark reference surface:
     `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
-  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark --surface strengthened`
-    confirmed the accepted strengthened Mission 3 benchmark result:
-    `rollout-search-strengthened 171/200`
+  - evidence-only local notes remain present under
+    `docs/internal/thread_reports/`, but none of them replace the preserved
+    accepted benchmark surfaces above
 
-Accepted runtime surface after Mission 3 search strengthening closeout:
+Accepted runtime surface after Mission 3 env-prep closeout:
 
 - `Mission` remains static scenario data loaded from config.
 - `GameState` remains runtime truth with explicit staged decision contexts.
@@ -103,14 +117,19 @@ Accepted runtime surface after Mission 3 search strengthening closeout:
   comparison layer, not a generic cross-mission benchmark platform.
 - `env/normalize_env_state(...)` is the accepted env decision boundary over
   automatic resolver progression.
-- `env/observation.py` exposes a structured player-visible observation rather
-  than raw `GameState`.
-- `env/action_catalog.py` fixes Mission 1 to a 32-id staged-action catalog.
-- `env/legal_action_mask.py` derives legal ids and masks from the resolver legal
-  set.
-- `env/mission1_env.py` is a dependency-free wrapper with deterministic
-  `reset(seed=...)`, `step(action_id)`, terminal-only default reward, and
-  `terminated` / `truncated` semantics already frozen.
+- `env/resolver_session.py` is the accepted shared resolver-backed env session
+  seam below mission-local wrappers.
+- `env/observation.py` remains the accepted Mission-1-local structured
+  player-visible observation builder rather than a generic cross-mission
+  observation API.
+- `env/action_catalog.py` remains the accepted Mission-1-local 32-id staged-
+  action catalog surface rather than the center of future env growth.
+- `env/legal_action_mask.py` remains the accepted legality-mask helper over the
+  Mission 1 catalog; it is not yet a broader multi-mission contract.
+- `env/mission1_env.py` is now a thin dependency-free Mission 1 wrapper over
+  the shared resolver session seam, with deterministic `reset(seed=...)`,
+  `step(action_id)`, terminal-only default reward, and `terminated` /
+  `truncated` semantics already frozen.
 - `agents/feature_adapter.py`, `agents/learned_policy.py`,
   `agents/masked_action_selection.py`, and `agents/masked_actor_critic.py`
   remain the accepted Phase 5 learning-side library surface.
@@ -155,10 +174,11 @@ Accepted runtime surface after Mission 3 search strengthening closeout:
 ## Current post-Mission-3 planning decision
 
 The original six-phase build sequence is finished, the first richer-content
-packet has closed, the first Mission 3 comparison packet has closed, and the
-bounded Mission 3 search-strengthening packet has now closed as well.
-Future planning should therefore continue from the preserved historical Mission
-3 surface plus the accepted strengthened local search surface.
+packet has closed, the first Mission 3 comparison packet has closed, the
+bounded Mission 3 search-strengthening packet has closed, and the Mission 3
+env-prep packet has also closed.
+Future planning should therefore continue from the accepted shared env-session
+seam plus the preserved Mission 3 historical and strengthened search surfaces.
 
 The strategic pause after that closeout is now informed by three extra inputs:
 
@@ -339,7 +359,547 @@ Demoted for now:
 - generic search, experiment, or platform buildout
 - tooling campaigns that are not directly required by the next content slice
 
-## Active packet - Mission 3 env-prep hardening and adapter seam
+## Active packet - Mission 3 env/wrapper extension
+
+Packet goal:
+
+- extend the accepted env boundary from Mission 1 to Mission 3 on top of the
+  shared resolver-backed session seam
+- make Mission 3 observation / action / reward / termination semantics
+  explicit without opening Mission 3 learning, Mission 4 content, or a broad
+  multi-mission env platform
+- preserve the accepted Mission 1 anchors plus the preserved historical and
+  strengthened Mission 3 search surfaces as separate comparison history while
+  the new wrapper introduces an observation-based Mission 3 contract
+
+Planning audit findings:
+
+- Repository state was rechecked on March 15, 2026 before dispatch:
+  - `git status --short` showed unrelated local tracked edits only in
+    `docs/internal/experiments/README.md`
+  - `git log --oneline --decorate -12` showed `HEAD` on
+    `f3be20a docs: sync roadmap and local experiment workflow`
+  - `.venv/bin/pytest -q` passed with `251 passed in 230.69s`
+  - `.venv/bin/ruff check src tests` passed with `All checks passed!`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+    preserved `random 2/16`, `heuristic 11/16`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+    preserved the accepted Mission 1 wrapper smoke surface:
+    `32` action ids, `35` decision steps, defeat, reward `-1.0`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+    preserved best `144` and median `133`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+    preserved `random 11/200`, `heuristic 157/200`, `rollout 195/200`
+  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
+    preserved the historical Mission 3 benchmark surface:
+    `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+- The accepted env growth seam is now real in code:
+  - `env/resolver_session.py` owns deterministic reset / step / episode
+    bookkeeping over the resolver path
+  - `env/mission1_env.py` is already a thin Mission 1 wrapper over that seam
+  - `env/observation.py` and `env/action_catalog.py` remain Mission-1-local
+    helpers even though their filenames and exports still read package-wide
+- No Mission 3 env surface exists yet:
+  - there is no `Mission3Env`
+  - there is no Mission 3 observation builder
+  - there is no Mission 3 action-id catalog or Mission 3 env smoke operator
+    path
+- The active missing piece is wrapper-contract clarity, not more prep:
+  - Mission 3 learning would otherwise either depend on raw `GameState`
+    surfaces through `agents/base.py` or force Mission-1-shaped env helpers
+    into cross-mission roles prematurely
+- Fairness now matters explicitly in planning:
+  - the March 14 reports support keeping player-visible observation and
+    oracle-style preserved search references conceptually separate
+  - this packet should clarify that split in the new wrapper contract without
+    rewriting historical benchmark numbers
+- Mission 3 itself still does not force generic platform work:
+  - it remains a `clear_all_hostiles` mission with one start hex
+  - the accepted shared seam is enough for this packet
+  - multi-start support, objective-dispatch generalization, and a generic env
+    registry remain later gates
+
+Why this packet should go now rather than Mission 3 learning immediately:
+
+- Mission 3 learning without an accepted wrapper would couple experiments to an
+  unstable observation/action contract
+- the env-prep packet already landed the missing structural seam, so the next
+  honest question is the Mission 3 env contract itself
+- this packet is the smallest way to make fair-vs-oracle interpretation less
+  ambiguous without opening the whole honest-agent research ladder
+- delaying wrapper decisions until after learning would make later Mission 3
+  learning evidence harder to interpret cleanly
+
+Accepted scope:
+
+- one Mission-3-capable wrapper surface built on `ResolverEnvSession`
+- one explicit Mission 3 observation boundary and Mission-3-local action-id /
+  legality surface
+- one explicit Mission 3 default reward / termination / truncation policy,
+  aligned with the current accepted env policy unless a direct blocker appears
+- one thin Mission 3 env smoke/operator surface if needed for acceptance
+- internal planning/status docs and closeout guidance for this packet
+
+Out of scope:
+
+- Mission 3 learning experiments or learned-policy integration
+- Mission 1 honest/fair-agent lab work or Mission 3 honest-agent search work
+- Mission 4 content, true multi-start support, or new objective families
+- generic multi-mission env registry/platform, generic action-platform, or
+  generic cross-mission benchmark/reporting rewrite
+- rewriting preserved Mission 3 historical or strengthened search numbers
+- broad fair-vs-oracle benchmark-policy overhaul beyond the packet-local
+  clarification needed to keep the wrapper honest
+- reward shaping, tensorization/feature-adapter redesign, or policy/network
+  architecture work
+
+Active risks now:
+
+- Mission-1-shaped helper drift:
+  current env helper names/exports can accidentally imply that Mission 1
+  observation or action shapes are the future shared API
+- Hidden-information contract drift:
+  if the first Mission 3 wrapper leaks raw `GameState` or `rng_state`, the new
+  wrapper will immediately blur fair-vs-oracle reasoning
+- Action-surface overreach:
+  generic cross-mission action abstraction or macro compression would mix this
+  wrapper packet with broader platform design that has not been justified yet
+- Preserved-surface confusion:
+  new Mission 3 wrapper smoke or later learning outputs could be misread as
+  replacements for the preserved oracle-style Mission 3 search history unless
+  docs/operator surfaces stay explicit
+- Shared-layer creep:
+  if mission-local observation/reward/catalog logic is pushed into the shared
+  seam unnecessarily, this packet will become a broad env redesign instead of a
+  bounded extension
+
+Active follow-ups from `docs/internal/independent_audit_followups.md`:
+
+- `P4-R4` active as a preservation rule:
+  - keep the accepted Phase 3 / Phase 4 / Phase 5 / Phase 6 references
+    discoverable and unchanged
+- `C6` active as a caution:
+  - Mission-1-specific heuristic coupling should not become a future env or
+    agent contract
+- `C11` active as a planning constraint:
+  - keep fair observation-based wrapper work distinct from oracle-style
+    benchmark history
+
+Not active by default in this packet unless a direct blocker appears:
+
+- `C1` replay draw-prediction coupling
+- `C2` `legal_actions.py` refactor
+- `C3` genuine multi-start support
+- `C4` objective-dispatch generalization
+- `C5` synthetic fixtures
+- `C7` checkpoint-loading hardening
+- `T1` through `T4` tooling backlog
+
+Key planning decisions:
+
+### Wrapper shape decision
+
+- Implement a separate `Mission3Env` wrapper surface.
+- That wrapper should be thin and mission-local, built directly on
+  `ResolverEnvSession`.
+- Do not harden `Mission1Env` into a polymorphic base class or generic
+  `MissionEnv` platform.
+- Do not stop at raw shared-session helpers; this packet needs an accepted
+  Mission 3 wrapper contract, not just another seam fragment.
+
+### Observation boundary decision
+
+- Default Mission 3 observation must be player-visible only.
+- Required visible ingredients:
+  current decision context, public mission/map data, British units, revealed
+  German units, unresolved marker positions, and already-observed activation
+  bookkeeping/roll information.
+- Excluded by default:
+  raw `GameState`, `rng_state`, unrealized reveal-table outcomes, branch-
+  realized future combat/reveal results, and other simulator-only debugging
+  truth.
+- Allowed simplifications:
+  the observation may remain a structured serializable dict and may continue to
+  include redundant visible mission metadata for usability/debugging.
+- Not allowed in this packet:
+  a second simulator-truth-rich default observation surface for learning.
+
+### Action exposure and legality decision
+
+- The first Mission 3 wrapper should expose a Mission-3-local fixed action-id
+  catalog over the staged `GameAction` family.
+- Legality remains resolver-owned and should surface as legal ids plus a
+  fixed-length mask at the wrapper boundary.
+- The catalog should stay aligned with the current staged domain decisions:
+  British unit selection, double handling, die selection, order execution
+  choice, concrete order parameters, and German activation order.
+- Do not introduce macro-actions, parameterized action heads, or a generic
+  cross-mission catalog framework in this packet.
+- Minimal shared helper widening is acceptable only if it stays truly narrow
+  and directly prevents duplication of existing session/legality logic.
+
+### Reward and termination decision
+
+- The default Mission 3 wrapper reward should match the accepted Mission 1
+  default:
+  victory `+1`, defeat `-1`, nonterminal `0`.
+- Mission victory and mission defeat, including turn-limit defeat, should map
+  to `terminated=True` and `truncated=False`.
+- `truncated=True` remains reserved for external wrapper limits such as
+  optional `max_steps`.
+- Reward shaping stays out of scope until a later Mission 3 learning packet
+  provides evidence that the default contract is insufficient.
+
+### Shared vs mission-local env API decision
+
+- Shared env-layer API for this packet:
+  `ResolverEnvSession`, `ResolverSessionSnapshot`, `NormalizedEnvState`,
+  `normalize_env_state`, and any tiny truly generic legality-selection helper
+  if the implementation needs it.
+- Mission-local for this packet:
+  `Mission3Env`, Mission 3 observation schema/builder, Mission 3 action
+  catalog/id semantics, Mission 3 default reward helper, Mission 3 env smoke
+  operator surface, and Mission 3-specific tests.
+- Treat current Mission 1 observation/action helpers and broad `env.__init__`
+  re-exports as local historical API, not as the template for a broad future
+  shared surface.
+
+### Fairness and preserved-surface decision
+
+- This packet clarifies:
+  the new Mission 3 wrapper is an observation-based interface with a
+  player-visible default boundary.
+- This packet does not rewrite:
+  the preserved Mission 3 historical and strengthened search results or their
+  operator surfaces.
+- Historical Mission 3 heuristic/search references remain valuable, but they
+  stay documented as preserved search/oracle-style comparison history rather
+  than as the new wrapper's fairness contract.
+- The packet should avoid naming or reporting that makes Mission 3 env smoke or
+  later Mission 3 learning results look like replacements for the preserved
+  Mission 3 comparison tables.
+- The broader fair-agent ladder remains later work:
+  honest Mission 1 lab, Mission 2 transfer, and honest Mission 3 approximation
+  are not part of this packet.
+
+### Operator-surface decision
+
+- One new thin Mission 3 env smoke command is justified for acceptance and
+  regression reruns.
+- No Mission 3 env benchmark/reporting platform is justified in this packet.
+- Preserve existing operator commands unchanged:
+  `cli/phase3_baselines.py`
+  `cli/phase4_env_smoke.py`
+  `cli/phase5_summary.py`
+  `cli/phase6_stronger_baseline.py`
+  `cli/mission3_comparison.py`
+
+### Public-doc sync decision
+
+- Do not widen public docs preemptively in this planning thread.
+- After implementation acceptance, a bounded public-doc sync is justified:
+  `README.md`, `ROADMAP.md`, `ASSUMPTIONS.md`, and `docs/reward_design.md`
+  should be revisited only to capture the accepted Mission 3 wrapper contract
+  and preserved-surface framing.
+
+Boundary to later packets:
+
+- This packet includes:
+  - one observation-based Mission 3 env contract
+  - one Mission-3-local action catalog and legality-mask surface
+  - one Mission 3 reward / termination / smoke operator surface
+  - only the smallest shared helper widening that is directly required
+- Mission 3 learning begins only when:
+  - an accepted Mission 3 wrapper already exists
+- Mission 1 honest/fair-agent lab begins only when:
+  - a later packet explicitly opens fair-agent research rather than wrapper
+    delivery
+- Mission 4 begins only when:
+  - new content beyond Mission 3 is being transcribed or supported
+- Broad platform work begins only when:
+  - more than one active mission genuinely requires shared abstraction beyond
+    the narrow seams above
+
+## Mission 3 env/wrapper packet status block
+
+- Delivery A: pending
+- Delivery B: pending
+- Delivery C: not opened
+- Packet overall: active
+- Planning audit date: March 15, 2026
+- Closeout audit date: pending
+- Blocking findings before dispatch:
+  - none acceptance-blocking
+- Active planning risks:
+  - Mission-1-shaped helper drift
+  - hidden-information contract drift
+  - preserved-surface confusion
+- Required preserved Mission 1 anchors:
+  - `random 11/200`
+  - learned best `144/200`
+  - `heuristic 157/200`
+  - `rollout 195/200`
+- Required preserved Mission 3 historical surface:
+  - smoke:
+    `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
+  - benchmark:
+    `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+- Required preserved Mission 3 strengthened local result:
+  - smoke:
+    `rollout-search-strengthened 12/16`
+  - benchmark:
+    `rollout-search-strengthened 171/200`
+- Recommended delivery order:
+  - Delivery A
+  - Delivery B
+  - Delivery C only if Deliveries A/B do not already leave a clean closeout
+    surface
+- End-of-packet default gate:
+  - proceed to Mission 3 learning experiments
+  - do not open another preparatory packet by default unless implementation
+    exposes one new concrete blocker that was not visible in the March 15 audit
+
+## Delivery A - Mission 3 wrapper contract + mission-local env surface
+
+Status:
+
+- pending
+
+Goal:
+
+- land the main Mission 3 wrapper surface on top of the accepted shared
+  resolver session seam without widening into a generic env platform
+
+Concrete deliverables:
+
+- `Mission3Env` with deterministic `reset(seed=...)` / `step(action_id)` over
+  `ResolverEnvSession`
+- one Mission 3 player-visible observation builder
+- one Mission-3-local fixed action-id catalog and legality-mask surface
+- one Mission 3 default terminal reward helper aligned with the accepted Mission
+  1 contract
+- focused tests proving seeded reset/step determinism, invalid-action
+  rejection, legality-mask correctness, and observation-boundary discipline
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/env/`
+- new Mission 3 wrapper/helper files under `src/solo_wargame_ai/env/`
+- `src/solo_wargame_ai/env/legal_action_mask.py` only if a tiny shared helper
+  widening is directly required
+- `src/solo_wargame_ai/env/__init__.py` only if the Mission 3 wrapper needs a
+  minimal explicit export
+- focused Mission 3 env tests under `tests/`
+
+Required tests / verification:
+
+- focused tests for:
+  - deterministic seeded Mission 3 reset/step preservation
+  - Mission 3 legal-id / mask preservation
+  - invalid/illegal action-id handling
+  - player-visible observation boundary with no `rng_state` / raw `GameState`
+    leakage
+  - terminal vs truncation semantics preservation
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+- `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
+
+Risks / traps:
+
+- turning Mission 3 wrapper work into a generic env platform
+- silently compressing the staged domain decision model into macro-actions
+- leaking hidden simulator truth or `rng_state` in the default observation
+- changing accepted Mission 1 env semantics while widening shared helpers
+- letting Mission 3 wrapper naming/reporting blur the preserved historical
+  search surfaces
+
+Completion criteria:
+
+- one accepted `Mission3Env` exists on top of `ResolverEnvSession`
+- observation, action, legality, reward, and termination contracts are all
+  explicit and test-covered
+- Mission 1 wrapper behavior remains regression-safe
+- the repo has a clean observation-based Mission 3 env boundary for the next
+  learning packet
+
+Commit shape:
+
+- one implementation commit preferred
+- two commits acceptable only if a tiny shared-helper widening is materially
+  clearer to review separately from the mission-local wrapper slice
+
+Analysis-before-edit:
+
+- required
+
+## Delivery B - Mission 3 env smoke/operator and preservation finish
+
+Status:
+
+- pending
+
+Goal:
+
+- add the smallest operator/preservation finish needed so the new Mission 3 env
+  surface is rerunnable and clearly separated from preserved historical
+  Mission 3 comparison history
+
+Concrete deliverables:
+
+- one thin Mission 3 env smoke CLI/operator surface
+- only the minimal `env/` export cleanup or naming clarification required to
+  keep shared-vs-local env boundaries honest
+- focused CLI/tests proving the Mission 3 env smoke path is deterministic and
+  discoverable
+- any narrow wording/docs sync directly required to keep Mission 3 wrapper
+  smoke separate from preserved historical Mission 3 comparison reports
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/cli/`
+- `src/solo_wargame_ai/env/__init__.py` only if directly required
+- focused CLI/env tests under `tests/cli/` and `tests/`
+- tracked internal docs only where the new accepted operator surface needs to
+  be recorded
+
+Required tests / verification:
+
+- focused tests for any new operator/export surface
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- the new Mission 3 env smoke command
+- `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
+  if Delivery B touches preservation/report wording around the historical
+  Mission 3 surface
+
+Risks / traps:
+
+- mixing a thin operator finish with Mission 3 learning scaffolding
+- turning export cleanup into a broad env naming campaign
+- quietly reframing preserved historical Mission 3 benchmarks while trying to
+  document the new wrapper
+- adding benchmark/reporting platform work when one smoke operator surface is
+  enough
+
+Completion criteria:
+
+- one accepted Mission 3 env smoke rerun path exists
+- preserved historical Mission 3 comparison surfaces remain explicit and
+  separate
+- shared env seams and Mission-local wrapper details are clearer after the
+  package than before it
+
+Commit shape:
+
+- one small implementation/docs commit preferred
+
+Analysis-before-edit:
+
+- required if Delivery B changes exports or preserved-surface wording
+
+## Delivery C - Optional shared/local API cleanup finish
+
+Status:
+
+- not opened
+
+Goal:
+
+- only if Deliveries A/B do not already leave a clean closeout-ready packet
+  surface, add one narrow follow-up to clarify shared-vs-local env API
+  boundaries without widening scope
+
+Concrete deliverables:
+
+- at most one narrow follow-up for:
+  - one small shared-helper rename or export cleanup
+  - one preservation fix if Delivery A/B made Mission-local helpers look like a
+    new generic default API
+  - one tiny closeout-support docs clarification directly tied to the wrapper
+    boundary
+- no Mission 3 learning
+- no Mission 4 content
+- no benchmark-policy rewrite
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/env/`
+- `src/solo_wargame_ai/cli/` only if directly required
+- small directly related tests
+
+Required tests / verification:
+
+- focused tests for any new helper/export surface
+- `.venv/bin/pytest -q`
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- the new Mission 3 env smoke command if Delivery C touches it
+
+Risks / traps:
+
+- turning a closeout finish into a broad env redesign
+- reopening Delivery A/B design questions instead of fixing one narrow blocker
+- smuggling generic platform work into a preservation pass
+
+Completion criteria:
+
+- the Packet Master Thread can close the packet without another preparatory
+  implementation thread
+- the shared seam and Mission-local env contracts are clearly separated in code
+  and docs
+
+Commit shape:
+
+- one small implementation or docs-and-implementation follow-up commit only if
+  the package is opened
+
+Analysis-before-edit:
+
+- required
+
+## Recommended Delivery Thread sequence for the Mission 3 env/wrapper packet
+
+Preferred sequence:
+
+1. Delivery A
+2. Delivery B
+3. Delivery C only if Deliveries A/B do not already leave a clean closeout-
+   ready surface
+
+Do not mix in one thread:
+
+- Mission 3 wrapper implementation with Mission 3 learning experiments
+- Mission 3 wrapper implementation with Mission 1 honest/fair-agent lab work
+- Mission 3 wrapper implementation with Mission 4 content landing
+- Mission 3 mission-local observation/action work with a generic env platform
+  or action-platform buildout
+- wrapper operator/preservation finish with a broad benchmark-policy rewrite
+- bounded shared-helper widening with unrelated replay/objective/multi-start
+  work
+
+End-of-packet decision gate:
+
+- Proceed directly to Mission 3 learning experiments if:
+  - `Mission3Env` exists and is accepted on top of `ResolverEnvSession`
+  - the default Mission 3 observation boundary is explicit, player-visible, and
+    test-covered
+  - the Mission 3 action-id / legality-mask surface is explicit and stable
+  - default reward / termination / truncation semantics are documented and
+    rerunnable
+  - preserved historical Mission 3 search/oracle surfaces remain separate and
+    unchanged
+  - no new concrete shared-seam blocker appears
+- Do not open another preparatory packet by default unless:
+  - implementation exposes a new concrete blocker that was not visible from the
+    March 15 repo evidence
+  - or Deliveries A/B cannot leave a clean closeout-ready packet surface
+
+## Archived packet - Mission 3 env-prep hardening and adapter seam
 
 Packet goal:
 
