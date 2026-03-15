@@ -248,7 +248,7 @@ Why this is now preferred:
   to reorder the current next packet
 - the March 14 fairness reports also remain worth preserving:
   they strengthen the case for an explicit fair-vs-oracle split, but they do
-  not displace Mission 3 env/wrapper extension as the current next packet
+  not displace Mission 3 learning experiments as the current next packet
 
 Likely follow-on packets after that:
 
@@ -330,9 +330,11 @@ Preserved March 14-15 sandbox idea bank for later packet design:
 Ranked backlog beyond the active next packet:
 
 - High value:
-  - Mission 3 env/wrapper extension
   - Mission 3 learning experiments
-  - Mission 1 honest/fair-agent lab kickoff after the Mission 3 wrapper
+  - Mission 1 honest/fair-agent lab kickoff after the Mission 3 learning
+    packet
+  - Mission 2 same-rules transfer once the Mission 1 fair-agent ladder has a
+    usable exact and honest-search surface
 - Medium value:
   - Mission 1 exact-ceiling artifact and honest-search baselines
   - Mission 1 value-function study and learned evaluators backed by exact
@@ -377,6 +379,551 @@ Demoted for now:
 - a broad top-level repo reorganization
 - generic search, experiment, or platform buildout
 - tooling campaigns that are not directly required by the next content slice
+
+## Active packet - Mission 3 learning experiments
+
+Packet goal:
+
+- run one bounded first-pass learning transfer on the accepted `Mission3Env`
+  contract
+- answer the narrow question:
+  does the accepted Phase-5-style learner family transfer at all to Mission 3
+  without reward shaping or broad RL redesign?
+- produce one first accepted Mission 3 learned result surface while keeping
+  preserved historical Mission 3 heuristic/search references visible and
+  separately framed
+
+Planning audit findings:
+
+- Repository state was rechecked on March 15, 2026 before opening this packet:
+  - `git status --short` showed local tracked docs edits in:
+    `ROADMAP.md`
+    `docs/internal/execution_plan.md`
+    `docs/internal/experiments/README.md`
+  - these local diffs were treated as existing worktree context and were not
+    silently absorbed into packet scope
+  - `git log --oneline --decorate -12` showed `HEAD` on
+    `30c3303 docs: close mission3 env wrapper packet`
+  - `git show --no-patch --decorate phase1-complete` still resolved to
+    `d6445d9`
+  - `git show --no-patch --decorate phase2-complete` still resolved to
+    `1ef74ab`
+  - `git show --no-patch --decorate phase3-complete` still resolved to
+    `98519c7`
+  - `git show --no-patch --decorate phase4-complete` still resolved to
+    `0e4a6a8`
+  - `git show --no-patch --decorate phase5-complete` still resolved to
+    `9d8beb9`
+  - `git show --no-patch --decorate phase6-complete` still resolved to
+    `f80fde5`
+  - `.venv/bin/pytest -q` passed with `275 passed in 226.57s`
+  - `.venv/bin/ruff check src tests` passed with `All checks passed!`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+    preserved `random 2/16`, `heuristic 11/16`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+    preserved the accepted Mission 1 wrapper smoke surface:
+    `32` action ids, `35` decision steps, defeat, reward `-1.0`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase5_summary --artifact-dir outputs/phase5/train_seed_101_ep_2000 --artifact-dir outputs/phase5/train_seed_202_ep_2000 --artifact-dir outputs/phase5/train_seed_303_ep_2000`
+    preserved best `144` and median `133`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+    preserved `random 11/200`, `heuristic 157/200`, `rollout 195/200`
+  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
+    preserved the accepted Mission 3 historical benchmark surface:
+    `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_env_smoke --seed 0`
+    preserved the accepted Mission 3 wrapper smoke surface:
+    `49` action ids, `72` decision steps, defeat, reward `-1.0`
+- The accepted Mission 3 wrapper contract is now real and should not be
+  reopened by default:
+  - `Mission3Env` exists over `ResolverEnvSession`
+  - default observation is player-visible and does not leak raw `GameState`
+    or `rng_state`
+  - public Mission 3 action exposure uses a fixed `49`-id local catalog with
+    opaque contact handles
+  - legality remains resolver-owned
+  - default reward remains terminal-only
+- The active learning-side blockers are now localized and mostly Mission-1-
+  specific:
+  - `agents/feature_adapter.py` is a Mission-1-shaped observation encoder over
+    `terrain`, `unit_id`, and `marker_id` fields from the Mission 1 wrapper
+  - `agents/masked_actor_critic_training.py` hardcodes `Mission1Env`,
+    Mission-1-shaped feature-adapter construction, Mission 1 action-count
+    lookup, and Phase 5 artifact/output framing
+  - `eval/learned_policy_eval.py` hardcodes `Mission1Env` and the Mission 1
+    observation/info surface
+  - `eval/learned_policy_reporting.py`,
+    `eval/learned_policy_summary.py`,
+    `eval/learned_policy_seeds.py`, and the `phase5_*` CLI entrypoints are
+    Mission-1-local historical surfaces rather than the right home for Mission
+    3 learning
+  - `learned_policy.py` and `masked_actor_critic.py` still point at the
+    Mission 1 observation type alias even though the policy/value core itself
+    is otherwise mission-neutral
+- Lower-level learning pieces already look reusable enough for a bounded port:
+  - `MaskedActorCriticNetwork`
+  - masked legal-action selection
+  - `LearnedPolicy` and legal-id / mask reading helpers
+  - `EpisodeMetrics` and the accepted fixed-seed metric schema
+- Fairness/planning context is now explicit:
+  - the preserved Mission 3 historical and strengthened heuristic/search
+    surfaces remain oracle-style or branch-clairvoyant references
+  - this packet should not relabel those references as fair learned-policy
+    targets
+  - the new learned-policy surface should instead be framed as observation-
+    based Mission 3 learning on the accepted wrapper contract
+- The live question is transfer, not redesign:
+  - there is no current repo evidence that the accepted Mission 3 wrapper,
+    fixed staged action catalog, or default terminal-only reward must be
+    rewritten before trying the first honest transfer pass
+
+Why this packet must stay bounded:
+
+- the wrapper contract is already accepted, so reopening env design would blur
+  the question this packet is supposed to answer
+- the fastest honest test is to port the existing Phase-5 learner family first,
+  not redesign it immediately
+- Mission 3 historical heuristic/search surfaces must remain preserved as
+  historical references rather than being rewritten inside a learning packet
+- the fair-vs-oracle distinction now matters, so this packet should report the
+  learned surface clearly instead of widening into the full fair-agent ladder
+- heavy training/eval runs can be operator-controlled, which keeps Delivery
+  Threads code-bounded rather than terminal-bound
+- weak first-pass learning evidence is still a valid packet outcome; it is not
+  permission to auto-open reward shaping, architecture churn, or Mission 4
+
+Accepted scope:
+
+- one bounded first-pass Mission 3 learning transfer on the accepted wrapper
+  using the current masked actor-critic learner family as the first baseline
+- one Mission-3-local feature/observation adapter plus only the smallest
+  shared adapter seam needed to host it cleanly
+- only the minimal training/eval loop sharing or parameterization directly
+  required to run the same learner family on `Mission3Env`
+- one Mission-3-local seed policy, artifact root, reporting surface, and thin
+  operator commands for train / eval / summary reruns
+- one first accepted Mission 3 learned result surface with explicit
+  observation-based-vs-historical-reference framing
+- focused tests and short in-thread smoke verification for the new learning
+  path
+- tracked internal planning/status docs and closeout guidance for this packet
+
+Out of scope:
+
+- reward shaping by default
+- broad RL redesign:
+  policy/value architecture churn, PPO-style replacement, hierarchical
+  policies, action-scoring networks, generic entity encoders, or a generic
+  multi-mission RL platform
+- reopening the Mission 3 env/wrapper contract, Mission 3 historical search
+  packet, or Mission 3 search-strengthening packet
+- Mission 1 honest/fair-agent lab work, Mission 4 content, or Mission 2 same-
+  rules transfer
+- generic cross-mission evaluation/reporting buildout beyond the minimal seams
+  this packet directly needs
+- treating a weak first-pass Mission 3 learned result as automatic
+  implementation failure
+- broad checkpoint-security hardening (`C7`) unless a direct dependency appears
+
+Learning-side seams that must adapt now:
+
+- observation/feature encoding:
+  the current Phase 5 adapter is Mission-1-specific and cannot consume the
+  accepted Mission 3 observation shape honestly as-is
+- env binding in training/eval:
+  the current train/eval/checkpoint path hardcodes `Mission1Env`
+- Mission-local seed and artifact policy:
+  Mission 3 learning needs its own seed aliases, output root, and result
+  surface without overwriting accepted Phase 5 artifacts
+- reporting and summary framing:
+  Mission 3 learned results need a Mission-3-local comparison surface that can
+  keep preserved historical heuristic/search references visible but accurately
+  qualified
+- thin observation typing/protocol seams:
+  the current learned-policy interfaces should stop depending on the Mission 1
+  observation alias as the implicit universal learning contract
+
+Key planning decisions:
+
+### Learner-family decision
+
+- Port the existing Phase-5-style masked actor-critic learner family first.
+- Do not redesign the learner family immediately.
+- The packet should answer transferability first, then only open redesign if
+  the result surface clearly justifies it later.
+- Packet success is:
+  one honest end-to-end Mission 3 training/eval result surface plus a clear
+  interpretation of whether transfer exists.
+- Packet success is not:
+  beating the preserved Mission 3 heuristic/search references by default.
+
+### Feature / observation encoding decision
+
+- Use a Mission-3-local feature adapter.
+- Allow one tiny shared adapter seam or protocol if it materially reduces
+  duplication between Mission 1 and Mission 3 adapters.
+- Do not force the Mission 1 adapter into a generic multi-mission flattened
+  schema.
+- Do not redesign the accepted Mission 3 observation surface to fit the old
+  Mission 1 adapter.
+- Mission 1 and Mission 3 may legitimately keep different mission-local
+  flattened encodings on top of the shared structured observation family.
+
+### Shared vs Mission-local learning-stack decision
+
+- Shared now, if kept narrow:
+  - `MaskedActorCriticNetwork`
+  - masked legal-action selection
+  - `LearnedPolicy` legal-id / legal-mask helpers
+  - the smallest env-factory / adapter-factory / action-count parameterization
+    needed for shared train/eval loops
+  - `EpisodeMetrics` aggregation and stable metrics-table formatting
+- Mission-1-local and preserved:
+  - accepted Phase 5 seed aliases/results
+  - Phase 5 anchor comparisons against preserved Mission 1 random/heuristic
+    numbers
+  - `outputs/phase5/`
+  - `phase5_*` thin operator surfaces as historical Mission 1 commands
+- Mission-3-local for this packet:
+  - feature adapter
+  - learning seed aliases and artifact root
+  - train/eval/report/summary helpers
+  - thin train/eval/summary operator surfaces
+  - learned-result reporting against preserved Mission 3 history
+
+### Reward decision
+
+- Keep the default terminal-only reward unchanged in this packet:
+  victory `+1`, defeat `-1`, nonterminal `0`.
+- Do not open reward shaping by default.
+- A weak or noisy first-pass result is evidence about transfer, not a reason to
+  immediately rewrite the reward contract.
+
+### Fairness / historical reporting decision
+
+- Preserve the Mission 3 historical and strengthened heuristic/search numbers
+  as oracle-style or branch-clairvoyant historical references.
+- New Mission 3 learned-policy reporting should separate:
+  - the observation-based learned result surface for this packet
+  - preserved historical Mission 3 comparison references
+- Do not rewrite the preserved historical benchmark framing in this packet;
+  label it carefully in the new learned-policy-local reporting instead.
+- Do not open the full Mission 1 honest/fair-agent research ladder here.
+
+### Result interpretation decision
+
+- The packet should not require a strong Mission 3 win rate for acceptance.
+- A result that is clearly above random would be encouraging evidence of
+  transfer.
+- A weak or even zero-win first pass is still an accepted answer if the run is
+  honest, reproducible, and clearly reported.
+
+## Heavy-run workflow for this packet
+
+Delivery Thread-owned verification can include:
+
+- focused unit and integration tests for new learning seams
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/pytest -q`
+- preserved short regression surfaces:
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_env_smoke --seed 0`
+- preserved benchmark/reference commands if a package touches the relevant
+  shared code:
+  - `.venv/bin/python -m solo_wargame_ai.cli.phase6_stronger_baseline --mode benchmark`
+  - `.venv/bin/python -m solo_wargame_ai.cli.mission3_comparison --mode benchmark`
+- one short in-thread Mission 3 learning smoke:
+  - tiny training run with a small episode count
+  - checkpoint load/re-eval smoke
+  - short smoke evaluation on a small fixed seed set
+
+Operator-controlled heavy runs should own:
+
+- the first substantive Mission 3 training runs on the accepted training-seed
+  set
+- full `0..199` benchmark evaluation of the selected checkpoints
+- aggregate summary over the accepted Mission 3 artifact dirs
+- any repeated reruns or ablations once the first result surface exists
+
+Minimum new in-thread verification that should still run before acceptance:
+
+- one end-to-end short Mission 3 train command that writes a checkpoint
+- one short Mission 3 learned-policy eval command that loads that checkpoint
+- one summary/report smoke over the short artifacts if the package introduces a
+  summary surface
+
+## Mission 3 learning packet status block
+
+- Delivery A: pending
+- Delivery B: pending
+- Delivery C: conditional
+- Packet overall: open
+- Planning audit date: March 15, 2026
+- Closeout audit date: pending
+- Blocking findings before dispatch:
+  - none acceptance-blocking
+- Active planning risks:
+  - Mission-1-shaped adapter drift
+  - generic RL-platform creep
+  - fairness/oracle reporting blur
+  - weak-result overreaction
+  - heavy-run ownership confusion
+- Required preserved Mission 1 anchors:
+  - `random 11/200`
+  - learned best `144/200`
+  - `heuristic 157/200`
+  - `rollout 195/200`
+- Required preserved Mission 3 historical surface:
+  - smoke:
+    `random 0/16`, `heuristic 7/16`, `rollout-search 8/16`
+  - benchmark:
+    `random 0/200`, `heuristic 72/200`, `rollout-search 105/200`
+- Required preserved Mission 3 strengthened local result:
+  - smoke:
+    `rollout-search-strengthened 12/16`
+  - benchmark:
+    `rollout-search-strengthened 171/200`
+- Default result-interpretation rule:
+  - a weak first-pass learner result is evidence, not automatic packet failure
+- End-of-packet default gate:
+  - close the packet once a first Mission 3 learned result surface exists and
+    its transfer verdict is explicit
+  - after closeout, move by default to the Mission 1 honest/fair-agent lab
+    kickoff rather than to reward shaping, Mission 4, or a generic RL-platform
+    packet
+
+## Delivery A - Mission 3 learner transfer core
+
+Goal:
+
+- port the existing masked actor-critic learner family onto `Mission3Env`
+  through the smallest bounded learning-core seam changes
+
+Concrete deliverables:
+
+- one Mission-3-local feature adapter over the accepted Mission 3 observation
+  surface
+- only the smallest shared adapter/protocol widening needed so Mission 1 and
+  Mission 3 adapters can coexist cleanly
+- only the minimal training/eval-loop sharing or parameterization required to
+  run the same learner family on `Mission3Env`
+- focused tests proving Mission 3 short-train / checkpoint-load / eval smoke
+  works without breaking accepted Mission 1 behavior
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/agents/`
+- `src/solo_wargame_ai/eval/learned_policy_eval.py`
+- `src/solo_wargame_ai/eval/learned_policy_seeds.py` or a new adjacent
+  Mission-3-local seed module
+- focused tests under `tests/agents/` and `tests/eval/`
+
+Required in-thread verification:
+
+- focused tests for:
+  - Mission 3 feature-adapter determinism
+  - Mission 3 short training smoke
+  - Mission 3 checkpoint load / policy-factory smoke
+  - Mission 1 regression on the preserved Phase 5 learning surface
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/pytest -q`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- `.venv/bin/python -m solo_wargame_ai.cli.mission3_env_smoke --seed 0`
+- one short Mission 3 learning smoke command once the package adds it
+
+Explicitly not owned by the Delivery Thread:
+
+- the full substantive Mission 3 training sweep
+- the full `0..199` learned-policy benchmark reruns
+
+Risks / traps:
+
+- turning a bounded port into a generic multi-mission RL platform
+- reshaping the accepted Mission 3 observation contract to fit Mission 1 code
+- silently changing accepted Mission 1 Phase 5 behavior while extracting shared
+  seams
+- opening reward shaping or policy/network redesign because the first transfer
+  pass is not yet strong
+
+Completion criteria:
+
+- the accepted Phase-5-style learner family can complete one short Mission 3
+  train/eval/checkpoint smoke on `Mission3Env`
+- Mission 1 Phase 5 learning surfaces remain regression-safe
+- the packet now has a real learning-core path onto Mission 3 without broad RL
+  redesign
+
+Commit shape:
+
+- one implementation commit preferred
+- two commits acceptable only if a tiny shared-seam extraction is materially
+  clearer to review separately from the Mission-3-local adapter slice
+
+Analysis-before-edit:
+
+- required
+
+## Delivery B - Mission 3 local reporting/operator surface and operator handoff
+
+Goal:
+
+- add the smallest Mission-3-local train/eval/report/operator surface needed to
+  rerun the first learning cycle honestly and hand the substantive runs to the
+  user as operator-owned commands
+
+Concrete deliverables:
+
+- one Mission-3-local train CLI / operator surface
+- one Mission-3-local learned-policy eval CLI / operator surface
+- one Mission-3-local summary/report surface over Mission 3 artifact dirs
+- explicit learned-result reporting that keeps preserved Mission 3 historical
+  heuristic/search references separate and clearly qualified
+- focused CLI/report tests plus a short end-to-end smoke over tiny artifacts
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/eval/`
+- `src/solo_wargame_ai/cli/`
+- focused tests under `tests/eval/` and `tests/cli/`
+- tracked internal docs only where the operator workflow and preserved-surface
+  framing need to be recorded
+
+Required in-thread verification:
+
+- focused tests for any new train/eval/summary/report helpers
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/pytest -q`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase3_baselines --mode smoke`
+- `.venv/bin/python -m solo_wargame_ai.cli.phase4_env_smoke --seed 0`
+- `.venv/bin/python -m solo_wargame_ai.cli.mission3_env_smoke --seed 0`
+- one short Mission 3 train smoke command
+- one short Mission 3 learned-policy eval smoke command
+- one short Mission 3 learning summary/report smoke command
+
+Operator-controlled heavy runs to hand off after Delivery B:
+
+- the accepted first-pass Mission 3 training seeds at the substantive episode
+  count chosen by implementation
+- full `0..199` benchmark evaluation of the selected checkpoints
+- aggregate summary over the resulting Mission 3 artifact dirs
+
+Risks / traps:
+
+- mixing thin operator/reporting work with broad RL-platform buildout
+- quietly overwriting or reframing accepted Phase 5 historical surfaces
+- presenting preserved Mission 3 heuristic/search references as fair learned
+  targets
+- smuggling reward shaping or architecture redesign into a reporting package
+
+Completion criteria:
+
+- the user has clear Mission-3-local operator commands for train / eval /
+  summary
+- the new learned-result report surface is explicit about preserved historical
+  Mission 3 references and the fair-vs-oracle distinction
+- substantive training/eval work can move to operator-owned runs without more
+  code changes by default
+
+Commit shape:
+
+- one implementation/docs commit preferred
+
+Analysis-before-edit:
+
+- required
+
+## Delivery C - Optional results-assimilation or closeout-support finish
+
+Status:
+
+- conditional only
+
+Goal:
+
+- only if Deliveries A/B plus operator-run artifacts do not already leave a
+  clean closeout-ready Mission 3 learning surface, add one narrow follow-up to
+  finish summary/report assimilation without widening scope
+
+Concrete deliverables:
+
+- at most one narrow follow-up for:
+  - one result-summary parsing/reporting fix
+  - one explicit preserved-surface wording correction
+  - one tiny operator-handoff or closeout-support helper tied directly to the
+    first accepted Mission 3 learned result surface
+- no reward shaping
+- no broad RL redesign
+- no Mission 1 fair-agent lab work
+- no Mission 4 content
+
+Likely files / subsystems touched:
+
+- `src/solo_wargame_ai/eval/`
+- `src/solo_wargame_ai/cli/` only if directly required
+- small directly related tests
+- tracked internal docs for closeout support
+
+Required verification:
+
+- focused tests for any new result-assimilation helper
+- `.venv/bin/ruff check src tests`
+- `.venv/bin/pytest -q`
+- the short Mission 3 learning smoke commands affected by the fix
+
+Risks / traps:
+
+- turning a closeout finish into another learning-architecture package
+- reopening Delivery A/B design questions instead of fixing one narrow blocker
+- letting operator-run result assimilation blur preserved historical Mission 3
+  references
+
+Completion criteria:
+
+- the Packet Master Thread can close the packet without another implementation
+  package
+- the first accepted Mission 3 learned result surface is compact, explicit, and
+  clearly separated from preserved historical reference tables
+
+Commit shape:
+
+- one small implementation/docs follow-up commit only if the package is opened
+
+Analysis-before-edit:
+
+- required
+
+## Recommended Delivery Thread sequence for the Mission 3 learning packet
+
+Preferred sequence:
+
+1. Delivery A
+2. Delivery B
+3. Delivery C only if Deliveries A/B plus operator-run artifacts do not
+   already leave a clean closeout-ready result surface
+
+Do not mix in one thread:
+
+- the learner-core port with broad reporting/operator work
+- any Mission 3 learning package with Mission 3 env redesign
+- any Mission 3 learning package with reward shaping by default
+- any Mission 3 learning package with Mission 1 honest/fair-agent lab work
+- any Mission 3 learning package with Mission 4 content landing
+- bounded shared seam extraction with a generic multi-mission RL platform
+
+End-of-packet decision gate:
+
+- Close the packet if:
+  - the Phase-5-style learner family can run end-to-end on `Mission3Env`
+  - a first accepted Mission 3 learned result surface exists
+  - preserved historical Mission 3 heuristic/search references remain separate
+    and clearly qualified
+  - the transfer verdict is explicit, even if the first-pass result is weak
+- Do not open reward shaping or broad RL redesign by default unless:
+  - the accepted first-pass result and closeout analysis explicitly justify a
+    new packet
+- Do not reopen Mission 3 env/wrapper or search packets by default unless:
+  - implementation exposes a new concrete blocker that was not visible in the
+    March 15 audit
 
 ## Archived packet - Mission 3 env/wrapper extension
 
