@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from solo_wargame_ai.domain.actions import (
     AdvanceAction,
     ChooseOrderExecutionAction,
@@ -28,6 +30,12 @@ MISSION_PATH = (
     / "configs"
     / "missions"
     / "mission_01_secure_the_woods_1.toml"
+)
+MISSION_03_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "configs"
+    / "missions"
+    / "mission_03_secure_the_building.toml"
 )
 
 
@@ -81,3 +89,10 @@ def test_catalog_encode_decode_round_trips_every_action_id() -> None:
     for action_id, action in enumerate(catalog.actions):
         assert catalog.encode(action) == action_id
         assert catalog.decode(action_id) == action
+
+
+def test_mission1_catalog_rejects_other_missions_without_packet_wording() -> None:
+    mission = load_mission(MISSION_03_PATH)
+
+    with pytest.raises(ValueError, match="Mission 1 action catalog only supports"):
+        build_mission1_action_catalog(mission)

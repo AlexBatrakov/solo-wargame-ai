@@ -1,4 +1,4 @@
-"""Canonical Mission 1 action-id catalog for the first env contract."""
+"""Mission action-id catalog helpers for env wrappers."""
 
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ _ORDER_EXECUTION_CHOICES = (
 
 @dataclass(frozen=True, slots=True)
 class MissionActionCatalog:
-    """One deterministic action-id mapping for the accepted Mission 1 config."""
+    """One deterministic fixed action-id mapping for a mission-local env contract."""
 
     mission_id: str
     actions: tuple[GameAction, ...]
@@ -74,17 +74,36 @@ class MissionActionCatalog:
 
         action_id = self._action_to_id.get(action)
         if action_id is None:
-            raise ActionCatalogError(f"Action is not in the Mission 1 catalog: {action!r}")
+            mission_label = _mission_catalog_label(self.mission_id)
+            legacy_hint = "" if mission_label is None else f"; not in the {mission_label} catalog"
+            raise ActionCatalogError(
+                f"Action is not in the action catalog for {self.mission_id!r}{legacy_hint}: "
+                f"{action!r}",
+            )
         return action_id
 
     def decode(self, action_id: int) -> GameAction:
         """Decode one fixed action id into its staged domain action."""
 
         if action_id < 0 or action_id >= len(self.actions):
+            mission_label = _mission_catalog_label(self.mission_id)
+            legacy_hint = (
+                ""
+                if mission_label is None
+                else f"; outside the {mission_label} catalog range"
+            )
             raise InvalidActionIdError(
-                f"Action id {action_id} is outside the Mission 1 catalog range",
+                f"Action id {action_id} is outside the action catalog range for "
+                f"{self.mission_id!r}{legacy_hint}",
             )
         return self.actions[action_id]
+
+
+def _mission_catalog_label(mission_id: str) -> str | None:
+    parts = mission_id.split("_", 2)
+    if len(parts) < 2 or not parts[1].isdigit():
+        return None
+    return f"Mission {int(parts[1])}"
 
 
 def build_mission1_action_catalog(mission: Mission) -> MissionActionCatalog:
@@ -92,7 +111,7 @@ def build_mission1_action_catalog(mission: Mission) -> MissionActionCatalog:
 
     if mission.mission_id != MISSION_1_ID:
         raise ValueError(
-            "Package A only supports the accepted Mission 1 action catalog; "
+            "Mission 1 action catalog only supports the accepted Mission 1 env contract; "
             f"got {mission.mission_id!r}",
         )
 
