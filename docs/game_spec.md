@@ -11,7 +11,8 @@ This file should answer a simple question:
 **what kind of game must the engine actually model?**
 
 It is a public specification document, not a scratchpad.
-Stable design decisions should be captured here at the level of concepts, while lower-level working notes can remain in internal documentation.
+Stable design decisions should be captured here at the level of concepts, while
+lower-level private working notes can remain outside the public docs set.
 
 ---
 

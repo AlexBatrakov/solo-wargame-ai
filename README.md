@@ -7,14 +7,15 @@
 Rule-faithful Python simulator, search baselines, and learning experiments for
 a stochastic solo hex-based tactical wargame.
 
-This repository focuses on:
-- deterministic stateful simulation for a stochastic game;
-- explicit legal-action generation over staged player decisions;
-- reproducible baseline, search, and learning comparisons on fixed seed sets;
-- a clean separation between domain rules, environment interfaces, agents, and
-  evaluation tooling.
+This repository is a compact platform for:
+- building deterministic simulation infrastructure around a stochastic game;
+- comparing heuristic, search, and learning agents on fixed seed suites;
+- testing how agent behavior changes as missions become richer and information
+  becomes less direct;
+- keeping domain rules, environment wrappers, agents, and evaluation tooling
+  cleanly separated.
 
-## Why this project is interesting
+## Why this project matters
 
 The game mixes several engineering and modeling challenges:
 - stochastic outcomes with fixed-seed reproducibility requirements;
@@ -29,19 +30,26 @@ That makes it a useful sandbox for:
 - search/planning baselines;
 - RL-style environment design and first learning experiments.
 
+In practice, the project demonstrates:
+- software engineering for a stateful rules engine with replayable transitions;
+- experiment design with preserved benchmark anchors and seed-controlled runs;
+- ML/RL-oriented interface design through observation-based environment
+  wrappers;
+- careful handling of the boundary between fair observation-based agents and
+  oracle-style planning references.
+
 ## Current highlights
 
-- **Mission 1 full stack is complete**
-  Domain engine, replay path, baseline agents, `Mission1Env`, first learner,
-  and a stronger rollout baseline all exist and are regression-checked.
-- **Mission 3 domain slice has landed**
-  The repository now supports deterministic load/init/play/replay for a richer
-  content slice with Buildings, Hills, bounded wooded-hill semantics, and the
-  German Rifle Squad.
-- **Mission 3 strengthened search stack is in place**
-  Mission 3 now has preserved historical `random`, `heuristic`, and
-  `rollout-search` references plus an accepted stronger local
-  `rollout-search-strengthened` surface.
+- **Mission 1 is now the reference baseline stack**
+  The repo has a regression-checked Mission 1 engine, replay path, baseline
+  agents, `Mission1Env`, first learner, and a stronger rollout reference.
+- **Mission 3 now spans domain, wrapper, and first learning transfer**
+  The repository supports deterministic Mission 3 load/init/play/replay,
+  accepted `Mission3Env`, preserved local search references, and a first
+  bounded observation-based learning path.
+- **Historical search references stay separate from wrapper/learning surfaces**
+  Mission 3 preserves oracle-style local search history while the public env
+  and learner path stay observation-based by default.
 - **The simulator keeps the written staged turn flow**
   The engine models explicit decision contexts rather than hiding gameplay
   structure behind undocumented macro-actions.
@@ -63,7 +71,28 @@ Mission 1 fixed 200-seed benchmark:
 These numbers are intentionally preserved as comparison anchors while richer
 content slices land.
 
-## Current implemented scope
+Benchmark framing:
+- Mission 1 anchors above are preserved historical references.
+- Mission 3 historical `heuristic` / `rollout-search` numbers are kept as
+  oracle-style planning references rather than as the public wrapper or
+  learning contract.
+
+## Technical themes
+
+- **Simulation and state modeling**
+  Deterministic transitions, replay support, mission loading/validation, and
+  explicit staged decision contexts.
+- **Search and baselines**
+  Random, heuristic, rollout-search, and strengthened local search references
+  on preserved seed sets.
+- **Environment and learning**
+  Lightweight RL-friendly wrappers, legality masks, fixed action catalogs, and
+  first masked actor-critic transfer experiments.
+- **Evaluation discipline**
+  CLI-driven smoke checks, regression coverage, fixed-seed benchmark surfaces,
+  and CI-backed verification.
+
+## Implemented scope
 
 ### Mission 1
 
@@ -79,26 +108,27 @@ content slices land.
 ### Mission 3
 
 - deterministic config loading and validation;
-- deterministic resolver-playable domain slice;
-- support for Building, Hill, bounded wooded-hill semantics, and German Rifle
-  Squad behavior;
-- Mission-3-only historical and strengthened search comparison surfaces with
-  fixed smoke and benchmark seed aliases;
+- deterministic resolver-playable domain slice with Building, Hill, bounded
+  wooded-hill semantics, and German Rifle Squad behavior;
+- Mission-3-only historical and strengthened local search comparison surfaces
+  with fixed smoke and benchmark seed aliases;
 - dependency-free `Mission3Env` wrapper with a player-visible default
   observation boundary, opaque contact handles, a fixed 49-id Mission-3-local
-  action catalog view, resolver-owned legality masks, and terminal-only
-  default reward;
-- thin `mission3_env_smoke` operator support for rerunning the accepted
-  wrapper surface without mixing it into the preserved historical comparison
-  CLI;
+  action catalog, resolver-owned legality masks, and terminal-only default
+  reward;
+- a first bounded Mission 3 learning path with local train / eval / summary
+  operator surfaces under `outputs/mission3_learning/`;
+- thin `mission3_env_smoke` support for rerunning the accepted wrapper surface
+  without mixing it into the preserved historical comparison CLI;
 - a shared resolver-backed env session seam that Mission-local wrappers can
   build on without duplicating lifecycle/state progression logic;
 - replay/integration coverage through the accepted resolver path.
 
 What is deliberately **not** implemented yet:
-- Mission 3 learning experiments;
-- broader multi-mission infrastructure;
-- generic experiment/search platform work.
+- the Mission 1 honest/fair-agent lab kickoff and the later honest-search
+  ladder built on top of it;
+- broader cross-mission reporting and experiment infrastructure;
+- generic search / experiment platform work.
 
 ## Architecture at a glance
 
@@ -127,23 +157,23 @@ What is deliberately **not** implemented yet:
 - [Mission config conventions](docs/mission_config.md)
 - [Rules digest](docs/reference/rules_digest.md)
 
-## Current next step
+## Current planned next step
 
-The next recommended packet is:
+The current next step is **Mission 1 honest/fair-agent lab kickoff**.
 
-**Mission 3 learning experiments**
-
-The goal is to test learnability on the richer Mission 3 slice using the now
-accepted observation-based `Mission3Env` contract without reopening the
-historical Mission 3 baseline surface, the strengthened search packet, or the
-wrapper-boundary packet that just closed.
+The goal is to turn Mission 1 into the repository's fair-agent reference lab:
+- make the fair-vs-oracle contract explicit;
+- productize the exact Mission 1 fair-ceiling artifact;
+- establish a clean operator workflow for heavier exact runs without reopening
+  Mission 3 wrapper or learning design by default.
 
 Likely follow-on packets after that:
-- a deferred honest/fair-agent research line that starts with Mission 1 exact
-  artifacts, then uses Mission 2 as a same-rules transfer step before moving
-  to harder honest-agent work on Mission 3, with later RL-agent design
-  questions such as state/action encoding and policy/value architecture kept
-  visible as a future track;
+- Mission 1 honest search baselines and value-function study after the exact
+  fair-ceiling reference is stable;
+- Mission 2 as a same-rules transfer step before moving to harder honest-agent
+  work on Mission 3;
+- later RL-agent design questions such as state/action encoding and
+  policy/value architecture, once the fair-agent line is stronger;
 - later Mission 4 or another bounded richer content slice;
 - cross-mission evaluation/reporting once more than one active mission needs to
   be compared.

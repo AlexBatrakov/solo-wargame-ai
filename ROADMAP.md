@@ -33,12 +33,12 @@ formalized concepts rather than improvised code generation.
 - [x] Create repository structure
 - [x] Add rule reference materials
 - [x] Create public documentation skeleton under `docs/`
-- [x] Create internal documentation skeleton under `docs/internal/`
-- [x] Ensure documentation layout matches the intended public/internal split
-- [x] Add a basic `.gitignore` policy that supports internal docs, outputs, and local artifacts
+- [x] Create a local working-notes skeleton
+- [x] Ensure documentation layout matches the intended public/private split
+- [x] Add a basic `.gitignore` policy that supports local notes, outputs, and local artifacts
 - [x] Add initial Python project metadata files (`pyproject.toml`, `Makefile`, package skeleton plan) at the Phase 0/1 handoff
 - [x] Decide which empty directories should exist now and which should be created later
-- [x] Record the intended mature repository structure in internal docs
+- [x] Record the intended mature repository structure in local working notes
 
 ### 0.2 Public project-facing documentation
 
@@ -54,14 +54,14 @@ formalized concepts rather than improvised code generation.
 - [x] Add `docs/reference/README.md`
 - [x] Ensure public docs are mutually consistent and do not contradict each other
 
-### 0.3 Internal working documents for development workflow and execution
+### 0.3 Local working notes for development workflow and execution
 
-- [x] Create `docs/internal/repo_layout.md`
-- [x] Create `docs/internal/codex_workflow.md`
-- [x] Add `docs/internal/README.md`
+- [x] Create a local repo-layout note
+- [x] Create a local workflow note set
+- [x] Add a local working-docs index
 - [x] Record the target repository layout and dependency boundaries
 - [x] Record internal execution workflow rules
-- [x] Record what belongs in public docs vs internal docs
+- [x] Record what belongs in public docs vs local working notes
 - [x] Record how assumptions discovered during implementation should be promoted into public documentation
 - [x] Record what kinds of changes require architecture review before coding
 
@@ -137,7 +137,7 @@ formalized concepts rather than improvised code generation.
 Phase 0 should be considered complete only when:
 
 - [x] public docs exist and are internally coherent
-- [x] internal docs exist and describe both layout and workflow
+- [x] local working notes exist and describe both layout and workflow
 - [x] the MVP scope is explicitly limited
 - [x] the initial state model is conceptually defined
 - [x] the initial action model is conceptually defined
@@ -148,8 +148,8 @@ Phase 0 should be considered complete only when:
 - [x] the next implementation slice is obvious and small enough to execute safely
 
 Status note: the planning and formalization work is complete enough to hand off
-to Phase 1 implementation threads without requiring more architectural
-invention first.
+to Phase 1 implementation work without requiring more architectural invention
+first.
 
 ---
 
@@ -530,12 +530,14 @@ the better next investment was a bounded Mission 3 vertical slice plus minimal
 structural prep, so the architecture was tested against richer content rather
 than optimized further on the near-solved Mission 1 slice.
 
-That next packet has now landed as well:
+Those Mission 3 follow-on packets have now landed as well:
 - Mission 3 is now a deterministic resolver-playable and replayable slice;
 - bounded support for Building, Hill, wooded-hill semantics, and German Rifle
   Squad behavior is in place;
 - the subsequent Mission 3 baselines/search packet has also landed and produced
-  a first accepted Mission 3 comparison surface.
+  a first accepted Mission 3 comparison surface;
+- the accepted Mission 3 wrapper and first bounded Mission 3 learning path have
+  also landed in repo history.
 
 ### Completed packets since the original phase roadmap
 
@@ -579,27 +581,31 @@ That next packet has now landed as well:
   - a narrow shared resolver-backed env session seam landed under
     `Mission1Env`;
   - the default next step is now Mission 3 env/wrapper extension.
-
-### Current planning pause
-
-After the Mission 3 search-strengthening closeout, additional audit and
-brainstorm work changed the preferred sequencing slightly, and the follow-up
-env-prep packet is now complete:
-
-- no big top-level repository reorg is needed;
-- the macro split `domain / io / env / agents / eval / cli` still looks right;
-- the highest-value immediate work is now **Mission 3 env/wrapper extension**
-  on top of the accepted env-prep seam, not another default Mission 3 tuning
-  loop;
-- the main reasons are:
-  - the preparatory hardening gaps were real and are now closed;
-  - the env layer now has a narrow shared adapter/session seam to extend rather
-    than forcing Mission 3 wrapper work into `Mission1Env` or a second
-    isolated `MissionXEnv` island;
-  - future fair/non-oracle agent work now has a cleaner path to sit on top of
-    an explicit observation-based Mission 3 contract.
-
----
+- [x] **Mission 3 env/wrapper extension**
+  Closed as a bounded wrapper-boundary packet after Mission 3 env-prep.
+  Outcome:
+  - `Mission3Env` landed on top of the shared resolver-backed session seam;
+  - the accepted Mission 3 wrapper contract is player-visible by default and
+    keeps raw `GameState` / `rng_state` out of the public surface;
+  - Mission 3 public action exposure now uses a fixed 49-id local catalog with
+    resolver-owned legality and opaque contact handles;
+  - `mission3_env_smoke` landed as a thin wrapper/operator surface kept
+    separate from historical `mission3_comparison`;
+  - the packet stayed out of learning, Mission 4 content, and generic
+    multi-mission env-platform work.
+- [x] **Mission 3 learning experiments**
+  Closed as a bounded first-pass learner-transfer packet after Mission 3
+  env/wrapper extension.
+  Outcome:
+  - the accepted Phase-5-style learner family now runs end-to-end on
+    `Mission3Env`;
+  - Mission 3 now has local train / eval / summary operator surfaces under
+    `outputs/mission3_learning/`;
+  - the first accepted Mission 3 learned smoke surface was weak (`0/16`), which
+    counted as valid transfer evidence rather than an implementation failure;
+  - preserved historical Mission 3 heuristic/search references remained
+    explicit and separate from the new observation-based learned surface;
+  - the default next step moved to Mission 1 honest/fair-agent lab kickoff.
 
 ## Post-Phase-6 Planning Model
 
@@ -615,80 +621,52 @@ Each new packet should define:
 - completion criteria;
 - the decision gate it is expected to clarify.
 
-The current default should be to let richer content drive the next design
-questions instead of spending more cycles on Mission 1 alone.
+The current default should be to let the highest-value unanswered research
+question drive sequencing, rather than mechanically staying on Mission 3 or
+returning to Mission 1 tuning without a clearer fair-agent goal.
 
-### Recently closed packet
+### Current planning state
 
-**Mission 3 env/wrapper extension**
+#### Recently closed packet
+
+**Mission 3 learning experiments**
+
+Most important closeout result:
+- the accepted Phase-5-style learner family now runs end-to-end on
+  `Mission3Env`;
+- Mission 3 now has local train/eval/summary operator surfaces under
+  `outputs/mission3_learning/`;
+- the first accepted smoke learned surface stayed weak (`0/16`), which counted
+  as a valid transfer result and did not justify automatic reward shaping or
+  RL redesign.
+
+#### Current recommended next packet
+
+**Mission 1 honest/fair-agent lab kickoff**
 
 Goal:
-- extend the accepted env boundary to Mission 3 using the shared
-  resolver-backed session seam that now exists below Mission-local wrappers.
+- turn Mission 1 into the repository's fair-agent reference lab;
+- make the fair-vs-oracle contract explicit in tracked planning and reporting;
+- productize the exact Mission 1 fair-ceiling artifact as the first concrete
+  deliverable in that line;
+- keep heavier exact runs operator-controlled rather than worker-owned.
 
-Scope:
-- add a Mission-3-capable wrapper surface on top of the accepted Mission 3
-  domain slice;
-- keep observation/action/reward/termination design explicit and bounded;
-- preserve Mission 1 anchors plus preserved historical and strengthened Mission
-  3 search references as separate comparison history;
-- keep the work focused on the wrapper/interface contract rather than on new
-  search, learning, or Mission 4 content.
+Why this is now preferred:
+- the fair-vs-oracle distinction is now explicit in repo history rather than an
+  implicit caveat;
+- Mission 2 same-rules transfer and later Mission 3 honest-agent work both
+  depend on a stronger Mission 1 fair reference than the current mixed baseline
+  stack;
+- Mission 1 is still the smallest and most tractable slice for exact or
+  near-exact honest play;
+- the Mission 3 learning packet answered the bounded transfer question without
+  forcing reward shaping or broad RL redesign, so the next high-value question
+  is no longer "more Mission 3 learning immediately."
 
-Non-goals:
-- no Mission 3 learning experiments yet;
-- no Mission 4 content landing yet;
-- no broad env-platform buildout;
-- no reopening of the Mission 3 env-prep or search-strengthening packets by
-  default;
-- no generic cross-mission reporting/search infrastructure.
+#### Planned fair-agent ladder after kickoff
 
-Accepted closeout result:
-- Mission 3 has an accepted env-side contract built on the shared resolver
-  session seam;
-- Mission 1 wrapper behavior stays regression-safe;
-- the project is now ready to ask the next honest question: how learnable is
-  the richer Mission 3 slice under an explicit observation-based contract?
-
-### Likely follow-on packets after that
-
-1. **Mission 3 learning experiments**
-   Re-test learnability on content that is materially richer than Mission 1.
-2. **Mission 1 honest/fair-agent lab - exact ceiling artifact**
-   Productize the exact Mission 1 solution as a preserved fair-reference
-   artifact rather than leaving it only as a scratch capability.
-3. **Mission 1 honest/fair-agent lab - honest search baselines**
-   Add bounded non-oracle Mission 1 search baselines such as depth-limited
-   expectimax, sampled chance evaluation, and rollout-from-top-candidates.
-4. **Mission 1 honest/fair-agent lab - value-function study**
-   Compare heuristic state evaluation against exact Mission 1 values and try
-   data-driven approximators such as regression or random forests.
-5. **Mission 1 honest/fair-agent lab - search-efficiency ideas**
-   Explore action pruning, beam-style search, hierarchical filtering, and other
-   bounded efficiency ideas once honest baselines exist.
-6. **Mission 2 same-rules transfer and ceiling check**
-   Reuse the same-rule Mission 1 tools on Mission 2, check whether an exact
-   solution is still tractable, and measure how well honest heuristics/search
-   transfer across two missions with the same rules.
-7. **Mission 3 honest-agent approximation**
-   Move the fair-agent line onto the richer Mission 3 slice with sampled
-   expectimax, honest rollouts, and other bounded approximations once there is
-   no exact oracle to lean on.
-8. **Cross-mission comparison and reporting**
-   Add only the evaluation/reporting support needed once more than one mission
-   is active.
-9. **Mission 4 or another bounded richer content slice**
-   Continue content growth only after the Mission 3 stack is healthier.
-
-### Preserved future research line: honest/fair-agent ladder
-
-This research line should stay visible in planning but does not displace the
-current Mission 3 mainline.
-
-It becomes formally sensible now that the Mission 3 env/wrapper extension is
-accepted and the repo has a cleaner fair-vs-oracle boundary.
-
-Planned packet sequence:
+This research line should stay visible in planning, but only one of its packets
+should be active by default at a time.
 
 1. **Mission 1 exact ceiling artifact**
    Save and document the exact Mission 1 solution as a durable reference for
@@ -720,17 +698,17 @@ Why Mission 2 deserves to stay visible:
 - it is a better bridge to Mission 3 than jumping directly from one tiny exact
   mission to a much richer slice with no oracle.
 
-Operational note for this research ladder:
+Operational note:
 
 - some exact or large fixed-seed experiments may take many minutes rather than
   seconds;
 - when that happens, the preferred shape is a thin operator-controlled command
-  that the user can run locally rather than a long worker-thread terminal job;
+  that the user can run locally rather than a long interactive session;
 - if the workload is naturally seed-parallel or episode-parallel, future
   research packets may add bounded multi-core local execution support so the
   user can exploit available hardware without changing benchmark semantics.
 
-### Preserved long-horizon idea bank
+### Preserved farther-out ideas
 
 These ideas are intentionally farther out than the current mainline, but they
 are worth pinning in the roadmap so they do not disappear between packets.
@@ -741,19 +719,6 @@ are worth pinning in the roadmap so they do not disappear between packets.
   - naive terminal Monte Carlo is often too noisy;
   - shallow fair search only helps when the leaf evaluator is strong;
   - direct exact fair turn-search scaled badly from Mission 1 to Mission 3;
-- continue the honest-search ladder with practical hybrids such as:
-  - top-K candidate filtering;
-  - sampled expectimax;
-  - rollout-from-top-candidates;
-  - beam-style bounded search;
-  - later bounded stochastic tree-search / MCTS-style ideas;
-- keep state-evaluation research visible:
-  - hand-designed feature families;
-  - exact-value supervision on Mission 1;
-  - regression / boosting / small neural estimators;
-- keep Mission 2 transfer visible as the clean same-rules generalization step;
-- keep Mission 3 honest-agent approximation visible as the first place where
-  sampling, pruning, and bounded fair search must work without an exact oracle;
 - keep later RL-agent design ideas visible, including:
   - masked legal-action policies;
   - hierarchical policies;
@@ -762,37 +727,36 @@ are worth pinning in the roadmap so they do not disappear between packets.
   - actor-critic / PPO-style baselines;
   - imitation learning or search-distilled policies before or alongside later
     RL fine-tuning.
+- keep cross-mission comparison, reporting, and replay/debug support visible,
+  but only after more than one honest-agent line is active.
 
 ### Ranked future backlog
 
 #### Highest-value backlog
 
-1. Mission 3 learning experiments
-2. Mission 1 honest/fair-agent lab kickoff
+1. Mission 1 honest/fair-agent lab kickoff
+2. Mission 1 honest search baselines and value-function study after the
+   exact fair-ceiling reference stabilizes
 3. Mission 2 same-rules transfer and exactness check
+4. Mission 3 honest-agent approximation once the Mission 1 / Mission 2
+   fair-agent ladder is stronger
 
 #### Medium-value backlog
 
-1. Mission 1 exact ceiling artifact and honest-search baselines once the
-   Mission 3 wrapper milestone is complete
-2. Mission 1 value-function study and learned evaluators backed by exact labels
-3. Mission 2 same-rules transfer and exactness check
-4. Mission 3 honest-agent approximation once the Mission 3 wrapper and first
-   learning pass are in place
-5. Mission 4 or another bounded richer content slice once the Mission 3 env
+1. Cross-mission comparison and reporting once more than one honest-agent line
+   is active
+2. Mission 4 or another bounded richer content slice once the Mission 3 env
    and learning path are healthier
-6. A narrow search-transfer/localization follow-up only if a later thread opens
-   that as a new explicit question rather than more tuning
-7. Observation/action redesign only if richer content shows the accepted
+3. A narrow search-transfer/localization follow-up only if a later planning
+   pass opens that as a new explicit question rather than more tuning
+4. Observation/action redesign only if richer content shows the accepted
    wrapper is too Mission-1-shaped
-8. Synthetic fixtures and bounded maintainability refactors ahead of broader
+5. Synthetic fixtures and bounded maintainability refactors ahead of broader
    multi-mission growth
-9. Better evaluation, reporting, and replay-assisted debugging once more than
-   one mission is active
-10. Operator-controlled multi-core local runners for heavy exact or seeded
-    experiments once the honest-agent lab starts needing repeated long runs
-11. Later RL-agent design work around state/action encoding and policy/value
-    architecture once the fair-agent ladder has stronger foundations
+6. Operator-controlled multi-core local runners for heavy exact or seeded
+   experiments once the honest-agent lab starts needing repeated long runs
+7. Later RL-agent design work around state/action encoding and policy/value
+   architecture once the fair-agent ladder has stronger foundations
 
 #### Lower-priority / opportunistic backlog
 
@@ -805,7 +769,7 @@ are worth pinning in the roadmap so they do not disappear between packets.
    work starts to dominate progress
 5. Broad agent-architecture churn before the Mission 1 / Mission 2 fair-agent
    line has produced clearer evidence
-5. Additional framework compatibility layers, richer operator UX, or optional
+6. Additional framework compatibility layers, richer operator UX, or optional
    visualization/debug views
 
 ---

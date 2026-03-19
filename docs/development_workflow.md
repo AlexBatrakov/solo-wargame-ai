@@ -54,13 +54,13 @@ Refactoring should not silently change game behavior without corresponding docum
 
 ## Notes
 
-Private working notes, prompt templates, and local workflow artifacts may live
-outside the public documentation set.
+Local working notes and helper artifacts may live outside the public
+documentation set.
 
 For heavy exact-search or many-seed research runs:
 
 - prefer a thin operator-facing local command when runtime is long enough that
-  it should not be owned by a worker thread;
+  it should not live in a long interactive session;
 - if the workload is naturally seed-parallel or episode-parallel, bounded
   multi-core local execution is acceptable as a future workflow improvement,
   provided reproducibility and accepted benchmark semantics stay explicit.
