@@ -606,6 +606,21 @@ Those Mission 3 follow-on packets have now landed as well:
   - preserved historical Mission 3 heuristic/search references remained
     explicit and separate from the new observation-based learned surface;
   - the default next step moved to Mission 1 honest/fair-agent lab kickoff.
+- [x] **Mission 1 honest/fair-agent lab kickoff**
+  Closed as a bounded packet after Mission 3 learning.
+  Outcome:
+  - Mission 1 now has an explicit fair-vs-oracle contract in tracked repo
+    surfaces;
+  - the exact Mission 1 fair-ceiling workflow landed in tracked code plus a
+    thin Mission-1-local operator/report surface;
+  - an operator-owned exact rerun produced the exact fair reference
+    `0.949848647767`, or about `189.97` expected wins per `200`;
+  - preserved Mission 1 historical anchors remained explicit and separate:
+    `random 11/200`, learned best `144/200`, `heuristic 157/200`, and
+    oracle/planner-like `rollout 195/200`;
+  - the packet stayed out of Mission 1 honest-search baselines, Mission 2
+    transfer, Mission 3 honest-agent approximation, reward shaping, and
+    generic planner/reporting platform work.
 
 ## Post-Phase-6 Planning Model
 
@@ -629,48 +644,47 @@ returning to Mission 1 tuning without a clearer fair-agent goal.
 
 #### Recently closed packet
 
-**Mission 3 learning experiments**
+**Mission 1 honest/fair-agent lab kickoff**
 
 Most important closeout result:
-- the accepted Phase-5-style learner family now runs end-to-end on
-  `Mission3Env`;
-- Mission 3 now has local train/eval/summary operator surfaces under
-  `outputs/mission3_learning/`;
-- the first accepted smoke learned surface stayed weak (`0/16`), which counted
-  as a valid transfer result and did not justify automatic reward shaping or
-  RL redesign.
+- Mission 1 now has a tracked exact fair-ceiling workflow and thin
+  Mission-1-local operator/report surface;
+- an operator-owned exact rerun produced the exact fair reference
+  `0.949848647767`, or about `189.97` expected wins per `200`;
+- preserved Mission 1 historical anchors remained explicit and separate from
+  the new fair reference.
 
 #### Current recommended next packet
 
-**Mission 1 honest/fair-agent lab kickoff**
+**Mission 1 honest search baselines**
 
 Goal:
-- turn Mission 1 into the repository's fair-agent reference lab;
-- make the fair-vs-oracle contract explicit in tracked planning and reporting;
-- productize the exact Mission 1 fair-ceiling artifact as the first concrete
-  deliverable in that line;
-- keep heavier exact runs operator-controlled rather than worker-owned.
+- build the first bounded family of non-oracle Mission 1 search baselines on
+  top of the accepted exact fair reference;
+- compare simple honest-search ideas such as expected one-step scoring,
+  depth-limited expectimax, sampled expectimax, and bounded rollouts without
+  opening the whole ladder at once;
+- keep the new honest-search results clearly separated from the preserved
+  oracle/planner-like Mission 1 rollout anchor.
 
 Why this is now preferred:
-- the fair-vs-oracle distinction is now explicit in repo history rather than an
-  implicit caveat;
-- Mission 2 same-rules transfer and later Mission 3 honest-agent work both
-  depend on a stronger Mission 1 fair reference than the current mixed baseline
-  stack;
-- Mission 1 is still the smallest and most tractable slice for exact or
-  near-exact honest play;
-- the Mission 3 learning packet answered the bounded transfer question without
-  forcing reward shaping or broad RL redesign, so the next high-value question
-  is no longer "more Mission 3 learning immediately."
+- the exact Mission 1 fair reference is now stable enough to anchor honest
+  search comparisons rather than only planning speculation;
+- the next unanswered question is no longer what the fair ceiling is, but how
+  much of that ceiling simpler honest-search methods can recover;
+- Mission 2 same-rules transfer and later Mission 3 honest-agent approximation
+  both benefit from having at least one bounded honest-search packet after the
+  exact reference.
 
-#### Planned fair-agent ladder after kickoff
+#### Planned fair-agent ladder after exact-reference closeout
 
 This research line should stay visible in planning, but only one of its packets
 should be active by default at a time.
 
 1. **Mission 1 exact ceiling artifact**
-   Save and document the exact Mission 1 solution as a durable reference for
-   fair optimal play.
+   Closed.
+   The exact fair reference is now recorded through the tracked workflow at
+   `0.949848647767`.
 2. **Mission 1 honest search baselines**
    Try non-oracle Mission 1 baselines such as expected one-step scoring,
    depth-limited expectimax, sampled expectimax, and bounded rollouts.
@@ -734,9 +748,9 @@ are worth pinning in the roadmap so they do not disappear between packets.
 
 #### Highest-value backlog
 
-1. Mission 1 honest/fair-agent lab kickoff
-2. Mission 1 honest search baselines and value-function study after the
-   exact fair-ceiling reference stabilizes
+1. Mission 1 honest search baselines
+2. Mission 1 value-function study after the honest-search baseline packet is
+   stable
 3. Mission 2 same-rules transfer and exactness check
 4. Mission 3 honest-agent approximation once the Mission 1 / Mission 2
    fair-agent ladder is stronger

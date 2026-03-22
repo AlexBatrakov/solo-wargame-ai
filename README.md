@@ -40,9 +40,10 @@ In practice, the project demonstrates:
 
 ## Current highlights
 
-- **Mission 1 is now the reference baseline stack**
+- **Mission 1 now has a fair reference plus preserved historical anchors**
   The repo has a regression-checked Mission 1 engine, replay path, baseline
-  agents, `Mission1Env`, first learner, and a stronger rollout reference.
+  agents, `Mission1Env`, first learner, a stronger rollout reference, and a
+  tracked exact fair-ceiling workflow.
 - **Mission 3 now spans domain, wrapper, and first learning transfer**
   The repository supports deterministic Mission 3 load/init/play/replay,
   accepted `Mission3Env`, preserved local search references, and a first
@@ -73,6 +74,10 @@ content slices land.
 
 Benchmark framing:
 - Mission 1 anchors above are preserved historical references.
+- Mission 1 now also has an exact fair reference from the tracked workflow:
+  fair ceiling `0.949848647767`, or about `189.97` expected wins per `200`.
+- That exact fair reference stays separate from the preserved
+  `RolloutSearchAgent 195/200` oracle/planner-like reference.
 - Mission 3 historical `heuristic` / `rollout-search` numbers are kept as
   oracle-style planning references rather than as the public wrapper or
   learning contract.
@@ -102,6 +107,9 @@ Benchmark framing:
   conditions;
 - structured replay / text trace support;
 - random, heuristic, learned, and stronger rollout baselines;
+- exact Mission 1 fair-ceiling workflow plus Mission-1-local operator/report
+  surface under `solo_wargame_ai.eval.mission1_exact_fair_ceiling` and
+  `solo_wargame_ai.cli.mission1_exact_fair_reference`;
 - dependency-free `Mission1Env` wrapper with fixed 32-id action catalog,
   legality masks, and terminal-only default reward.
 
@@ -125,8 +133,8 @@ Benchmark framing:
 - replay/integration coverage through the accepted resolver path.
 
 What is deliberately **not** implemented yet:
-- the Mission 1 honest/fair-agent lab kickoff and the later honest-search
-  ladder built on top of it;
+- the later Mission 1 honest-search baselines and value-function study beyond
+  the exact fair reference;
 - broader cross-mission reporting and experiment infrastructure;
 - generic search / experiment platform work.
 
@@ -159,17 +167,20 @@ What is deliberately **not** implemented yet:
 
 ## Current planned next step
 
-The current next step is **Mission 1 honest/fair-agent lab kickoff**.
+The current next step is **Mission 1 honest search baselines**.
 
-The goal is to turn Mission 1 into the repository's fair-agent reference lab:
-- make the fair-vs-oracle contract explicit;
-- productize the exact Mission 1 fair-ceiling artifact;
-- establish a clean operator workflow for heavier exact runs without reopening
-  Mission 3 wrapper or learning design by default.
+The Mission 1 honest/fair-agent lab kickoff is now closed:
+- the fair-vs-oracle contract is explicit;
+- a tracked exact Mission 1 fair-ceiling workflow exists;
+- the exact fair reference has been rerun through the tracked operator surface.
+
+The next packet should build on that exact fair reference by trying bounded
+non-oracle Mission 1 baselines such as expected one-step scoring, depth-limited
+expectimax, sampled expectimax, and bounded rollouts.
 
 Likely follow-on packets after that:
-- Mission 1 honest search baselines and value-function study after the exact
-  fair-ceiling reference is stable;
+- Mission 1 value-function study after the honest-search baseline packet is
+  stable;
 - Mission 2 as a same-rules transfer step before moving to harder honest-agent
   work on Mission 3;
 - later RL-agent design questions such as state/action encoding and

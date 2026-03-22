@@ -220,6 +220,27 @@ Reward remains an env-layer concern, not a domain-layer concern. Keeping the
 default contract aligned across the accepted wrappers reduces interpretation
 drift before Mission 3 learning begins.
 
+### A15. Accepted fair-agent references are observation-based, not branch-clairvoyant
+The accepted fair-agent contract now uses player-visible information plus
+explicit rule knowledge rather than branch-realized hidden future randomness.
+
+Current implementation fact:
+- the tracked Mission 1 exact fair-ceiling workflow expands public chance
+  outcomes explicitly instead of reusing the live episode's hidden future
+  branch;
+- fair reasoning may use expectation, exact chance expansion, or planner-local
+  sampling;
+- fair references may not read hidden runtime truth or exploit live
+  `rng_state` as an oracle;
+- preserved oracle/planner-like references remain valid historical comparison
+  points, but they are framed separately from fair-agent results
+
+Rationale:
+This keeps benchmark framing aligned with the distinction between simulator
+truth and player-visible information, and prevents reproducible but
+clairvoyant planning references from being mistaken for honest hidden-randomness
+play.
+
 ---
 
 ## Open assumptions to resolve later
