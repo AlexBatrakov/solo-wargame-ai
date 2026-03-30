@@ -1,5 +1,11 @@
 """Evaluation helpers for baseline and learned-policy workflows."""
 
+from .agent_loader import (
+    ExplicitAgentLoaderSpec,
+    build_explicit_agent_factory,
+    resolve_explicit_agent_name,
+    validate_agent_loader_spec,
+)
 from .benchmark import (
     PHASE3_BENCHMARK_SEEDS,
     BenchmarkComparison,
@@ -16,6 +22,25 @@ from .episode_runner import (
     run_episode,
     run_episodes,
     run_smoke_episodes,
+)
+from .exact_artifact import (
+    DEFAULT_ARTIFACT_ROOT,
+    EXACT_ARTIFACT_FORMAT,
+    ExactArtifact,
+    ExactArtifactVerificationResult,
+    build_exact_artifact,
+    default_exact_artifact_dir,
+    read_exact_artifact_stats,
+    resolve_exact_db_path,
+    verify_exact_artifact,
+)
+from .exact_policy_solver import (
+    EXACT_KEY_CODEC_VERSION,
+    EXACT_TIE_TOLERANCE_DEFAULT,
+    ExactPolicySolver,
+    PackedPublicStateCodec,
+    action_label,
+    build_capped_exact_policy_solver,
 )
 from .learned_policy_eval import (
     LearnedEpisodeRun,
@@ -61,6 +86,21 @@ from .metrics import (
     diff_episode_metrics,
     format_metrics_table,
 )
+from .mission_summary import (
+    KNOWN_MISSION_EXACT_ANCHORS,
+    MissionSummary,
+    build_mission_summary,
+    format_mission_summary_report,
+)
+from .policy_audit import (
+    POLICY_AUDIT_ARTIFACT_FORMAT,
+    PolicyAuditArtifact,
+    PolicyAuditVerificationResult,
+    build_policy_audit_artifact,
+    default_policy_audit_dir,
+    read_policy_audit_stats,
+    verify_policy_audit_artifact,
+)
 from .rollout_baseline import (
     PHASE6_HEURISTIC_ANCHOR_WINS,
     PHASE6_LEARNED_BEST_WINS,
@@ -77,12 +117,22 @@ from .rollout_baseline import (
 __all__ = [
     "BenchmarkComparison",
     "BenchmarkRun",
+    "DEFAULT_ARTIFACT_ROOT",
+    "EXACT_ARTIFACT_FORMAT",
+    "EXACT_KEY_CODEC_VERSION",
+    "EXACT_TIE_TOLERANCE_DEFAULT",
     "EpisodeResult",
     "EpisodeMetrics",
     "EpisodeMetricsDelta",
     "EpisodeRun",
+    "ExactArtifact",
+    "ExactArtifactVerificationResult",
+    "ExactPolicySolver",
+    "ExplicitAgentLoaderSpec",
+    "KNOWN_MISSION_EXACT_ANCHORS",
     "LearnedEpisodeRun",
     "LearnedPolicyEvaluation",
+    "MissionSummary",
     "PHASE3_BENCHMARK_SEEDS",
     "PHASE3_SMOKE_SEEDS",
     "PHASE5_BENCHMARK_EVAL_SEEDS",
@@ -90,6 +140,7 @@ __all__ = [
     "PHASE5_MODEL_SELECTION_SEEDS",
     "PHASE5_SMOKE_EVAL_SEEDS",
     "PHASE5_TRAINING_SEEDS",
+    "POLICY_AUDIT_ARTIFACT_FORMAT",
     "PHASE6_HEURISTIC_ANCHOR_WINS",
     "PHASE6_LEARNED_BEST_WINS",
     "PHASE6_LEARNED_MEDIAN_WINS",
@@ -104,9 +155,17 @@ __all__ = [
     "Phase6Comparison",
     "aggregate_episode_results",
     "accepted_phase3_anchor",
+    "action_label",
     "agent_name",
+    "build_capped_exact_policy_solver",
+    "build_exact_artifact",
+    "build_explicit_agent_factory",
+    "build_mission_summary",
+    "build_policy_audit_artifact",
     "build_phase5_anchor_comparison",
     "build_phase5_aggregate_summary",
+    "default_exact_artifact_dir",
+    "default_policy_audit_dir",
     "diff_episode_metrics",
     "episode_metrics_from_payload",
     "episode_metrics_payload",
@@ -116,10 +175,15 @@ __all__ = [
     "format_phase5_aggregate_summary",
     "format_phase5_eval_report",
     "format_metrics_table",
+    "format_mission_summary_report",
     "format_seed_set",
     "load_phase5_artifact_result",
     "phase5_aggregate_summary_payload",
     "phase5_eval_payload",
+    "read_exact_artifact_stats",
+    "read_policy_audit_stats",
+    "resolve_exact_db_path",
+    "resolve_explicit_agent_name",
     "run_learned_episode",
     "run_learned_episodes",
     "run_episode",
@@ -132,4 +196,10 @@ __all__ = [
     "run_smoke_comparison",
     "run_smoke_episodes",
     "training_rollout_seed",
+    "validate_agent_loader_spec",
+    "verify_exact_artifact",
+    "verify_policy_audit_artifact",
+    "PackedPublicStateCodec",
+    "PolicyAuditArtifact",
+    "PolicyAuditVerificationResult",
 ]

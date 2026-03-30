@@ -22,6 +22,12 @@ MISSION_PATH = (
     / "missions"
     / "mission_01_secure_the_woods_1.toml"
 )
+MISSION_02_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "configs"
+    / "missions"
+    / "mission_02_secure_the_woods_2.toml"
+)
 
 
 def test_loader_rejects_unknown_terrain_name() -> None:
@@ -279,8 +285,18 @@ def test_validate_mission_rejects_start_hexes_on_non_playable_hexes() -> None:
     )
 
 
-def _load_raw_mission_data() -> dict[str, object]:
-    with MISSION_PATH.open("rb") as handle:
+def test_load_mission_02_from_data_keeps_tracked_config_valid() -> None:
+    mission_data = _load_raw_mission_data(MISSION_02_PATH)
+
+    mission = load_mission_from_data(mission_data)
+
+    assert mission.mission_id == "mission_02_secure_the_woods_2"
+    assert mission.turns.turn_limit == 5
+    assert len(mission.map.hidden_markers) == 2
+
+
+def _load_raw_mission_data(path: Path = MISSION_PATH) -> dict[str, object]:
+    with path.open("rb") as handle:
         return deepcopy(tomllib.load(handle))
 
 

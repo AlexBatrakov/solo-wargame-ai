@@ -12,6 +12,12 @@ MISSION_PATH = (
     / "missions"
     / "mission_01_secure_the_woods_1.toml"
 )
+MISSION_02_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "configs"
+    / "missions"
+    / "mission_02_secure_the_woods_2.toml"
+)
 MISSION_03_PATH = (
     Path(__file__).resolve().parents[1]
     / "configs"
@@ -152,3 +158,35 @@ def test_load_mission_03_builds_valid_static_mission_model() -> None:
     assert mission.combat_modifiers.defender_in_woods == 1
     assert mission.combat_modifiers.defender_in_building == 2
     assert mission.combat_modifiers.attacker_from_hill == -1
+
+
+def test_load_mission_02_builds_valid_static_mission_model() -> None:
+    mission = load_mission(MISSION_02_PATH)
+
+    assert mission.schema_version == 1
+    assert mission.mission_id == "mission_02_secure_the_woods_2"
+    assert mission.name == "Mission 2 - Secure the Woods (2)"
+    assert mission.source.briefing_page == 18
+    assert mission.source.map_page == 19
+    assert mission.turns.turn_limit == 5
+    assert mission.objective.kind is MissionObjectiveKind.CLEAR_ALL_HOSTILES
+    assert mission.objective.description == (
+        "Reveal and clear all German units before time runs out."
+    )
+
+    assert mission.map.start_hexes == (HexCoord(0, 3),)
+    assert tuple(marker.coord for marker in mission.map.hidden_markers) == (
+        HexCoord(0, 0),
+        HexCoord(-1, 2),
+    )
+    assert mission.map.hex_at(HexCoord(2, 0)) is not None
+    assert mission.map.hex_at(HexCoord(2, 1)) is not None
+
+    assert tuple(unit.unit_id for unit in mission.british.roster) == (
+        "rifle_squad_a",
+        "rifle_squad_b",
+    )
+    assert mission.german.unit_classes_by_name["heavy_machine_gun"].attack_to_hit == 5
+    assert mission.german.unit_classes_by_name["light_machine_gun"].attack_to_hit == 6
+    assert mission.german.reveal_table[0].roll_min == 1
+    assert mission.german.reveal_table[1].roll_max == 6
