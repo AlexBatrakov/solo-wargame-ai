@@ -4,6 +4,7 @@ from importlib import import_module
 from typing import Any
 
 from .base import Agent, AgentFactory
+from .exact_guided_heuristic_agent import ExactGuidedHeuristicAgent
 from .feature_adapter import FeatureVector, ObservationFeatureAdapter
 from .heuristic_agent import HeuristicAgent
 from .learned_policy import (
@@ -45,6 +46,7 @@ __all__ = [
     "ActorCriticActionRecord",
     "Agent",
     "AgentFactory",
+    "ExactGuidedHeuristicAgent",
     "FeatureVector",
     "HeuristicAgent",
     "LearnedPolicy",
