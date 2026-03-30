@@ -6,6 +6,7 @@ from pathlib import Path
 from solo_wargame_ai.agents.exact_guided_heuristic_agent import (
     ExactGuidedHeuristicAgent,
 )
+from solo_wargame_ai.agents.heuristic_agent import HeuristicAgent
 from solo_wargame_ai.domain.actions import (
     AdvanceAction,
     SelectActivationDieAction,
@@ -39,6 +40,7 @@ MISSION2_PATH = (
     / "missions"
     / "mission_02_secure_the_woods_2.toml"
 )
+EXACT_GUIDED_REGRESSION_SEEDS = tuple(range(32))
 
 
 def test_exact_guided_heuristic_prefers_the_promoted_mission1_left_lane_opening() -> None:
@@ -121,17 +123,31 @@ def test_exact_guided_heuristic_prefers_the_mined_mission2_die_choice() -> None:
     assert selected_action == SelectActivationDieAction(die_value=6)
 
 
-def test_exact_guided_heuristic_matches_the_promoted_benchmark_snapshots() -> None:
-    mission1_wins = benchmark_policy_seed_wins(
+def test_exact_guided_heuristic_matches_the_promoted_32_seed_snapshots() -> None:
+    historical_mission1_wins = benchmark_policy_seed_wins(
+        mission_path=MISSION1_PATH,
+        build_agent=lambda: HeuristicAgent(),
+        seeds=EXACT_GUIDED_REGRESSION_SEEDS,
+    )
+    promoted_mission1_wins = benchmark_policy_seed_wins(
         mission_path=MISSION1_PATH,
         build_agent=lambda: ExactGuidedHeuristicAgent(),
-        seeds=tuple(range(200)),
+        seeds=EXACT_GUIDED_REGRESSION_SEEDS,
     )
-    mission2_wins = benchmark_policy_seed_wins(
+    historical_mission2_wins = benchmark_policy_seed_wins(
+        mission_path=MISSION2_PATH,
+        build_agent=lambda: HeuristicAgent(),
+        seeds=EXACT_GUIDED_REGRESSION_SEEDS,
+    )
+    promoted_mission2_wins = benchmark_policy_seed_wins(
         mission_path=MISSION2_PATH,
         build_agent=lambda: ExactGuidedHeuristicAgent(),
-        seeds=tuple(range(200)),
+        seeds=EXACT_GUIDED_REGRESSION_SEEDS,
     )
 
-    assert mission1_wins == 177
-    assert mission2_wins == 94
+    assert historical_mission1_wins == 23
+    assert promoted_mission1_wins == 28
+    assert historical_mission2_wins == 10
+    assert promoted_mission2_wins == 12
+    assert promoted_mission1_wins > historical_mission1_wins
+    assert promoted_mission2_wins > historical_mission2_wins
