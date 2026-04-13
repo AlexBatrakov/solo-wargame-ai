@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -156,6 +157,101 @@ def test_run_episode_batch_uses_the_accepted_episode_runner_and_metrics_seam() -
     assert isinstance(payload["execution"]["duration_sec"], float)
     assert payload["artifacts"] == []
     assert payload["warnings"] == []
+
+
+def test_run_episode_batch_materializes_request_and_result_artifacts(
+    tmp_path: Path,
+) -> None:
+    artifact_dir = tmp_path / "artifacts" / "episode-batch"
+    payload = _base_request_payload()
+    payload["artifact_dir"] = str(artifact_dir)
+
+    request = episode_batch_request_from_payload(payload)
+    result = run_episode_batch(request)
+
+    assert isinstance(result, EpisodeBatchSuccessResult)
+    assert artifact_dir.is_dir()
+
+    request_path = artifact_dir / "request.json"
+    result_path = artifact_dir / "result.json"
+    assert request_path.is_file()
+    assert result_path.is_file()
+
+    result_payload = result.to_payload()
+    assert result_payload["artifacts"] == [
+        {
+            "kind": "request",
+            "path": str(request_path),
+            "format": "json",
+            "description": "normalized episode-batch request payload",
+        },
+        {
+            "kind": "result",
+            "path": str(result_path),
+            "format": "json",
+            "description": "machine-readable episode-batch result payload",
+        },
+    ]
+    assert result_payload["warnings"] == []
+    assert json.loads(request_path.read_text(encoding="utf-8")) == request.to_payload()
+    assert json.loads(result_path.read_text(encoding="utf-8")) == result_payload
+
+
+def test_run_episode_batch_writes_optional_episode_rows_artifact(
+    tmp_path: Path,
+) -> None:
+    artifact_dir = tmp_path / "artifacts" / "episode-rows"
+    payload = _base_request_payload()
+    payload["artifact_dir"] = str(artifact_dir)
+    payload["write_episode_rows"] = True
+    payload["seed_spec"] = {
+        "kind": "range",
+        "start": 0,
+        "stop": 2,
+    }
+
+    request = episode_batch_request_from_payload(payload)
+    result = run_episode_batch(request)
+
+    assert isinstance(result, EpisodeBatchSuccessResult)
+
+    episode_rows_path = artifact_dir / "episodes.jsonl"
+    assert episode_rows_path.is_file()
+
+    result_payload = result.to_payload()
+    assert result_payload["artifacts"] == [
+        {
+            "kind": "request",
+            "path": str(artifact_dir / "request.json"),
+            "format": "json",
+            "description": "normalized episode-batch request payload",
+        },
+        {
+            "kind": "episode_rows",
+            "path": str(episode_rows_path),
+            "format": "jsonl",
+            "description": "one row per completed episode",
+            "episode_count": 2,
+        },
+        {
+            "kind": "result",
+            "path": str(artifact_dir / "result.json"),
+            "format": "json",
+            "description": "machine-readable episode-batch result payload",
+        },
+    ]
+
+    episode_rows = [
+        json.loads(line)
+        for line in episode_rows_path.read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(episode_rows) == 2
+    assert [row["seed"] for row in episode_rows] == [0, 1]
+    assert all(row["agent_name"] == HeuristicAgent.name for row in episode_rows)
+    assert all(row["terminal_outcome"] in {"victory", "defeat"} for row in episode_rows)
+    assert json.loads((artifact_dir / "result.json").read_text(encoding="utf-8")) == (
+        result_payload
+    )
 
 
 def test_run_episode_batch_from_payload_reports_policy_resolution_failures() -> None:

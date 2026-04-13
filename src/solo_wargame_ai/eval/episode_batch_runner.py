@@ -6,11 +6,13 @@ This module intentionally stays at the library/contract layer:
 - builtin policy loading stays narrow and explicit
 - execution builds on the accepted mission-loader, episode-runner, and
   aggregate-metrics seams
-- CLI transport and artifact writing remain out of scope for this core
+- optional artifact materialization stays here so the CLI can remain thin
+- CLI transport remains out of scope for this core
 """
 
 from __future__ import annotations
 
+import json
 import platform
 import subprocess
 from collections.abc import Mapping
@@ -24,7 +26,7 @@ from solo_wargame_ai.agents.exact_guided_heuristic_agent import ExactGuidedHeuri
 from solo_wargame_ai.agents.heuristic_agent import HeuristicAgent
 from solo_wargame_ai.agents.random_agent import RandomAgent
 from solo_wargame_ai.domain.mission import Mission
-from solo_wargame_ai.eval.episode_runner import run_episodes
+from solo_wargame_ai.eval.episode_runner import EpisodeRun, run_episodes
 from solo_wargame_ai.eval.metrics import EpisodeMetrics, aggregate_episode_results
 from solo_wargame_ai.io.mission_loader import load_mission
 
@@ -300,6 +302,14 @@ class _ResolvedBuiltinPolicy:
     metadata: ResolvedPolicyInfo
 
 
+@dataclass(frozen=True, slots=True)
+class _EpisodeBatchExecution:
+    """Internal execution output used for optional artifact materialization."""
+
+    result: EpisodeBatchRunResult
+    episode_runs: tuple[EpisodeRun, ...] = ()
+
+
 def episode_batch_request_from_payload(payload: object) -> EpisodeBatchRequest:
     """Validate and normalize a versioned episode-batch request payload."""
 
@@ -427,6 +437,15 @@ def resolve_builtin_policy(
 def run_episode_batch(request: EpisodeBatchRequest) -> EpisodeBatchRunResult:
     """Execute one validated episode-batch request end to end."""
 
+    execution = _execute_episode_batch(request)
+    if request.artifact_dir is None:
+        return execution.result
+    return _materialize_episode_batch_artifacts(request, execution)
+
+
+def _execute_episode_batch(request: EpisodeBatchRequest) -> _EpisodeBatchExecution:
+    """Execute the core runner logic before any optional artifact writes."""
+
     started_at = perf_counter()
     execution = ExecutionMetadata(
         mission_path=str(request.mission_path),
@@ -437,16 +456,18 @@ def run_episode_batch(request: EpisodeBatchRequest) -> EpisodeBatchRunResult:
     try:
         mission = load_mission(request.mission_path)
     except Exception as exc:
-        return EpisodeBatchFailureResult(
-            schema_version=request.schema_version,
-            status=FAILURE_STATUS,
-            operation=request.operation,
-            execution=_finalize_execution_metadata(execution, started_at=started_at),
-            artifacts=(),
-            warnings=(),
-            error=EpisodeBatchError(
-                kind="mission_load_error",
-                message=str(exc),
+        return _EpisodeBatchExecution(
+            result=EpisodeBatchFailureResult(
+                schema_version=request.schema_version,
+                status=FAILURE_STATUS,
+                operation=request.operation,
+                execution=_finalize_execution_metadata(execution, started_at=started_at),
+                artifacts=(),
+                warnings=(),
+                error=EpisodeBatchError(
+                    kind="mission_load_error",
+                    message=str(exc),
+                ),
             ),
         )
 
@@ -455,16 +476,18 @@ def run_episode_batch(request: EpisodeBatchRequest) -> EpisodeBatchRunResult:
     try:
         resolved_policy = resolve_builtin_policy(request.policy, mission=mission)
     except EpisodeBatchPolicyResolutionError as exc:
-        return EpisodeBatchFailureResult(
-            schema_version=request.schema_version,
-            status=FAILURE_STATUS,
-            operation=request.operation,
-            execution=_finalize_execution_metadata(execution, started_at=started_at),
-            artifacts=(),
-            warnings=(),
-            error=EpisodeBatchError(
-                kind="policy_resolution_error",
-                message=str(exc),
+        return _EpisodeBatchExecution(
+            result=EpisodeBatchFailureResult(
+                schema_version=request.schema_version,
+                status=FAILURE_STATUS,
+                operation=request.operation,
+                execution=_finalize_execution_metadata(execution, started_at=started_at),
+                artifacts=(),
+                warnings=(),
+                error=EpisodeBatchError(
+                    kind="policy_resolution_error",
+                    message=str(exc),
+                ),
             ),
         )
 
@@ -473,16 +496,18 @@ def run_episode_batch(request: EpisodeBatchRequest) -> EpisodeBatchRunResult:
     try:
         seeds = resolve_episode_batch_seeds(request.seed_spec)
     except EpisodeBatchRequestValidationError as exc:
-        return EpisodeBatchFailureResult(
-            schema_version=request.schema_version,
-            status=FAILURE_STATUS,
-            operation=request.operation,
-            execution=_finalize_execution_metadata(execution, started_at=started_at),
-            artifacts=(),
-            warnings=(),
-            error=EpisodeBatchError(
-                kind="request_validation_error",
-                message=str(exc),
+        return _EpisodeBatchExecution(
+            result=EpisodeBatchFailureResult(
+                schema_version=request.schema_version,
+                status=FAILURE_STATUS,
+                operation=request.operation,
+                execution=_finalize_execution_metadata(execution, started_at=started_at),
+                artifacts=(),
+                warnings=(),
+                error=EpisodeBatchError(
+                    kind="request_validation_error",
+                    message=str(exc),
+                ),
             ),
         )
 
@@ -496,28 +521,33 @@ def run_episode_batch(request: EpisodeBatchRequest) -> EpisodeBatchRunResult:
         )
         metrics = aggregate_episode_results(run.result for run in episode_runs)
     except Exception as exc:
-        return EpisodeBatchFailureResult(
-            schema_version=request.schema_version,
-            status=FAILURE_STATUS,
-            operation=request.operation,
-            execution=_finalize_execution_metadata(execution, started_at=started_at),
-            artifacts=(),
-            warnings=(),
-            error=EpisodeBatchError(
-                kind="episode_execution_error",
-                message=str(exc),
-                completed_episode_count=0,
+        return _EpisodeBatchExecution(
+            result=EpisodeBatchFailureResult(
+                schema_version=request.schema_version,
+                status=FAILURE_STATUS,
+                operation=request.operation,
+                execution=_finalize_execution_metadata(execution, started_at=started_at),
+                artifacts=(),
+                warnings=(),
+                error=EpisodeBatchError(
+                    kind="episode_execution_error",
+                    message=str(exc),
+                    completed_episode_count=0,
+                ),
             ),
         )
 
-    return EpisodeBatchSuccessResult(
-        schema_version=request.schema_version,
-        status=SUCCESS_STATUS,
-        operation=request.operation,
-        metrics=metrics,
-        execution=_finalize_execution_metadata(execution, started_at=started_at),
-        artifacts=(),
-        warnings=_request_warnings(request),
+    return _EpisodeBatchExecution(
+        result=EpisodeBatchSuccessResult(
+            schema_version=request.schema_version,
+            status=SUCCESS_STATUS,
+            operation=request.operation,
+            metrics=metrics,
+            execution=_finalize_execution_metadata(execution, started_at=started_at),
+            artifacts=(),
+            warnings=(),
+        ),
+        episode_runs=episode_runs,
     )
 
 
@@ -652,19 +682,187 @@ def _resolve_git_metadata() -> tuple[str | None, bool | None]:
     return git_commit, git_dirty
 
 
-def _request_warnings(request: EpisodeBatchRequest) -> tuple[str, ...]:
-    warnings: list[str] = []
-    if request.artifact_dir is not None:
-        warnings.append(
-            "artifact_dir was accepted but artifact writing "
-            "is not implemented by the contract core",
+def _materialize_episode_batch_artifacts(
+    request: EpisodeBatchRequest,
+    execution: _EpisodeBatchExecution,
+) -> EpisodeBatchRunResult:
+    artifact_dir = request.artifact_dir
+    if artifact_dir is None:
+        return execution.result
+
+    request_path = artifact_dir / "request.json"
+    result_path = artifact_dir / "result.json"
+    episode_rows_path = artifact_dir / "episodes.jsonl"
+
+    try:
+        artifact_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        return _result_after_result_artifact_failure(
+            execution.result,
+            artifacts=(),
+            message=f"failed to create artifact_dir {artifact_dir}: {exc}",
         )
-    if request.write_episode_rows:
-        warnings.append(
-            "write_episode_rows was accepted but episode row artifacts "
-            "are not implemented by the contract core",
+
+    artifacts: list[ArtifactManifestEntry] = []
+    artifact_warnings: list[str] = []
+
+    try:
+        _write_json_file(request_path, request.to_payload())
+    except OSError as exc:
+        artifact_warnings.append(f"failed to write request artifact: {exc}")
+    else:
+        artifacts.append(
+            ArtifactManifestEntry(
+                kind="request",
+                path=str(request_path),
+                format="json",
+                description="normalized episode-batch request payload",
+            ),
         )
-    return tuple(warnings)
+
+    if request.write_episode_rows and isinstance(
+        execution.result,
+        EpisodeBatchSuccessResult,
+    ):
+        try:
+            _write_episode_rows_file(episode_rows_path, execution.episode_runs)
+        except OSError as exc:
+            artifact_warnings.append(f"failed to write episode rows artifact: {exc}")
+        else:
+            artifacts.append(
+                ArtifactManifestEntry(
+                    kind="episode_rows",
+                    path=str(episode_rows_path),
+                    format="jsonl",
+                    description="one row per completed episode",
+                    episode_count=len(execution.episode_runs),
+                ),
+            )
+
+    result = _result_after_non_result_artifact_writes(
+        execution.result,
+        artifacts=tuple(artifacts),
+        messages=tuple(artifact_warnings),
+    )
+
+    result_entry = ArtifactManifestEntry(
+        kind="result",
+        path=str(result_path),
+        format="json",
+        description="machine-readable episode-batch result payload",
+    )
+    result_with_artifact = _result_with_artifacts(
+        result,
+        tuple([*artifacts, result_entry]),
+    )
+
+    try:
+        _write_json_file(result_path, result_with_artifact.to_payload())
+    except OSError as exc:
+        return _result_after_result_artifact_failure(
+            result,
+            artifacts=tuple(artifacts),
+            message=f"failed to write result artifact: {exc}",
+        )
+
+    return result_with_artifact
+
+
+def _result_after_non_result_artifact_writes(
+    result: EpisodeBatchRunResult,
+    *,
+    artifacts: tuple[ArtifactManifestEntry, ...],
+    messages: tuple[str, ...],
+) -> EpisodeBatchRunResult:
+    if not messages:
+        return _result_with_artifacts(result, artifacts)
+
+    if isinstance(result, EpisodeBatchSuccessResult):
+        return EpisodeBatchFailureResult(
+            schema_version=result.schema_version,
+            status=FAILURE_STATUS,
+            operation=result.operation,
+            execution=result.execution,
+            artifacts=artifacts,
+            warnings=messages,
+            error=EpisodeBatchError(
+                kind="artifact_write_error",
+                message="; ".join(messages),
+                completed_episode_count=result.metrics.episode_count,
+            ),
+        )
+
+    return replace(
+        result,
+        artifacts=artifacts,
+        warnings=result.warnings + messages,
+    )
+
+
+def _result_after_result_artifact_failure(
+    result: EpisodeBatchRunResult,
+    *,
+    artifacts: tuple[ArtifactManifestEntry, ...],
+    message: str,
+) -> EpisodeBatchRunResult:
+    if isinstance(result, EpisodeBatchSuccessResult):
+        return EpisodeBatchFailureResult(
+            schema_version=result.schema_version,
+            status=FAILURE_STATUS,
+            operation=result.operation,
+            execution=result.execution,
+            artifacts=artifacts,
+            warnings=(message,),
+            error=EpisodeBatchError(
+                kind="artifact_write_error",
+                message=message,
+                completed_episode_count=result.metrics.episode_count,
+            ),
+        )
+
+    return replace(
+        result,
+        artifacts=artifacts,
+        warnings=result.warnings + (message,),
+    )
+
+
+def _result_with_artifacts(
+    result: EpisodeBatchRunResult,
+    artifacts: tuple[ArtifactManifestEntry, ...],
+) -> EpisodeBatchRunResult:
+    return replace(result, artifacts=artifacts)
+
+
+def _write_json_file(path: Path, payload: object) -> None:
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_episode_rows_file(
+    path: Path,
+    episode_runs: tuple[EpisodeRun, ...],
+) -> None:
+    with path.open("w", encoding="utf-8") as output:
+        for episode_run in episode_runs:
+            output.write(
+                json.dumps(_episode_row_payload(episode_run), sort_keys=True) + "\n",
+            )
+
+
+def _episode_row_payload(episode_run: EpisodeRun) -> dict[str, object]:
+    result = episode_run.result
+    return {
+        "agent_name": result.agent_name,
+        "seed": result.seed,
+        "terminal_outcome": result.terminal_outcome.value,
+        "terminal_turn": result.terminal_turn,
+        "resolved_marker_count": result.resolved_marker_count,
+        "removed_german_count": result.removed_german_count,
+        "player_decision_count": result.player_decision_count,
+    }
 
 
 def _require_supported_mission(
