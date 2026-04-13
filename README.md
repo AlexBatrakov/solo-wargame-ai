@@ -44,6 +44,14 @@ In practice, the project demonstrates:
   The repo has a regression-checked Mission 1 engine, replay path, baseline
   agents, `Mission1Env`, first learner, a stronger rollout reference, and a
   tracked exact fair-ceiling workflow.
+- **Exact-backed artifact, audit, and summary workflows now exist**
+  The repo now has generic exact-artifact, policy-audit, and mission-summary
+  surfaces for exact-backed missions, plus a promoted exact-guided heuristic
+  successor kept separate from the historical `HeuristicAgent` baseline.
+- **A versioned orchestration-facing episode-batch runner now exists**
+  The repo now has a machine-readable, subprocess-friendly batch runner with a
+  structured success/failure contract and artifact manifest for external
+  orchestration.
 - **Mission 3 now spans domain, wrapper, and first learning transfer**
   The repository supports deterministic Mission 3 load/init/play/replay,
   accepted `Mission3Env`, preserved local search references, and a first
@@ -110,8 +118,29 @@ Benchmark framing:
 - exact Mission 1 fair-ceiling workflow plus Mission-1-local operator/report
   surface under `solo_wargame_ai.eval.mission1_exact_fair_ceiling` and
   `solo_wargame_ai.cli.mission1_exact_fair_reference`;
+- generic exact-artifact, policy-audit, and mission-summary workflows under
+  `solo_wargame_ai.eval.exact_artifact`,
+  `solo_wargame_ai.eval.policy_audit`,
+  `solo_wargame_ai.eval.mission_summary`,
+  and their thin CLI/operator surfaces;
+- a promoted `ExactGuidedHeuristicAgent` successor plus a historical-vs-
+  promoted comparison/reporting surface;
 - dependency-free `Mission1Env` wrapper with fixed 32-id action catalog,
   legality masks, and terminal-only default reward.
+
+### Mission 2
+
+- deterministic mission loading and initialization through tracked mission
+  config;
+- compatibility with the generic exact-artifact, policy-audit, and
+  mission-summary workflows;
+- known exact full-space ceiling anchor `0.598931044695`
+  (`119.786209/200`);
+- known practical fixed-seed ceiling anchor `131/200` on the preserved
+  `0..199` benchmark surface, currently carried as a strong working anchor from
+  artifact-backed deterministic replay;
+- benchmark-light historical-vs-promoted heuristic comparison path on the
+  preserved `0..199` seed surface.
 
 ### Mission 3
 
@@ -132,9 +161,28 @@ Benchmark framing:
   build on without duplicating lifecycle/state progression logic;
 - replay/integration coverage through the accepted resolver path.
 
+### Orchestration-facing execution
+
+- a versioned `episode_batch` runner contract over the accepted fixed-seed
+  episode-runner seam;
+- machine-readable success and failure payloads suitable for subprocess-based
+  orchestration;
+- structured aggregate metrics, resolved execution metadata, warnings, and
+  artifact manifest entries;
+- builtin stable policy names in v1:
+  `random`, `heuristic`, and `exact_guided_heuristic`;
+- optional per-episode detail written as an artifact rather than embedded in
+  the top-level result by default.
+
 What is deliberately **not** implemented yet:
-- the later Mission 1 honest-search baselines and value-function study beyond
-  the exact fair reference;
+- the later Mission 1 honest-search baselines and value-function study on top
+  of the promoted exact-guided heuristic base;
+- heavier Mission 2-specific heuristic assimilation beyond the current
+  benchmark-light successor/comparison path;
+- broader Mission 1 / Mission 2 artifact-driven policy-improvement and
+  distillation work;
+- broader multi-operation orchestration runner/platform work beyond the first
+  `episode_batch` contract;
 - broader cross-mission reporting and experiment infrastructure;
 - generic search / experiment platform work.
 
@@ -150,7 +198,8 @@ What is deliberately **not** implemented yet:
 - `src/solo_wargame_ai/agents/`
   Random, heuristic, rollout-search, and learned-policy code.
 - `src/solo_wargame_ai/eval/`
-  Episode runner, benchmark harness, metrics, and reporting helpers.
+  Episode runner, benchmark harness, metrics, artifact/reporting helpers, and
+  the orchestration-facing episode-batch runner core.
 - `tests/`
   Unit, integration, replay, env, agent, and CLI regression coverage.
 
@@ -169,25 +218,32 @@ What is deliberately **not** implemented yet:
 
 The current next step is **Mission 1 honest search baselines**.
 
-The Mission 1 honest/fair-agent lab kickoff is now closed:
-- the fair-vs-oracle contract is explicit;
-- a tracked exact Mission 1 fair-ceiling workflow exists;
-- the exact fair reference has been rerun through the tracked operator surface.
+The versioned orchestration-facing runner packet is now closed:
+- the repo now has a tracked `episode_batch` runner surface under
+  `solo_wargame_ai.eval.episode_batch_runner` and
+  `solo_wargame_ai.cli.episode_batch_runner`;
+- the first external runner contract is versioned, machine-readable, and
+  subprocess-friendly;
+- aggregate metrics, resolved execution metadata, warnings, explicit failure
+  payloads, and structured artifact manifests are now part of the tracked
+  runner surface;
+- optional per-episode detail can now be written as an artifact rather than
+  embedded in the top-level result by default.
 
-The next packet should build on that exact fair reference by trying bounded
-non-oracle Mission 1 baselines such as expected one-step scoring, depth-limited
-expectimax, sampled expectimax, and bounded rollouts.
+With that bounded integration step complete, the next research packet should
+return to the fair-agent ladder and try bounded non-oracle Mission 1 search
+baselines such as expected one-step scoring, depth-limited expectimax, sampled
+expectimax, and bounded rollouts.
 
 Likely follow-on packets after that:
 - Mission 1 value-function study after the honest-search baseline packet is
   stable;
-- Mission 2 as a same-rules transfer step before moving to harder honest-agent
-  work on Mission 3;
-- later RL-agent design questions such as state/action encoding and
-  policy/value architecture, once the fair-agent line is stronger;
-- later Mission 4 or another bounded richer content slice;
-- cross-mission evaluation/reporting once more than one active mission needs to
-  be compared.
+- later Mission 2-specific heuristic assimilation beyond the current
+  benchmark-light transfer path;
+- later Mission 1 / Mission 2 artifact-driven policy-improvement and
+  distillation work once the new heuristic surfaces are tracked cleanly;
+- later Mission 3 honest-agent approximation once the Mission 1 / Mission 2
+  fair-agent line is stronger.
 
 ## Development setup
 

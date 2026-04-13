@@ -621,6 +621,41 @@ Those Mission 3 follow-on packets have now landed as well:
   - the packet stayed out of Mission 1 honest-search baselines, Mission 2
     transfer, Mission 3 honest-agent approximation, reward shaping, and
     generic planner/reporting platform work.
+- [x] **Mission 1/2 artifact-backed heuristic assimilation**
+  Closed as a bounded packet after Mission 1 honest/fair-agent lab kickoff.
+  Outcome:
+  - generic exact-artifact, policy-audit, and mission-summary workflows landed
+    in tracked repo code with thin CLI/operator surfaces;
+  - Mission 2 deterministic config coverage now exists inside those generic
+    workflows;
+  - the exact-backed evaluation contract is now explicit in tracked reporting
+    surfaces, including both full-space and fixed-seed normalization views for
+    exact-solved missions;
+  - a promoted `ExactGuidedHeuristicAgent` landed beside the preserved
+    historical `HeuristicAgent` baseline rather than silently replacing it;
+  - Mission 2 now has a benchmark-light transfer/comparison path plus a known
+    fixed-seed ceiling anchor `131/200` on the preserved `0..199` surface,
+    carried as a strong working anchor from artifact-backed deterministic
+    replay;
+  - the packet stayed out of honest search, value-function study, deeper
+    Mission 2 assimilation, broad distillation work, and generic experiment
+    platform buildout.
+- [x] **Versioned orchestration-facing episode-batch runner interface**
+  Closed as a bounded packet after Mission 1/2 artifact-backed heuristic
+  assimilation.
+  Outcome:
+  - the repo now has a tracked versioned `episode_batch` runner surface under
+    `eval/episode_batch_runner.py` and `cli/episode_batch_runner.py`;
+  - the first external runner contract is machine-readable,
+    subprocess-friendly, and intentionally narrow in scope;
+  - aggregate metrics, resolved execution metadata, structured artifact
+    manifests, warnings, and explicit failure payloads are part of the tracked
+    result contract;
+  - builtin policy loading stays narrow in v1 through stable names rather than
+    a broad dynamic loader contract;
+  - the packet stayed out of exact-artifact build, policy-audit build,
+    generic mission-summary as a primary external contract, and broader
+    multi-operation runner-platform work.
 
 ## Post-Phase-6 Planning Model
 
@@ -644,15 +679,18 @@ returning to Mission 1 tuning without a clearer fair-agent goal.
 
 #### Recently closed packet
 
-**Mission 1 honest/fair-agent lab kickoff**
+**Versioned orchestration-facing episode-batch runner interface**
 
 Most important closeout result:
-- Mission 1 now has a tracked exact fair-ceiling workflow and thin
-  Mission-1-local operator/report surface;
-- an operator-owned exact rerun produced the exact fair reference
-  `0.949848647767`, or about `189.97` expected wins per `200`;
-- preserved Mission 1 historical anchors remained explicit and separate from
-  the new fair reference.
+- the repo now has a tracked `episode_batch` runner surface over the accepted
+  fixed-seed episode-runner seam;
+- the first external runner contract is versioned, machine-readable, and
+  subprocess-friendly;
+- aggregate metrics, resolved execution metadata, structured artifact
+  manifests, warnings, and explicit failure payloads are part of the tracked
+  result contract;
+- the packet added a bounded orchestration-facing execution surface without
+  widening into heavy artifact workflows or a broad multi-operation platform.
 
 #### Current recommended next packet
 
@@ -660,45 +698,74 @@ Most important closeout result:
 
 Goal:
 - build the first bounded family of non-oracle Mission 1 search baselines on
-  top of the accepted exact fair reference;
+  top of the stronger exact-backed heuristic base rather than the older
+  historical heuristic alone;
 - compare simple honest-search ideas such as expected one-step scoring,
   depth-limited expectimax, sampled expectimax, and bounded rollouts without
   opening the whole ladder at once;
-- keep the new honest-search results clearly separated from the preserved
-  oracle/planner-like Mission 1 rollout anchor.
+- keep the new honest-search results clearly separated from both the preserved
+  oracle/planner-like Mission 1 rollout anchor and the promoted exact-guided
+  heuristic successor.
 
 Why this is now preferred:
-- the exact Mission 1 fair reference is now stable enough to anchor honest
-  search comparisons rather than only planning speculation;
-- the next unanswered question is no longer what the fair ceiling is, but how
-  much of that ceiling simpler honest-search methods can recover;
-- Mission 2 same-rules transfer and later Mission 3 honest-agent approximation
-  both benefit from having at least one bounded honest-search packet after the
-  exact reference.
+- the temporary integration step for external orchestration is now closed, so
+  the fair-agent ladder can return to its next open research question;
+- Mission 1 now has a strong exact-backed heuristic baseline and a stable
+  exact fair reference, which makes it the cleanest place to compare honest
+  search families before opening heavier Mission 2-specific follow-up work;
+- later value-function study, Mission 2 heuristic assimilation follow-up, and
+  Mission 3 honest-agent approximation all benefit from having at least one
+  bounded honest-search packet on top of the new tracked heuristic base.
 
-#### Planned fair-agent ladder after exact-reference closeout
+Lessons already absorbed into the plan:
+
+- promote builders and evaluation contracts, not round scripts;
+- keep two exact-backed normalization views for exact-solved missions:
+  - full-space ceiling vs policy root value
+  - fixed-seed ceiling vs policy fixed-seed result
+- preserve one promoted heuristic surface, not one tracked agent per promoted
+  round;
+- keep Mission 2 benchmark-light by default until a later packet explicitly
+  opens deeper Mission 2 assimilation again;
+- keep the orchestration-facing runner narrow and stable rather than widening
+  it into a broad platform before new evidence demands it.
+
+#### Planned fair-agent ladder after artifact-backed assimilation
 
 This research line should stay visible in planning, but only one of its packets
 should be active by default at a time.
+
+The temporary orchestration-facing runner packet is now closed, so the next
+research packet inside this ladder is again **Mission 1 honest search
+baselines**.
 
 1. **Mission 1 exact ceiling artifact**
    Closed.
    The exact fair reference is now recorded through the tracked workflow at
    `0.949848647767`.
-2. **Mission 1 honest search baselines**
+2. **Mission 1/2 artifact-backed heuristic assimilation**
+   Closed.
+   The generic exact / policy / summary machinery and the promoted
+   `ExactGuidedHeuristicAgent` are now tracked.
+3. **Mission 1 honest search baselines**
    Try non-oracle Mission 1 baselines such as expected one-step scoring,
    depth-limited expectimax, sampled expectimax, and bounded rollouts.
-3. **Mission 1 value-function study**
+4. **Mission 1 value-function study**
    Measure how well the current heuristic evaluation aligns with exact values,
    then try learned evaluators.
-4. **Mission 1 search-efficiency ideas**
+5. **Mission 2 heuristic assimilation follow-up**
+   After the generic builders and the first promoted Mission 1-led heuristic
+   are tracked, selectively assimilate the heavier Mission 2-specific
+   improvements rather than rebuilding deep Mission 2 artifacts for every
+   earlier candidate.
+6. **Mission 1/2 artifact-driven policy-improvement and distillation**
+   Turn the exact/policy-artifact workflow into a more explicit methodology:
+   weighted audits, conservative `Q_pi` improvement, compact tables, and later
+   other bounded distillation ideas.
+7. **Mission 1 search-efficiency ideas**
    Explore pruning, beam search, top-K rollout filtering, and later bounded
    MCTS-style ideas only after the simpler honest ladder exists.
-5. **Mission 2 same-rules transfer and exactness check**
-   Use the fact that Mission 2 shares the same rules as Mission 1 to test
-   whether exact methods, value models, and honest search baselines transfer,
-   and to determine whether Mission 2 also admits a practical exact ceiling.
-6. **Mission 3 honest-agent approximation**
+8. **Mission 3 honest-agent approximation**
    Move from exact-oracle-backed research to richer-slice approximation:
    sampled expectimax, honest rollouts, pruning, and later bounded stochastic
    tree-search ideas where exact solution is no longer available.
@@ -707,8 +774,9 @@ Why Mission 2 deserves to stay visible:
 
 - it shares the same core rules as Mission 1, so it is the cleanest
   generalization step after a Mission 1 exact lab;
-- it may still admit an exact or near-exact solution, which would make it a
-  second high-value calibration point;
+- recent experiments already suggest practical exact/artifact workflows there,
+  which makes it a second high-value calibration point rather than only a
+  speculative transfer target;
 - it is a better bridge to Mission 3 than jumping directly from one tiny exact
   mission to a much richer slice with no oracle.
 
@@ -751,8 +819,9 @@ are worth pinning in the roadmap so they do not disappear between packets.
 1. Mission 1 honest search baselines
 2. Mission 1 value-function study after the honest-search baseline packet is
    stable
-3. Mission 2 same-rules transfer and exactness check
-4. Mission 3 honest-agent approximation once the Mission 1 / Mission 2
+3. Mission 2 heuristic assimilation follow-up
+4. Mission 1/2 artifact-driven policy-improvement / distillation work
+5. Mission 3 honest-agent approximation once the Mission 1 / Mission 2
    fair-agent ladder is stronger
 
 #### Medium-value backlog

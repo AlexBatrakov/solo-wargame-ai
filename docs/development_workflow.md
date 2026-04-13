@@ -16,6 +16,14 @@ It is public and should contain stable workflow principles, not private prompt d
 6. Stable design decisions should be reflected in public docs under `docs/`.
 7. If an in-scope rule exposes player-visible substeps, model them explicitly in
    the domain layer rather than silently compressing them away.
+8. Promote reusable experiment machinery into tracked code only after it has
+   proven stable across more than one run or mission; keep one-off scripts and
+   round-specific miners local.
+9. Preserve historical baseline agents and promoted successor agents as
+   separate tracked surfaces rather than silently rewriting benchmark anchors.
+10. If the repository exposes computation to an external orchestrator, prefer
+    one versioned machine-readable runner contract over coupling external
+    systems directly to human-oriented CLIs or heavy research workflows.
 
 ## Preferred implementation order
 
@@ -41,6 +49,24 @@ When adding a new feature:
 
 Scope control should come from limiting which missions and rule families are
 implemented, not from rewriting the flow of in-scope rules.
+
+When experiments produce a reusable evaluation workflow, prefer this migration
+shape:
+
+1. keep the raw exploratory script local;
+2. extract the durable library surface into `src/`;
+3. add one thin CLI/operator surface in `src/solo_wargame_ai/cli/`;
+4. keep heavy generated artifacts under local or ignored output directories;
+5. only then retire or down-rank the local exploratory script.
+
+When exposing a new orchestration-facing runner surface:
+
+1. keep the first contract narrow and versioned;
+2. prefer one stable operation over a broad multi-operation interface;
+3. make success and failure payloads explicitly machine-readable;
+4. keep aggregate metrics in the top-level result;
+5. write optional per-episode detail as an artifact rather than embedding it
+   inline by default.
 
 ## Refactoring policy
 
