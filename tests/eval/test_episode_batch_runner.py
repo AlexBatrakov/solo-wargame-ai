@@ -40,6 +40,7 @@ MISSION3_PATH = (
     / "missions"
     / "mission_03_secure_the_building.toml"
 )
+SAMPLE_DIR = Path(__file__).resolve().parents[2] / "docs" / "episode_batch_runner_samples"
 
 
 def _base_request_payload() -> dict[str, object]:
@@ -57,6 +58,10 @@ def _base_request_payload() -> dict[str, object]:
             "stop": 4,
         },
     }
+
+
+def _load_sample_payload(name: str) -> dict[str, object]:
+    return json.loads((SAMPLE_DIR / name).read_text(encoding="utf-8"))
 
 
 def test_episode_batch_request_from_payload_normalizes_the_v1_contract() -> None:
@@ -314,3 +319,72 @@ def test_run_episode_batch_from_payload_reports_request_validation_failures() ->
     assert payload["warnings"] == []
     assert payload["error"]["kind"] == "request_validation_error"
     assert "schema_version must be" in payload["error"]["message"]
+
+
+def test_checked_in_episode_batch_samples_match_the_v1_contract_shape() -> None:
+    request_payload = _load_sample_payload("request.json")
+    success_payload = _load_sample_payload("success_result.json")
+    failure_payload = _load_sample_payload("failure_result.json")
+
+    request = episode_batch_request_from_payload(request_payload)
+
+    assert request.schema_version == RUNNER_SCHEMA_VERSION
+    assert request.operation == EPISODE_BATCH_OPERATION
+    assert request.mission_path == (
+        Path("configs/missions/mission_01_secure_the_woods_1.toml")
+    ).resolve()
+    assert request.policy.name == BUILTIN_POLICY_HEURISTIC
+    assert request.artifact_dir == (Path("outputs/evalynx/episode_batch_run_001")).resolve()
+    assert request.write_episode_rows is True
+
+    assert success_payload["schema_version"] == RUNNER_SCHEMA_VERSION
+    assert success_payload["status"] == "succeeded"
+    assert success_payload["operation"] == EPISODE_BATCH_OPERATION
+    assert set(success_payload) == {
+        "schema_version",
+        "status",
+        "operation",
+        "metrics",
+        "execution",
+        "artifacts",
+        "warnings",
+    }
+    assert set(success_payload["metrics"]) == {
+        "agent_name",
+        "episode_count",
+        "victory_count",
+        "defeat_count",
+        "win_rate",
+        "defeat_rate",
+        "mean_terminal_turn",
+        "mean_resolved_marker_count",
+        "mean_removed_german_count",
+        "mean_player_decision_count",
+    }
+    assert success_payload["execution"]["policy"]["name"] == BUILTIN_POLICY_HEURISTIC
+    assert any(
+        artifact["kind"] == "episode_rows" for artifact in success_payload["artifacts"]
+    )
+
+    assert failure_payload["schema_version"] == RUNNER_SCHEMA_VERSION
+    assert failure_payload["status"] == "failed"
+    assert failure_payload["operation"] == EPISODE_BATCH_OPERATION
+    assert set(failure_payload) == {
+        "schema_version",
+        "status",
+        "operation",
+        "execution",
+        "artifacts",
+        "warnings",
+        "error",
+    }
+    assert (
+        failure_payload["execution"]["policy"]["name"]
+        == BUILTIN_POLICY_EXACT_GUIDED_HEURISTIC
+    )
+    assert failure_payload["error"]["kind"] == "policy_resolution_error"
+
+    for payload in (success_payload, failure_payload):
+        assert isinstance(payload["artifacts"], list)
+        for artifact in payload["artifacts"]:
+            assert set(artifact) >= {"kind", "path", "format"}
