@@ -226,6 +226,7 @@ function renderEventLog(state) {
     item.append(step, message);
     eventLog.append(item);
   });
+  eventLog.scrollTop = eventLog.scrollHeight;
 }
 
 function formatRollOptions(rollOptions) {
