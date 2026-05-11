@@ -246,11 +246,13 @@ input {
   grid-template-columns: 26px minmax(0, 1fr);
   gap: 8px;
   align-items: start;
+  flex: 0 0 auto;
   min-height: 26px;
   padding: 5px 7px;
   background: #fffdf7;
   border: 1px solid #e1d8c5;
   border-radius: 6px;
+  line-height: 1.25;
 }
 
 .event-entry-latest {
@@ -274,6 +276,11 @@ input {
 .empty-log {
   display: block;
   color: var(--muted);
+}
+
+.event-message {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .message-line {

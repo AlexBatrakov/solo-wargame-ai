@@ -222,6 +222,7 @@ function renderEventLog(state) {
     step.className = "event-step";
     step.textContent = entry.step;
     const message = document.createElement("span");
+    message.className = "event-message";
     message.textContent = entry.message;
     item.append(step, message);
     eventLog.append(item);
