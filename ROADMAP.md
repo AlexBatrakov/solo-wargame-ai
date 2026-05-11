@@ -790,6 +790,49 @@ Operational note:
   research packets may add bounded multi-core local execution support so the
   user can exploit available hardware without changing benchmark semantics.
 
+#### Parallel interactive play track
+
+This track is separate from the fair-agent research ladder.
+It should make the existing simulator playable and inspectable without turning
+the UI into a second rules engine.
+
+The interactive layer should depend on the accepted resolver, replay, mission,
+and state contracts. The dependency direction should stay one-way:
+
+`interactive -> domain / resolver / replay`
+
+The domain, agent, evaluation, exact-artifact, and learning layers should not
+depend on the interactive layer.
+
+Planned packets:
+
+1. **Minimal playable browser session**
+   Build a local browser/SVG session over Mission 1 first: state view models,
+   action labels, an in-memory session lifecycle, a local CLI/server entrypoint,
+   basic SVG map rendering, legal-action selection, reset, and terminal outcome
+   display.
+2. **Playability polish**
+   Add natural map/counter clicks where they fit the current legal-action
+   boundary, improve action labels, add a concise event log, and support seed
+   reset from the UI.
+3. **Replay and inspection**
+   Add replay export/import, a step timeline, structured event details, and a
+   cleaner way to inspect previous decisions.
+4. **Strategy-lab layer**
+   Add optional agent suggestions, watch-agent-play mode, and later exact- or
+   policy-artifact annotations for solved missions when local artifacts are
+   available.
+
+First-packet non-goals:
+
+- no changes to core rules or mission semantics;
+- no changes to the historical heuristic, promoted heuristic, exact builders,
+  policy-audit workflows, or mission-summary workflows;
+- no persistent session database;
+- no broad web framework unless a later packet has a concrete reason to add
+  one;
+- no attempt to make the UI the source of truth for replay or evaluation.
+
 ### Preserved farther-out ideas
 
 These ideas are intentionally farther out than the current mainline, but they
@@ -828,17 +871,19 @@ are worth pinning in the roadmap so they do not disappear between packets.
 
 1. Cross-mission comparison and reporting once more than one honest-agent line
    is active
-2. Mission 4 or another bounded richer content slice once the Mission 3 env
+2. Minimal playable browser session as the first packet in the parallel
+   interactive play track
+3. Mission 4 or another bounded richer content slice once the Mission 3 env
    and learning path are healthier
-3. A narrow search-transfer/localization follow-up only if a later planning
+4. A narrow search-transfer/localization follow-up only if a later planning
    pass opens that as a new explicit question rather than more tuning
-4. Observation/action redesign only if richer content shows the accepted
+5. Observation/action redesign only if richer content shows the accepted
    wrapper is too Mission-1-shaped
-5. Synthetic fixtures and bounded maintainability refactors ahead of broader
+6. Synthetic fixtures and bounded maintainability refactors ahead of broader
    multi-mission growth
-6. Operator-controlled multi-core local runners for heavy exact or seeded
+7. Operator-controlled multi-core local runners for heavy exact or seeded
    experiments once the honest-agent lab starts needing repeated long runs
-7. Later RL-agent design work around state/action encoding and policy/value
+8. Later RL-agent design work around state/action encoding and policy/value
    architecture once the fair-agent ladder has stronger foundations
 
 #### Lower-priority / opportunistic backlog

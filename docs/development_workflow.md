@@ -4,7 +4,7 @@
 
 This file describes project-wide engineering rules for development.
 
-It is public and should contain stable workflow principles, not private prompt details.
+It is public and should contain stable workflow principles, not private planning details.
 
 ## Workflow principles
 
