@@ -270,6 +270,7 @@ function renderMap(state) {
   const size = 42;
   const padding = 76;
   const centers = new Map();
+  const affordances = buildAffordanceMaps(state.affordances);
 
   state.map.hexes.forEach((hex) => {
     centers.set(coordKey(hex.coord), hexCenter(hex.coord, size));
@@ -285,10 +286,19 @@ function renderMap(state) {
   state.map.hexes.forEach((hex) => {
     const center = centers.get(coordKey(hex.coord));
     const terrain = hex.terrain[0] || "clear";
+    const advanceAffordance = affordances.advanceDestinations.get(coordKey(hex.coord));
     const polygon = svgElement("polygon", {
       points: hexPoints(center, size),
-      class: `hex hex-${terrain}${hex.is_start ? " hex-start" : ""}`,
+      class: [
+        "hex",
+        `hex-${terrain}`,
+        hex.is_start ? "hex-start" : "",
+        advanceAffordance ? "hex-advance-target" : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
     });
+    attachShortcut(polygon, advanceAffordance);
     mapSvg.append(polygon);
 
     const label = svgElement("text", {
@@ -322,7 +332,12 @@ function renderMap(state) {
       return;
     }
     const [dx, dy] = nextOffset(marker.coord);
-    drawMarker(center.x + dx, center.y + dy, marker);
+    drawMarker(
+      center.x + dx,
+      center.y + dy,
+      marker,
+      affordances.hiddenMarkers.get(marker.id),
+    );
   });
 
   state.units.german.forEach((unit) => {
@@ -331,7 +346,7 @@ function renderMap(state) {
       return;
     }
     const [dx, dy] = nextOffset(unit.coord);
-    drawGermanCounter(center.x + dx, center.y + dy, unit);
+    drawGermanCounter(center.x + dx, center.y + dy, unit, affordances.germanUnits.get(unit.id));
   });
 
   state.units.british.forEach((unit) => {
@@ -340,21 +355,60 @@ function renderMap(state) {
       return;
     }
     const [dx, dy] = nextOffset(unit.coord);
-    drawBritishCounter(center.x + dx, center.y + dy, unit);
+    drawBritishCounter(center.x + dx, center.y + dy, unit, affordances.britishUnits.get(unit.id));
   });
 }
 
-function drawBritishCounter(x, y, unit) {
+function buildAffordanceMaps(affordances = {}) {
+  return {
+    advanceDestinations: new Map(
+      (affordances.advance_destinations || []).map((entry) => [coordKey(entry.coord), entry]),
+    ),
+    britishUnits: new Map(
+      (affordances.british_units || []).map((entry) => [entry.unit_id, entry]),
+    ),
+    germanUnits: new Map((affordances.german_units || []).map((entry) => [entry.unit_id, entry])),
+    hiddenMarkers: new Map(
+      (affordances.hidden_markers || []).map((entry) => [entry.marker_id, entry]),
+    ),
+  };
+}
+
+function attachShortcut(element, affordance) {
+  if (!affordance || !affordance.shortcut_action_id) {
+    return;
+  }
+
+  const actionId = affordance.shortcut_action_id;
+  element.classList.add("map-clickable");
+  element.setAttribute("role", "button");
+  element.setAttribute("tabindex", "0");
+  element.addEventListener("click", () => {
+    if (!requestInFlight) {
+      applyAction(actionId);
+    }
+  });
+  element.addEventListener("keydown", (event) => {
+    if ((event.key === "Enter" || event.key === " ") && !requestInFlight) {
+      event.preventDefault();
+      applyAction(actionId);
+    }
+  });
+}
+
+function drawBritishCounter(x, y, unit, affordance) {
   const group = svgElement("g", {
     class: [
       "counter",
       "british-counter",
       `british-morale-${unit.morale}`,
       unit.active ? "counter-active" : "",
+      affordance ? "counter-activatable" : "",
     ]
       .filter(Boolean)
       .join(" "),
   });
+  attachShortcut(group, affordance);
   group.append(svgElement("rect", {x: x - 17, y: y - 13, width: 34, height: 26, rx: 4}));
   const text = svgElement("text", {x, y: y + 4, "text-anchor": "middle"});
   text.textContent = unit.counter_label || unit.id;
@@ -368,10 +422,18 @@ function drawBritishCounter(x, y, unit) {
   mapSvg.append(group);
 }
 
-function drawGermanCounter(x, y, unit) {
+function drawGermanCounter(x, y, unit, affordance) {
   const group = svgElement("g", {
-    class: `counter german-counter german-${unit.status}`,
+    class: [
+      "counter",
+      "german-counter",
+      `german-${unit.status}`,
+      affordance ? "counter-targetable" : "",
+    ]
+      .filter(Boolean)
+      .join(" "),
   });
+  attachShortcut(group, affordance);
   group.append(svgElement("rect", {x: x - 22, y: y - 14, width: 44, height: 28, rx: 4}));
   const text = svgElement("text", {x, y: y + 4, "text-anchor": "middle"});
   text.textContent = unit.counter_label || unit.unit_class;
@@ -425,8 +487,13 @@ function facingAngle(facing) {
   return angles[facing] ?? -90;
 }
 
-function drawMarker(x, y, marker) {
-  const group = svgElement("g", {class: "hidden-marker"});
+function drawMarker(x, y, marker, affordance) {
+  const group = svgElement("g", {
+    class: ["hidden-marker", affordance ? "hidden-marker-targetable" : ""]
+      .filter(Boolean)
+      .join(" "),
+  });
+  attachShortcut(group, affordance);
   group.append(
     svgElement("polygon", {
       points: `${x},${y - 17} ${x + 17},${y} ${x},${y + 17} ${x - 17},${y}`,

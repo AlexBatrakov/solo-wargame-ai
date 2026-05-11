@@ -10,6 +10,7 @@ from solo_wargame_ai.domain.hexgrid import HexCoord
 from solo_wargame_ai.domain.state import GameState
 
 from .action_view import (
+    UIActionView,
     build_activation_restrictions,
     build_activation_roll_options,
     build_ui_action_selection,
@@ -22,6 +23,7 @@ def build_state_view(state: GameState, legal_actions: tuple[GameAction, ...]) ->
     """Convert a resolver-owned state and legal actions into a browser view."""
 
     action_selection = build_ui_action_selection(state, legal_actions)
+    action_views = action_selection.action_views
     return {
         "mission": _mission_view(state),
         "turn": state.turn,
@@ -37,6 +39,7 @@ def build_state_view(state: GameState, legal_actions: tuple[GameAction, ...]) ->
         },
         "map": _map_view(state),
         "units": _units_view(state),
+        "affordances": _affordances_view(state, action_views),
         "state_token": action_selection.state_token,
         "legal_actions": action_selection.to_list(),
     }
@@ -155,6 +158,84 @@ def _current_activation_view(state: GameState) -> JsonDict | None:
         "active_order": (
             None if activation.active_order is None else activation.active_order.value
         ),
+    }
+
+
+def _affordances_view(state: GameState, action_views: tuple[UIActionView, ...]) -> JsonDict:
+    british_units: dict[str, list[UIActionView]] = {}
+    advance_destinations: dict[tuple[int, int], list[UIActionView]] = {}
+    german_units: dict[str, list[UIActionView]] = {}
+    hidden_markers: dict[str, list[UIActionView]] = {}
+
+    for action_view in action_views:
+        hints = action_view.hints
+        if action_view.kind == "select_british_unit":
+            british_units.setdefault(str(hints["unit_id"]), []).append(action_view)
+        elif action_view.kind == "advance":
+            coord = hints["target_coord"]
+            advance_destinations.setdefault((coord["q"], coord["r"]), []).append(action_view)
+        elif action_view.kind in {"fire", "grenade_attack"}:
+            german_units.setdefault(str(hints["target_unit_id"]), []).append(action_view)
+        elif action_view.kind == "select_german_unit":
+            german_units.setdefault(str(hints["unit_id"]), []).append(action_view)
+        elif action_view.kind == "scout":
+            hidden_markers.setdefault(str(hints["marker_id"]), []).append(action_view)
+
+    active_unit_id = (
+        None if state.current_activation is None else state.current_activation.active_unit_id
+    )
+    return {
+        "acting_side": state.phase.value,
+        "active_british_unit_id": active_unit_id,
+        "british_units": [
+            _target_affordance(unit_id=unit_id, action_views=views)
+            for unit_id, views in sorted(british_units.items())
+        ],
+        "advance_destinations": [
+            _coord_affordance(coord=coord, action_views=views)
+            for coord, views in sorted(advance_destinations.items())
+        ],
+        "german_units": [
+            _target_affordance(unit_id=unit_id, action_views=views)
+            for unit_id, views in sorted(german_units.items())
+        ],
+        "hidden_markers": [
+            _marker_affordance(marker_id=marker_id, action_views=views)
+            for marker_id, views in sorted(hidden_markers.items())
+        ],
+    }
+
+
+def _coord_affordance(
+    *,
+    coord: tuple[int, int],
+    action_views: list[UIActionView],
+) -> JsonDict:
+    return {
+        "coord": {"q": coord[0], "r": coord[1]},
+        **_action_group_affordance(action_views),
+    }
+
+
+def _target_affordance(*, unit_id: str, action_views: list[UIActionView]) -> JsonDict:
+    return {
+        "unit_id": unit_id,
+        **_action_group_affordance(action_views),
+    }
+
+
+def _marker_affordance(*, marker_id: str, action_views: list[UIActionView]) -> JsonDict:
+    return {
+        "marker_id": marker_id,
+        **_action_group_affordance(action_views),
+    }
+
+
+def _action_group_affordance(action_views: list[UIActionView]) -> JsonDict:
+    return {
+        "action_ids": [action_view.id for action_view in action_views],
+        "kinds": [action_view.kind for action_view in action_views],
+        "shortcut_action_id": action_views[0].id if len(action_views) == 1 else None,
     }
 
 

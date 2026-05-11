@@ -12,6 +12,7 @@ from solo_wargame_ai.domain.actions import (
     GrenadeAttackAction,
     OrderExecutionChoice,
     ResolveDoubleChoiceAction,
+    ScoutAction,
     SelectActivationDieAction,
     SelectBritishUnitAction,
     SelectGermanUnitAction,
@@ -89,6 +90,16 @@ def test_state_view_exposes_map_units_markers_decision_and_legal_actions(mission
         "Activate Rifle Squad A",
         "Activate Rifle Squad B",
     ]
+    assert [
+        (entry["unit_id"], entry["kinds"], entry["shortcut_action_id"] is not None)
+        for entry in view["affordances"]["british_units"]
+    ] == [
+        ("rifle_squad_a", ["select_british_unit"], True),
+        ("rifle_squad_b", ["select_british_unit"], True),
+    ]
+    assert view["affordances"]["acting_side"] == "british"
+    assert view["affordances"]["active_british_unit_id"] is None
+    assert view["affordances"]["advance_destinations"] == []
 
 
 def test_action_labels_follow_staged_activation_context(mission) -> None:
@@ -200,6 +211,19 @@ def test_advance_action_view_exposes_target_coordinate_hint(mission) -> None:
         "kind": "advance",
         "target_coord": {"q": 0, "r": 2},
     }
+
+
+def test_state_view_exposes_advance_destination_affordance(mission) -> None:
+    state = create_initial_game_state(mission, seed=0)
+    action = AdvanceAction(destination=HexCoord(q=0, r=2))
+
+    view = build_state_view(state, (action,))
+
+    advance_affordance = view["affordances"]["advance_destinations"][0]
+    assert advance_affordance["coord"] == {"q": 0, "r": 2}
+    assert advance_affordance["kinds"] == ["advance"]
+    assert advance_affordance["action_ids"] == [view["legal_actions"][0]["id"]]
+    assert advance_affordance["shortcut_action_id"] == view["legal_actions"][0]["id"]
 
 
 def test_discard_action_label_is_plain_language(mission) -> None:
@@ -410,6 +434,79 @@ def test_german_target_action_labels_match_numbered_counter_labels() -> None:
         "Grenade attack LMG 2",
         "Resolve German fire: LMG 2",
     ]
+
+
+def test_state_view_groups_german_target_affordances_without_ambiguous_shortcut() -> None:
+    mission = load_mission(MISSION3_PATH)
+    state = create_initial_game_state(mission, seed=0)
+    state = replace(
+        state,
+        german_units={
+            "qm_2": RevealedGermanUnitState(
+                unit_id="qm_2",
+                unit_class="light_machine_gun",
+                position=HexCoord(0, 1),
+                facing=HexDirection.DOWN_LEFT,
+                status=GermanUnitStatus.ACTIVE,
+            ),
+        },
+        unresolved_markers={},
+    )
+
+    view = build_state_view(
+        state,
+        (
+            FireAction(target_unit_id="qm_2"),
+            GrenadeAttackAction(target_unit_id="qm_2"),
+        ),
+    )
+
+    german_affordance = view["affordances"]["german_units"][0]
+    assert german_affordance["unit_id"] == "qm_2"
+    assert german_affordance["kinds"] == ["fire", "grenade_attack"]
+    assert german_affordance["shortcut_action_id"] is None
+
+
+def test_state_view_exposes_unambiguous_german_select_shortcut() -> None:
+    mission = load_mission(MISSION3_PATH)
+    state = create_initial_game_state(mission, seed=0)
+
+    view = build_state_view(state, (SelectGermanUnitAction(unit_id="qm_1"),))
+
+    german_affordance = view["affordances"]["german_units"][0]
+    assert german_affordance["unit_id"] == "qm_1"
+    assert german_affordance["kinds"] == ["select_german_unit"]
+    assert german_affordance["shortcut_action_id"] == view["legal_actions"][0]["id"]
+
+
+def test_state_view_groups_scout_marker_affordances_without_ambiguous_shortcut(
+    mission,
+) -> None:
+    state = create_initial_game_state(mission, seed=0)
+
+    view = build_state_view(
+        state,
+        (
+            ScoutAction(marker_id="qm_1", facing=HexDirection.DOWN),
+            ScoutAction(marker_id="qm_1", facing=HexDirection.DOWN_LEFT),
+        ),
+    )
+
+    marker_affordance = view["affordances"]["hidden_markers"][0]
+    assert marker_affordance["marker_id"] == "qm_1"
+    assert marker_affordance["kinds"] == ["scout", "scout"]
+    assert marker_affordance["shortcut_action_id"] is None
+
+
+def test_state_view_exposes_unambiguous_scout_marker_shortcut(mission) -> None:
+    state = create_initial_game_state(mission, seed=0)
+
+    view = build_state_view(state, (ScoutAction(marker_id="qm_1"),))
+
+    marker_affordance = view["affordances"]["hidden_markers"][0]
+    assert marker_affordance["marker_id"] == "qm_1"
+    assert marker_affordance["kinds"] == ["scout"]
+    assert marker_affordance["shortcut_action_id"] == view["legal_actions"][0]["id"]
 
 
 def test_both_orders_label_makes_commitment_explicit(mission) -> None:
