@@ -52,6 +52,10 @@ In practice, the project demonstrates:
   The repo now has a machine-readable, subprocess-friendly batch runner with a
   structured success/failure contract and artifact manifest for external
   orchestration.
+- **A local browser play session now exists**
+  Mission 1 can be played from a local stdlib HTTP server with a vanilla
+  browser UI, SVG map, counters, hidden markers, resolver-backed legal action
+  buttons, reset, and terminal outcome display.
 - **Mission 3 now spans domain, wrapper, and first learning transfer**
   The repository supports deterministic Mission 3 load/init/play/replay,
   accepted `Mission3Env`, preserved local search references, and a first
@@ -174,6 +178,21 @@ Benchmark framing:
 - optional per-episode detail written as an artifact rather than embedded in
   the top-level result by default.
 
+### Interactive play
+
+- a local Mission 1 browser play session under
+  `solo_wargame_ai.interactive`;
+- resolver-backed state and legal-action view models with per-state UI action
+  ids;
+- a stdlib HTTP server and thin CLI entrypoint:
+
+```bash
+.venv/bin/python -m solo_wargame_ai.cli.play_session \
+  --mission configs/missions/mission_01_secure_the_woods_1.toml \
+  --seed 0 \
+  --port 8765
+```
+
 What is deliberately **not** implemented yet:
 - the later Mission 1 honest-search baselines and value-function study on top
   of the promoted exact-guided heuristic base;
@@ -200,6 +219,9 @@ What is deliberately **not** implemented yet:
 - `src/solo_wargame_ai/eval/`
   Episode runner, benchmark harness, metrics, artifact/reporting helpers, and
   the orchestration-facing episode-batch runner core.
+- `src/solo_wargame_ai/interactive/`
+  Local browser play-session view models, in-memory session lifecycle, and
+  stdlib HTTP server.
 - `tests/`
   Unit, integration, replay, env, agent, and CLI regression coverage.
 

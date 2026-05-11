@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Solo Wargame Play Session</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="mission-heading">
+        <h1 id="mission-name">Loading...</h1>
+        <p id="mission-objective"></p>
+      </div>
+      <div class="status-strip" aria-live="polite">
+        <span id="turn-status"></span>
+        <span id="phase-status"></span>
+        <span id="decision-status"></span>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <section class="board-surface" aria-label="Mission map">
+        <svg id="map-svg" role="img" aria-labelledby="mission-name"></svg>
+      </section>
+
+      <aside class="control-panel">
+        <section class="panel-section session-controls">
+          <label for="seed-input">Seed</label>
+          <input id="seed-input" type="number" step="1" value="0">
+          <button id="reset-button" type="button">Reset</button>
+        </section>
+
+        <section id="terminal-panel" class="terminal-panel" hidden></section>
+
+        <section class="panel-section">
+          <h2>Activation</h2>
+          <dl id="activation-details" class="details-list"></dl>
+        </section>
+
+        <section class="panel-section actions-section">
+          <h2>Legal Actions</h2>
+          <div id="action-list" class="action-list"></div>
+        </section>
+
+        <p id="message-line" class="message-line" role="status" aria-live="polite"></p>
+      </aside>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

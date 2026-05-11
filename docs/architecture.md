@@ -70,19 +70,32 @@ Responsible for:
 - benchmarking,
 - experiment reports.
 
+### 5. Interactive layer
+Responsible for:
+- converting resolver-owned state and legal actions into browser-facing views,
+- local in-memory play sessions,
+- local browser UI and SVG map rendering,
+- thin HTTP/CLI surfaces for manual play.
+
+The interactive layer consumes accepted domain, resolver, replay, and mission
+contracts. It must not duplicate rule resolution or become a source of mission
+semantics.
+
 ## Dependency rules
 
 Preferred dependency direction:
 
-`domain -> none`  
-`env -> domain`  
-`agents -> env and/or domain interfaces`  
-`eval -> env + agents`
+- `domain -> none`
+- `env -> domain`
+- `agents -> env and/or domain interfaces`
+- `eval -> env + agents`
+- `interactive -> domain + resolver + replay/io`
 
 Forbidden or discouraged:
 - domain importing RL or training libraries;
 - agents directly changing internal state without action/resolver APIs;
 - duplicated rule logic in agents or evaluation code.
+- domain, env, agents, or evaluation code depending on the interactive layer.
 
 ## RNG policy
 
