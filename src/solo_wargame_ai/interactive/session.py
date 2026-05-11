@@ -21,6 +21,7 @@ from .action_view import (
     build_ui_action_selection,
     state_token_from_ui_action_id,
 )
+from .event_log import UIEventSummary, build_ui_event_summaries, event_summaries_to_dicts
 from .state_view import build_state_view
 
 
@@ -69,6 +70,8 @@ class PlaySessionSnapshot:
     state: GameState
     seed: int
     decision_step_count: int
+    event_log: tuple[UIEventSummary, ...]
+    last_action_events: tuple[UIEventSummary, ...]
 
 
 class PlaySession:
@@ -104,6 +107,8 @@ class PlaySession:
             state=state,
             seed=chosen_seed,
             decision_step_count=0,
+            event_log=(),
+            last_action_events=(),
         )
         return self.current_view()
 
@@ -118,6 +123,8 @@ class PlaySession:
             "decision_step_count": snapshot.decision_step_count,
             "closed": snapshot.state.terminal_outcome is not None,
         }
+        view["event_log"] = event_summaries_to_dicts(snapshot.event_log)
+        view["last_action_events"] = event_summaries_to_dicts(snapshot.last_action_events)
         return view
 
     def apply_ui_action(self, action_id: str) -> dict[str, object]:
@@ -135,10 +142,22 @@ class PlaySession:
                 current_state_token=action_selection.state_token,
             )
 
+        next_state = apply_action(snapshot.state, action)
+        step_index = snapshot.decision_step_count + 1
+        last_action_events = build_ui_event_summaries(
+            mission=self._mission,
+            before_state=snapshot.state,
+            after_state=next_state,
+            action=action,
+            step_index=step_index,
+        )
+
         self._snapshot = PlaySessionSnapshot(
-            state=apply_action(snapshot.state, action),
+            state=next_state,
             seed=snapshot.seed,
-            decision_step_count=snapshot.decision_step_count + 1,
+            decision_step_count=step_index,
+            event_log=(*snapshot.event_log, *last_action_events),
+            last_action_events=last_action_events,
         )
         return self.current_view()
 

@@ -277,20 +277,17 @@ def run_action_replay(
                 f"at step {index}: {serialize_action(action)!r}",
             )
 
-        draws = _predict_random_draws(state, action)
         next_state = apply_action(state, action)
-        _assert_rng_alignment(state, next_state, draws, action, index)
 
         step = ReplayStep(
             index=index,
             before=summarize_state(state),
             action=action,
-            events=_build_step_events(
+            events=build_transition_events(
                 mission=mission,
                 before_state=state,
                 after_state=next_state,
                 action=action,
-                draws=draws,
                 step_index=index,
             ),
             after=summarize_state(next_state),
@@ -362,6 +359,35 @@ def render_replay_trace(trace: ReplayTrace) -> str:
         f"terminal={trace.final_state.terminal_outcome}"
     )
     return "\n".join(lines)
+
+
+def build_transition_events(
+    *,
+    mission: Mission,
+    before_state: GameState,
+    after_state: GameState,
+    action: GameAction,
+    step_index: int,
+) -> tuple[ReplayEvent, ...]:
+    """Derive replay events for one accepted resolver transition."""
+
+    legal_actions = get_legal_actions(before_state)
+    if action not in legal_actions:
+        raise ReplayConsistencyError(
+            "Action is not legal on the accepted resolver path "
+            f"at step {step_index}: {serialize_action(action)!r}",
+        )
+
+    draws = _predict_random_draws(before_state, action)
+    _assert_rng_alignment(before_state, after_state, draws, action, step_index)
+    return _build_step_events(
+        mission=mission,
+        before_state=before_state,
+        after_state=after_state,
+        action=action,
+        draws=draws,
+        step_index=step_index,
+    )
 
 
 def summarize_state(state: GameState) -> ReplayStateSummary:
@@ -1028,6 +1054,7 @@ __all__ = [
     "ReplayStateSummary",
     "ReplayStep",
     "ReplayTrace",
+    "build_transition_events",
     "render_replay_trace",
     "replay_trace",
     "run_action_replay",

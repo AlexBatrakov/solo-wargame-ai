@@ -12,6 +12,7 @@ const seedInput = document.querySelector("#seed-input");
 const resetButton = document.querySelector("#reset-button");
 const terminalPanel = document.querySelector("#terminal-panel");
 const activationDetails = document.querySelector("#activation-details");
+const eventLog = document.querySelector("#event-log");
 const actionList = document.querySelector("#action-list");
 const messageLine = document.querySelector("#message-line");
 
@@ -139,6 +140,7 @@ function render() {
   renderHeader(currentState);
   renderTerminal(currentState);
   renderActivation(currentState);
+  renderEventLog(currentState);
   renderActions(currentState);
   renderMap(currentState);
 }
@@ -197,6 +199,32 @@ function renderActivation(state) {
     const description = document.createElement("dd");
     description.textContent = value;
     activationDetails.append(term, description);
+  });
+}
+
+function renderEventLog(state) {
+  eventLog.replaceChildren();
+
+  if (!state.event_log.length) {
+    const empty = document.createElement("li");
+    empty.className = "empty-log";
+    empty.textContent = "No actions yet";
+    eventLog.append(empty);
+    return;
+  }
+
+  state.event_log.slice(-36).forEach((entry) => {
+    const item = document.createElement("li");
+    item.className = state.last_action_events.some((latest) => latest.id === entry.id)
+      ? "event-entry event-entry-latest"
+      : "event-entry";
+    const step = document.createElement("span");
+    step.className = "event-step";
+    step.textContent = entry.step;
+    const message = document.createElement("span");
+    message.textContent = entry.message;
+    item.append(step, message);
+    eventLog.append(item);
   });
 }
 
